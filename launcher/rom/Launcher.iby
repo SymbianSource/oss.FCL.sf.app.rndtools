@@ -1,0 +1,34 @@
+/*
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  
+*
+*/
+
+
+#ifndef __LAUNCHER_IBY__
+#define __LAUNCHER_IBY__
+
+S60_APP_EXE(Launcher)
+S60_APP_AIF_ICONS(Launcher)
+S60_APP_RESOURCE(Launcher)
+#ifdef S60_UPGRADABLE_APP_REG_RSC
+  S60_UPGRADABLE_APP_REG_RSC(Launcher)
+#else
+  S60_APP_AIF_RSC(Launcher)
+#endif
+
+data=ZPRIVATE\101FB74F\backup_registration.xml        	private\101FB74F\backup_registration.xml
+data=ZSYSTEM\Install\Launcher_stub.sis                  \system\install\Launcher_stub.sis
+
+#endif

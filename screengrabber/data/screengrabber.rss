@@ -1,0 +1,550 @@
+/*
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  
+*
+*/
+
+
+
+NAME MATT
+
+#include <eikon.rh>
+#include <eikon.rsg>
+#include <avkon.rh>
+#include <avkon.rsg>
+#include <avkon.mbg>
+#include <CommonDialogs.hrh>
+#include <CommonDialogs.rh>
+#include <pathconfiguration.hrh>
+
+#include "SG.hrh"
+#include "SGStd.h"
+#include <data_caging_paths_strings.hrh>
+#include <appinfo.rh>
+
+
+// ---------------------------------------------------------
+//   
+//    Define the resource file signature 
+//    This resource should be empty.
+//
+// ---------------------------------------------------------
+//
+RESOURCE RSS_SIGNATURE { }
+
+// ---------------------------------------------------------
+//   
+//    Default Document Name
+//
+// ---------------------------------------------------------
+//
+RESOURCE TBUF r_default_document_name { buf=""; }
+
+// ---------------------------------------------------------
+//   
+//    Define default menu and CBA key.
+//
+// ---------------------------------------------------------
+//
+RESOURCE EIK_APP_INFO
+    {
+	//status_pane = r_screengrabber_status_pane;
+    //menubar = r_screengrabber_menubar;
+    //cba = R_AVKON_SOFTKEYS_OPTIONS_EXIT;
+    }
+
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_hotkeys
+//
+//----------------------------------------------------
+//
+RESOURCE HOTKEYS r_screengrabber_hotkeys
+    {
+    control=
+        {
+        HOTKEY { command=EAknCmdExit; key='e'; }
+        };
+    }
+
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_view1
+//
+//----------------------------------------------------
+//
+RESOURCE AVKON_VIEW r_screengrabber_view1
+    {
+    hotkeys=r_screengrabber_hotkeys;
+    menubar=r_screengrabber_menubar_view1;  
+    cba=R_AVKON_SOFTKEYS_OPTIONS_EXIT;    
+    }
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_menubar_view1
+//
+//----------------------------------------------------
+//
+RESOURCE MENU_BAR r_screengrabber_menubar_view1
+    {
+    titles=
+        {
+        MENU_TITLE { menu_pane=r_screengrabber_app_menu; txt="App"; },
+        MENU_TITLE { menu_pane=r_screengrabber_view1_menu; txt="View"; }
+        };
+    }
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_view1_menu
+//
+//----------------------------------------------------
+//
+
+RESOURCE MENU_PANE r_screengrabber_view1_menu
+    {
+    items=
+        {
+        MENU_ITEM { command=EScreenGrabberCmdSendToBackground; txt="Send to background"; },
+        MENU_ITEM { command=EScreenGrabberCmdScreenResolution; cascade = r_screengrabber_resolution_submenu; txt="Screen resolution"; },
+        MENU_ITEM { command=EScreenGrabberCmdSettings; txt="Settings"; },
+        MENU_ITEM { command=EScreenGrabberCmdAbout; txt="About"; },
+        MENU_ITEM { command=EAknCmdExit; txt="Exit"; }
+        };
+    }
+
+RESOURCE MENU_PANE r_screengrabber_resolution_submenu
+    {
+    items=
+        {
+        };
+    }
+    
+//----------------------------------------------------
+//   
+//    r_screengrabber_view2
+//
+//----------------------------------------------------
+//
+RESOURCE CBA r_screengrabber_softkeys_view2
+	{
+	buttons =
+		{
+		CBA_BUTTON {id=EAknSoftkeyOptions; txt = "Options" ;},
+		CBA_BUTTON {id=EScreenGrabberCmdSettingsBack; txt = "Back" ; }
+		};
+	}
+
+RESOURCE AVKON_VIEW r_screengrabber_view2
+    {
+    hotkeys=r_screengrabber_hotkeys;
+    menubar=r_screengrabber_menubar_view2;  
+    cba=r_screengrabber_softkeys_view2; 
+    }
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_menubar_view2
+//
+//----------------------------------------------------
+//
+RESOURCE MENU_BAR r_screengrabber_menubar_view2
+    {
+    titles=
+        {
+        MENU_TITLE { menu_pane=r_screengrabber_app_menu; txt="App"; },
+        MENU_TITLE { menu_pane=r_screengrabber_view2_menu; txt="View"; }
+        };
+    }
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_view2_menu
+//    ?description
+//
+//----------------------------------------------------
+//
+RESOURCE MENU_PANE r_screengrabber_view2_menu
+    {
+    items=
+        {
+        MENU_ITEM { command=EScreenGrabberCmdSettingsChange; txt="Change"; },
+        MENU_ITEM { command=EScreenGrabberCmdSettingsExit; txt="Exit"; }
+        };
+    }
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_app_menu
+//
+//----------------------------------------------------
+//
+RESOURCE MENU_PANE r_screengrabber_app_menu
+    {
+    items=
+        {
+        };
+    }
+
+
+//----------------------------------------------------
+//   
+//    r_screengrabber_settinglist
+//
+//----------------------------------------------------
+//
+RESOURCE AVKON_SETTING_ITEM_LIST r_screengrabber_settinglist
+	{
+	title = "Settings";
+	initial_number = 1;
+	items = 
+		{
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListCaptureModeSelection;
+			name = "Capture mode";
+			setting_page_resource = r_capturemodeselection_setting_page;
+			associated_resource = r_capturemodeselection_setting_texts;
+			},
+					
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSingleCaptureHotkeySelection;
+			name = "Capture hotkey";
+			setting_page_resource = r_hotkeyselection_setting_page;
+			associated_resource = r_hotkeyselection_setting_texts;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSingleCaptureImageFormatSelection;
+			name = "Image format";
+			setting_page_resource = r_imageformatselection_setting_page;
+			associated_resource = r_imageformatselection_setting_texts;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSingleCaptureMemorySelection;
+			name = "Memory in use";
+			setting_page_resource = r_memoryselection_dialog;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSingleCaptureFileNameSelection;
+			name = "File name";
+			setting_page_resource = r_filenameselection_setting_page;
+			},
+			
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSequantialCaptureHotkeySelection;
+			name = "Start/stop hotkey";
+			setting_page_resource = r_hotkeyselection_setting_page;
+			associated_resource = r_hotkeyselection_setting_texts;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSequantialCaptureImageFormatSelection;
+			name = "Image format";
+			setting_page_resource = r_imageformatselection_setting_page;
+			associated_resource = r_imageformatselection_setting_texts;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSequantialCaptureDelaySelection;
+			name = "Delay (ms)";
+			setting_page_resource = r_delayselection_setting_page;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSequantialCaptureMemorySelection;
+			name = "Memory in use";
+			setting_page_resource = r_memoryselection_dialog;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListSequantialCaptureFileNameSelection;
+			name = "File name";
+			setting_page_resource = r_filenameselection_setting_page;
+			},
+
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListVideoCaptureHotkeySelection;
+			name = "Start/stop hotkey";
+			setting_page_resource = r_hotkeyselection_setting_page;
+			associated_resource = r_hotkeyselection_setting_texts;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListVideoCaptureVideoFormatSelection;
+			name = "Video format";
+			setting_page_resource = r_videoformatselection_setting_page;
+			associated_resource = r_videoformatselection_setting_texts;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListVideoCaptureMemorySelection;
+			name = "Memory in use";
+			setting_page_resource = r_memoryselection_dialog;
+			},
+		AVKON_SETTING_ITEM
+			{
+			identifier = ESettingListVideoCaptureFileNameSelection;
+			name = "File name";
+			setting_page_resource = r_filenameselection_setting_page;
+			}
+		};
+	}
+
+RESOURCE POPUP_SETTING_LIST r_popup_setting_list_editor
+	{
+	}
+
+//
+// resources for capture mode selection
+//
+RESOURCE AVKON_SETTING_PAGE r_capturemodeselection_setting_page
+	{
+    number = EAknSettingPageNoOrdinalDisplayed; 
+	type = EAknCtPopupSettingList;
+	editor_resource_id = r_popup_setting_list_editor;
+	}
+RESOURCE AVKON_POPUP_SETTING_TEXTS r_capturemodeselection_setting_texts
+	{
+	setting_texts_resource = r_capturemodeselection_text_array;
+	}
+RESOURCE ARRAY r_capturemodeselection_text_array
+	{
+	items =
+		{
+		AVKON_ENUMERATED_TEXT { value=ECaptureModeSingleCapture; text = "Single capture"; },
+		AVKON_ENUMERATED_TEXT { value=ECaptureModeSequantialCapture; text = "Sequantial capture"; },
+		AVKON_ENUMERATED_TEXT { value=ECaptureModeVideoCapture; text = "Video capture"; }
+		};
+	}
+	
+//
+// generic resources for hotkey selection
+//
+RESOURCE AVKON_SETTING_PAGE r_hotkeyselection_setting_page
+	{
+    number = EAknSettingPageNoOrdinalDisplayed; 
+	type = EAknCtPopupSettingList;
+	editor_resource_id = r_popup_setting_list_editor;
+	}
+RESOURCE AVKON_POPUP_SETTING_TEXTS r_hotkeyselection_setting_texts
+	{
+	setting_texts_resource = r_hotkeyselection_text_array;
+	}
+RESOURCE ARRAY r_hotkeyselection_text_array
+	{
+	items =
+		{
+		AVKON_ENUMERATED_TEXT { value=EHotkeySendKey; text = "Send key"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeyShiftStar; text = "SHIFT+*"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeyHashStar; text = "HASH+*"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeyShiftMenu; text = "SHIFT+Menu"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeyPowerKey; text = "Power key"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeySideKey; text = "Side key"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeyCameraKey1; text = "Camera key #1"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeyCameraKey2; text = "Camera key #2"; },
+		AVKON_ENUMERATED_TEXT { value=EHotkeyPOC; text = "POC"; }
+		};
+	}
+
+//
+// generic resources for image format selection
+//
+RESOURCE AVKON_SETTING_PAGE r_imageformatselection_setting_page
+	{
+    number = EAknSettingPageNoOrdinalDisplayed; 
+	type = EAknCtPopupSettingList;
+	editor_resource_id = r_popup_setting_list_editor;
+	}
+RESOURCE AVKON_POPUP_SETTING_TEXTS r_imageformatselection_setting_texts
+	{
+	setting_texts_resource = r_imageformatselection_text_array;
+	}
+RESOURCE ARRAY r_imageformatselection_text_array
+	{
+	items =
+		{
+		AVKON_ENUMERATED_TEXT { value=EImageFormatPNG; text = "PNG"; },
+		AVKON_ENUMERATED_TEXT { value=EImageFormatJPGHQ; text = "JPEG high qual."; },
+		AVKON_ENUMERATED_TEXT { value=EImageFormatJPGLQ; text = "JPEG low qual."; },
+		AVKON_ENUMERATED_TEXT { value=EImageFormatBMP; text = "BMP"; },
+		AVKON_ENUMERATED_TEXT { value=EImageFormatGIF; text = "GIF"; },
+		AVKON_ENUMERATED_TEXT { value=EImageFormatMBM; text = "MBM"; }
+		};
+	}
+
+//
+// generic resources for video format selection
+//
+RESOURCE AVKON_SETTING_PAGE r_videoformatselection_setting_page
+	{
+    number = EAknSettingPageNoOrdinalDisplayed; 
+	type = EAknCtPopupSettingList;
+	editor_resource_id = r_popup_setting_list_editor;
+	}
+RESOURCE AVKON_POPUP_SETTING_TEXTS r_videoformatselection_setting_texts
+	{
+	setting_texts_resource = r_videoformatselection_text_array;
+	}
+RESOURCE ARRAY r_videoformatselection_text_array
+	{
+	items =
+		{
+		AVKON_ENUMERATED_TEXT { value=EVideoFormatAnimatedGIF; text = "Animated GIF"; }
+		};
+	}
+
+//
+// generic resources for memory selection
+//
+RESOURCE MEMORYSELECTIONDIALOG r_memoryselection_dialog
+    {
+    title = "Memory in use";
+    locations =
+        {
+        LOCATION
+            { 
+            root_path = text_phone_memory_root_path;
+			default_folder = text_images_path; 
+            },
+        LOCATION 
+            { 
+            root_path = text_memory_card_root_path;
+			default_folder = text_images_path;
+            }
+        };
+    }
+
+//
+// generic resources for filename selection
+//
+RESOURCE AVKON_SETTING_PAGE r_filenameselection_setting_page
+	{
+	type = EEikCtEdwin;
+	editor_resource_id = r_filename_text_editor;
+	}
+
+RESOURCE EDWIN r_filename_text_editor
+	{
+	lines = 0;  // expanding to multiple rows
+	maxlength = 63;
+	flags = EEikEdwinNoLineOrParaBreaks;
+	}
+
+//
+// generic resources for delay selection
+//
+RESOURCE AVKON_SETTING_PAGE r_delayselection_setting_page
+	{
+	type = EAknCtIntegerEdwin;
+	editor_resource_id = r_delay_integer_editor;
+	}
+
+RESOURCE AVKON_INTEGER_EDWIN r_delay_integer_editor
+	{
+	maxlength = 6;
+	min = 0;
+	max = 999999;
+	}
+
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_my_general_confirmation_query
+	{
+	flags = EGeneralQueryFlags;
+	buttons = R_AVKON_SOFTKEYS_YES_NO;
+	items =
+		{
+		DLG_LINE
+			{
+			type = EAknCtQuery;
+			id = EGeneralQuery;
+			control = AVKON_CONFIRMATION_QUERY
+				{
+				layout = EConfirmationQueryLayout;
+				};
+			}
+		};
+	}
+
+   
+// ---------------------------------------------------------
+//   
+//   r_screengrabber_about_dialog
+//   About dialog - show version and copyright info etc.
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_screengrabber_about_dialog
+{
+    flags = EGeneralQueryFlags | EEikDialogFlagNoBorder | EEikDialogFlagNoShadow;
+    buttons = R_AVKON_SOFTKEYS_OK_EMPTY;
+    items=
+    {
+        DLG_LINE
+        {
+            type = EAknCtPopupHeadingPane;
+            id = EAknMessageQueryHeaderId;
+            control = AVKON_HEADING
+            {
+                label = "About Scr.Grabber";
+                headinglayout = R_AVKON_WML_SIGN_QUERY_HEADING_PANE;
+            };
+        },
+        DLG_LINE
+        {
+            type = EAknCtMessageQuery;
+            id = EAknMessageQueryContentId;
+            control = AVKON_MESSAGE_QUERY
+            {
+                message = "Version 4.2.0 - 14th May 2009. Copyright © 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
+            };
+        }
+    };
+}
+
+// ---------------------------------------------------------
+//   
+//    New framework:
+//    Secure platform and scalable UI changes 
+//
+// ---------------------------------------------------------
+//
+RESOURCE LOCALISABLE_APP_INFO r_screengrabber_localisable_app_info
+    {
+    short_caption = "Scr.Grabber";
+    caption_and_icon = 
+    CAPTION_AND_ICON_INFO
+        {
+        caption = "ScreenGrabber";
+
+        number_of_icons = 1;
+
+        // Note for ROM-based apps it is recommended to add the drive letter
+        // icon_file = "z:"APP_BITMAP_DIR"\\myapp_aif.mif";
+        icon_file = APP_BITMAP_DIR"\\screengrabber_aif.mif";
+        };
+    }
+

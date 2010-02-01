@@ -1,0 +1,2324 @@
+/*
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  
+*
+*/
+
+
+
+
+NAME MATT
+
+#include <eikon.rh>
+#include <eikon.rsg>
+#include <avkon.rh>
+#include <avkon.rsg>
+#include <avkon.mbg>
+#include <AvkonIcons.hrh>
+
+
+
+#include "creator.hrh"
+#include <data_caging_paths_strings.hrh>
+#include <appinfo.rh>
+
+// ---------------------------------------------------------
+//   
+//    Define the resource file signature 
+//    This resource should be empty.
+//
+// ---------------------------------------------------------
+//
+RESOURCE RSS_SIGNATURE { }
+
+// ---------------------------------------------------------
+//   
+//    Default Document Name
+//
+// ---------------------------------------------------------
+//
+RESOURCE TBUF r_default_document_name { buf=""; }
+
+// ---------------------------------------------------------
+//   
+//    Define default menu and CBA key.
+//
+// ---------------------------------------------------------
+//
+RESOURCE EIK_APP_INFO
+    {
+    menubar = r_creator_menubar;
+    cba = R_AVKON_SOFTKEYS_OPTIONS_EXIT;
+    }
+
+
+// ---------------------------------------------------------
+//   
+//   r_creator_menubar
+//   Menubar for Creator
+//
+// ---------------------------------------------------------
+//
+RESOURCE MENU_BAR r_creator_menubar
+    {
+    titles =
+        {
+        MENU_TITLE {menu_pane = r_creator_menu;}
+        };
+    }
+
+
+// ---------------------------------------------------------
+//   
+//   r_creator_menu
+//   Menu for "Options"
+//
+// ---------------------------------------------------------
+//
+RESOURCE MENU_PANE r_creator_menu
+    {
+    items = 
+        {
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+        MENU_ITEM 
+            {
+            command = ECmdCreateFromFile;
+             txt = "Run script";
+            },
+#endif
+
+        MENU_ITEM 
+            {
+            command = ECmdCreateCalendarEntries;
+            cascade = r_creator_agendaentries_submenu;
+             txt = "Calendar";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdCreateBrowserEntries;
+            cascade = r_creator_browserentries_submenu;
+             txt = "Browser";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntries;
+            cascade = r_creator_fileentries_submenu;
+             txt = "Files";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdCreateLogEntries;
+            cascade = r_creator_logentries_submenu;
+             txt = "Logs";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdCreateMessagingEntries;
+            cascade = r_creator_messagingentries_submenu;
+             txt = "Messaging";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntries;
+            cascade = r_creator_miscentries_submenu;
+             txt = "Misc";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdCreatePhoneBookEntries;
+            cascade = r_creator_phonebookentries_submenu;
+             txt = "Phonebook";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdDeleteEntries;
+            cascade = r_creator_deleteentries_submenu;
+            txt = "Delete";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdSelectRandomDataFile;
+            txt = "Select random data file";
+            },
+
+        MENU_ITEM 
+            {
+            command = ECmdAboutCreator;
+            txt = "About Creator";
+            },
+
+        MENU_ITEM 
+            {
+            command = EAknSoftkeyExit;   
+            txt = "Exit";
+            }
+        };
+    }
+
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_agendaentries_submenu
+    {
+    items = 
+        {
+        MENU_ITEM 
+            {
+            command = ECmdCreateCalendarEntryAppointments;
+            txt = "Appointments";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateCalendarEntryEvents;
+            txt = "Events";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateCalendarEntryAnniversaries;
+            txt = "Anniversaries";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateCalendarEntryToDos;
+            txt = "Todos";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateCalendarEntryReminders;
+            txt = "Reminders";
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_browserentries_submenu
+    {
+    items = 
+        {
+        MENU_ITEM 
+            {
+            command = ECmdCreateBrowserBookmarkEntries;
+            txt = "Bookmarks";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateBrowserBookmarkFolderEntries;
+            txt = "Bookmark folders";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateBrowserSavedPageEntries;
+            txt = "Saved pages";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateBrowserSavedPageFolderEntries;
+            txt = "Saved page folders";
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_fileentries_submenu
+    {
+    items = 
+        {
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryEmptyFolder;
+            txt = "Empty folder";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryJPEG_25kB;
+            txt = "JPEG 25kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryJPEG_200kB;
+            txt = "JPEG 200kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryJPEG_500kB;
+            txt = "JPEG 500kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryPNG_15kB;
+            txt = "PNG 15kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryGIF_2kB;
+            txt = "GIF 2kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryBMP_25kB;
+            txt = "BMP 25kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryJP2_65kB;
+            txt = "JP2 65kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntrySVG_15kB;
+            txt = "SVG 15kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryTIF_25kB;
+            txt = "TIF 25kB";
+            },                                                
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryRNG_1kB;
+            txt = "RNG 1kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryMIDI_10kB;
+            txt = "MIDI 10kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryWAV_20kB;
+            txt = "WAVE 20kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryAMR_20kB;
+            txt = "AMR 20kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryXLS_15kB;
+            txt = "Excel 15kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryDOC_20kB;
+            txt = "Word 20kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryPPT_40kB;
+            txt = "PowerPoint 40kB";
+            },
+        MENU_ITEM 
+            {            
+            command = ECmdCreateFileEntryTXT_10kB;
+            txt = "Text 10kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryTXT_70kB;
+            txt = "Text 70kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryHTML_20kB;
+            txt = "HTML 20kB";
+            },
+        /*MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryDeck_1kB;
+            txt = "Savedeck 1kB";
+            },*/
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryMXMF_40kB;
+            txt = "MXMF 40kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryRAM_1kB;
+            txt = "RAM 1kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryJAD_1kB;
+            txt = "JAD 1kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryJAR_10kB;
+            txt = "JAR 10kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryVCF_1kB;
+            txt = "VCF 1kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryVCS_1kB;
+            txt = "VCS 1kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntrySISX_10kB;
+            txt = "SISX 10kB";
+            },               
+        MENU_ITEM 
+            {                     
+            command = ECmdCreateFileEntry3GPP_70kB;
+            txt = "3GPP 70kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryMP3_250kB;
+            txt = "MP3 250kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryAAC_100kB;
+            txt = "AAC 100kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntrySWF_15kB;
+            txt = "SWF 15kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryMP4_200kB;
+            txt = "MP4 200kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryRM_95kB;
+            txt = "RM 95kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryWMA_50kB;
+            txt = "WMA 50kB";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateFileEntryWMV_200kB;
+            txt = "WMV 200kB";
+            }
+        };
+    }
+
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_logentries_submenu
+    {
+    items = 
+        {
+        MENU_ITEM 
+            {
+            command = ECmdCreateLogEntryMissedCalls;
+            txt = "Missed calls";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateLogEntryReceivedCalls;
+            txt = "Received calls";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateLogEntryDialledNumbers;
+            txt = "Dialled numbers";
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_messagingentries_submenu
+    {
+    items = 
+        {
+/*        
+        MENU_ITEM 
+            {
+            command = ECmdCreateMessagingEntryCBSTopics;
+            txt = "CBS topics";
+            },
+        MENU_ITEM
+            {
+            command = ECmdCreateMessagingEntryDocumentsFolders;
+            txt = "Documents folders";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateMessagingEntrySMSMessageCenters;
+            txt = "SMS Message Centers";
+            },
+*/
+        MENU_ITEM 
+            {
+            command = ECmdCreateMessagingEntryMailboxes;
+            txt = "Mailboxes";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreateMessagingEntryMessages;
+            txt = "Messages";
+            }
+/*            
+            ,
+        MENU_ITEM 
+            {
+            command = ECmdCreateMessagingEntryTemplates;
+            txt = "Templates";
+            }
+*/
+        };
+    }
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_miscentries_submenu
+    {
+    items = 
+        {
+      #if defined (__SERIES60_30__) || defined(__SERIES60_31__)
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntryAccessPoints;
+             txt = "Access Points";
+            },
+                
+      #else
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntryAccessPoints;
+            txt = "Connection Methods";
+            },
+            
+      #endif                 
+            
+/*
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntryAppMenuFolders;
+             txt = "App menu folders";
+            },
+*/
+    #ifdef __PRESENCE
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntryIMPSServers;
+             txt = "IMPS servers";
+            },
+    #endif
+    
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntryNotes;
+             txt = "Notes";
+            }
+ 
+
+/*            
+            ,
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntrySyncSettings;
+             txt = "Sync settings";
+            }
+*/
+            ,
+        MENU_ITEM 
+            {
+            command = ECmdCreateMiscEntryLandmarks;
+            txt = "Landmarks";
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_phonebookentries_submenu
+    {
+    items = 
+        {
+        MENU_ITEM 
+            {
+            command = ECmdCreatePhoneBookEntryContacts;
+             txt = "Contacts";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdCreatePhoneBookEntryGroups;
+             txt = "Groups";
+            }
+/*            
+            ,
+        MENU_ITEM 
+            {
+            command = ECmdCreatePhoneBookEntrySubscribedContacts;
+             txt = "Subscribed contacts";
+            }
+*/
+        };
+    }
+
+// ---------------------------------------------------------
+
+RESOURCE MENU_PANE r_creator_deleteentries_submenu
+    {
+    items = 
+        {
+        MENU_ITEM 
+            {
+            command = ECmdDeleteAllEntries;
+            cascade = r_creator_deleteall_submenu;
+            txt = "All items";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteCalendarEntries;
+            cascade = r_creator_deletecalendar_submenu;
+            txt = "Calendar entries";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteBrowserBookmarks;
+            cascade = r_creator_deletebookmarks_submenu;
+            txt = "Br bookmarks";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteCreatorBrowserBookmarkFolders;
+            cascade = r_creator_deletebookmarkfolders_submenu;
+            txt = "Br bookmark folders";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteBrowserSavedPages;
+            cascade = r_creator_deletesavedpages_submenu;
+            txt = "Br saved pages";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteBrowserSavedPageFolders;
+            cascade = r_creator_deletesavedpagefolders_submenu;
+            txt = "Br saved page folders";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteCreatorFiles;
+            cascade = r_creator_deletefiles_submenu;
+            txt = "Files";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteLogs;
+            cascade = r_creator_deletelogs_submenu;
+            txt = "Logs";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteMessages;
+            cascade = r_creator_deletemessages_submenu;
+            txt = "Messages";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteIAPs; // ECmdDeleteMiscEntryAccessPoints
+            cascade = r_creator_deleteiaps_submenu;
+#if defined (__SERIES60_30__) || defined(__SERIES60_31__)
+            txt = "Access Points";
+#else
+            txt = "Connection methods";
+#endif
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteIMPSs;
+            cascade = r_creator_deleteimps_submenu;
+            txt = "IMPS servers";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteNotes;
+            cascade = r_creator_deletenotes_submenu;
+            txt = "Notes";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteLandmarks;
+            cascade = r_creator_deletelandmarks_submenu;
+            txt = "Landmarks";
+            },            
+        MENU_ITEM 
+            {
+            command = ECmdDeleteContacts;
+            cascade = r_creator_deletecontacts_submenu;
+            txt = "Contacts";
+            },
+        MENU_ITEM 
+            {
+            command = ECmdDeleteContactGroups;
+            cascade = r_creator_deletecontactgroups_submenu;
+            txt = "Contact groups";
+            }
+            
+        /*
+        MENU_ITEM 
+            {
+            command = ECmdDeleteMiscEntryAccessPoints;
+            txt = "All Connection Methods";
+            }
+        */
+        };
+    }
+
+#define string_creator_deletemenu_all "All"
+#define string_creator_deletemenu_by_creator "By Creator"
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deleteall_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteAllEntries;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteAllCreatorEntries;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletecalendar_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteCalendarEntries;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorCalendarEntries;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletebookmarks_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteBrowserBookmarks;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorBrowserBookmarks;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletebookmarkfolders_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteBrowserBookmarkFolders;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorBrowserBookmarkFolders;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletesavedpages_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteBrowserSavedPages;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorBrowserSavedPages;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletesavedpagefolders_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteBrowserSavedPageFolders;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorBrowserSavedPageFolders;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletefiles_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorFiles;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletelogs_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteLogs;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorLogs;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletemailboxes_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteMailboxes;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorMailboxes;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletemessages_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteMessages;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorMessages;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deleteiaps_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteIAPs;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorIAPs;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deleteimps_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteIMPSs;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorIMPSs;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletenotes_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteNotes;
+            txt = string_creator_deletemenu_all;
+            }
+        // By Creator not supported because 
+        // note id is not available via Notepad API
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletelandmarks_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteLandmarks;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorLandmarks;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletecontacts_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteContacts;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorContacts;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+RESOURCE MENU_PANE r_creator_deletecontactgroups_submenu
+    {
+    items =
+        {
+        MENU_ITEM
+            {
+            command = ECmdDeleteContactGroups;
+            txt = string_creator_deletemenu_all;
+            },
+        MENU_ITEM
+            {
+            command = ECmdDeleteCreatorContactGroups;
+            txt = string_creator_deletemenu_by_creator;
+            }
+        };
+    }
+
+
+// ---------------------------------------------------------
+//   
+//   r_creator_about_dialog
+//   About dialog - show version and copyright info etc.
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_creator_about_dialog
+{
+    flags = EGeneralQueryFlags | EEikDialogFlagNoBorder | EEikDialogFlagNoShadow;
+    buttons = R_AVKON_SOFTKEYS_OK_EMPTY;
+    items=
+    {
+        DLG_LINE
+        {
+            type = EAknCtPopupHeadingPane;
+            id = EAknMessageQueryHeaderId;
+            control = AVKON_HEADING
+            {
+                label = "About Creator";
+                headinglayout = R_AVKON_WML_SIGN_QUERY_HEADING_PANE;
+            };
+        },
+        DLG_LINE
+        {
+            type = EAknCtMessageQuery;
+            id = EAknMessageQueryContentId;
+            control = AVKON_MESSAGE_QUERY
+            {
+                message = "Version 5.3.5 - 30th October 2009. Copyright © 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
+            };
+        }
+    };
+}
+
+
+// ---------------------------------------------------------
+//   
+//   r_entry_query
+//   Dialog to query the amount of entries to create
+//
+// ---------------------------------------------------------
+//
+
+
+RESOURCE DIALOG r_entry_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control= AVKON_DATA_QUERY
+                {
+                layout = ENumberLayout;
+                label = "Insert label to ExecuteLD";
+                control = AVKON_INTEGER_EDWIN
+                    {
+                    min = 0;
+                    max = 9999;
+                    };
+                };
+            }
+        };
+    }
+
+
+// ---------------------------------------------------------
+//   
+//   r_start_date_query
+//   Dialog to query a start date
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_start_date_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control= AVKON_DATA_QUERY
+                {
+                layout = EDateLayout;
+                label = "Start date of creation period";
+                control = DATE_EDITOR
+                    {
+                    minDate = DATE
+                        {
+                        year = 1900;
+                        };
+                    maxDate = DATE
+                        {
+                        year = 3000;
+                        };
+                    flags = 0;
+                    };
+                };
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_end_date_query
+//   Dialog to query a start date
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_end_date_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control= AVKON_DATA_QUERY
+                {
+                layout = EDateLayout;
+                label = "End date of creation period";
+                control = DATE_EDITOR
+                    {
+                    minDate = DATE
+                        {
+                        year = 1900;
+                        };
+                    maxDate = DATE
+                        {
+                        year = 3000;
+                        };
+                    flags = 0;
+                    };
+                };
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_contact_creation_type_query
+//   Dialog to query a contact creation type
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_contact_creation_type_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_contact_creation_type_query_array;
+                    };
+                heading = "Fields in contact";                
+                };
+            }
+        };
+    }
+
+RESOURCE ARRAY r_contact_creation_type_query_array
+    {
+    items =
+        {
+        LBUF {txt = "Default fields"; },
+        LBUF {txt = "Define..."; }
+        };
+    }
+
+
+// ---------------------------------------------------------
+//   
+//   r_message_type_query
+//   Dialog to query a message type
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_message_type_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_message_type_query_array;
+                    };
+                heading = "Message type";                
+                };
+            }
+        };
+    }
+
+RESOURCE ARRAY r_message_type_query_array
+    {
+    items =
+        {
+        LBUF {txt = "SMS"; },
+        LBUF {txt = "MMS"; },
+        LBUF {txt = "AMS"; },
+        LBUF {txt = "Email"; },
+        LBUF {txt = "Smart Message"; },
+        LBUF {txt = "IR Message"; },
+        LBUF {txt = "BT Message"; }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_folder_type_query
+//   Dialog to query a message type
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_folder_type_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_folder_type_query_array;
+                    };
+                heading = "Folder type";                
+                };
+            }
+        };
+    }
+    
+RESOURCE ARRAY r_folder_type_query_array
+    {
+    items =
+        {
+        LBUF {txt = "Inbox"; },
+        LBUF {txt = "Drafts"; },
+        LBUF {txt = "Outbox"; },
+        LBUF {txt = "Sent"; }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_folder_type_with_mailbox_query
+//   Dialog to query a message type
+//
+// ---------------------------------------------------------
+//
+RESOURCE DIALOG r_folder_type_with_mailbox_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_folder_type_with_mailbox_query_array;
+                    };
+                heading = "Folder type";                
+                };
+            }
+        };
+    }
+RESOURCE ARRAY r_folder_type_with_mailbox_query_array
+    {
+    items =
+        {
+        LBUF {txt = "Inbox"; },
+        LBUF {txt = "Drafts"; },
+        LBUF {txt = "Outbox"; },
+        LBUF {txt = "Sent"; },
+        LBUF {txt = "Mailbox..."; }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_app_selection_query
+//   
+//
+// ---------------------------------------------------------
+//
+RESOURCE DIALOG r_mailbox_selection_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    };
+                heading = "Choose mailbox:";                
+                };
+            }
+        };
+    } 
+        
+// ---------------------------------------------------------
+//   
+//   r_unread_type_query
+//   Dialog to query whether to create the message unread or not
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_unread_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_unread_query_array;
+                    };
+                heading = "Message status";                
+                };
+            }
+        };
+    }
+
+RESOURCE ARRAY r_unread_query_array
+    {
+    items =
+        {
+        LBUF {txt = "Read"; },
+        LBUF {txt = "New"; }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_attachment_single_selection_query
+//   r_attachment_multi_selection_query
+//   Dialogs to query attachments
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_attachment_single_selection_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_attachment_query_array;
+                    };
+                heading = "Choose attachment:";                
+                };
+            }
+        };
+    }
+
+RESOURCE DIALOG r_ams_attachment_single_selection_query
+{
+flags = EGeneralQueryFlags;
+buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+items =
+    {
+    AVKON_LIST_QUERY_DLG_LINE
+        {
+        control= AVKON_LIST_QUERY_CONTROL
+            {
+            listtype = EAknCtSinglePopupMenuListBox;
+            listbox = AVKON_LIST_QUERY_LIST
+                {
+                array_id = r_ams_attachment_query_array;
+                };
+            heading = "Choose attachment:";                
+            };
+        }
+    };
+}
+
+
+RESOURCE DIALOG r_attachment_multi_selection_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_MULTISELECTION_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSingleGraphicPopupMenuListBox;
+                listbox = AVKON_MULTISELECTION_LIST_QUERY_LIST
+                    {
+                    array_id = r_attachment_multiselection_query_array;
+                    };
+                heading = "Choose attachments:";                
+                };
+            }
+        };
+    }
+
+
+RESOURCE ARRAY r_attachment_query_array
+    {
+    items =
+        {
+        LBUF {txt = "JPEG 25kB"; },
+        LBUF {txt = "JPEG 300kB"; },
+        LBUF {txt = "JPEG 500kB"; },
+        LBUF {txt = "PNG 15kB"; },
+        LBUF {txt = "GIF 2kB"; },
+        LBUF {txt = "RNG 1kB"; },
+        LBUF {txt = "MIDI 10kB"; },
+        LBUF {txt = "WAVE 20kB"; },
+        LBUF {txt = "AMR 20kB"; },
+        LBUF {txt = "Excel 15kB"; },
+        LBUF {txt = "Word 20kB"; },
+        LBUF {txt = "PowerPoint 40kB"; },
+        LBUF {txt = "Text 10kB"; },
+        LBUF {txt = "Text 70kB"; },
+        LBUF {txt = "3GPP 70kB"; },
+        LBUF {txt = "MP3 250kB"; },
+        LBUF {txt = "AAC 100kB"; },
+        LBUF {txt = "RM 95kB"; }
+        };
+    }
+
+RESOURCE ARRAY r_ams_attachment_query_array
+    {
+    items =
+        {
+        LBUF {txt = "AMR 20kB"; }
+        };
+    }
+
+RESOURCE ARRAY r_attachment_multiselection_query_array
+    {
+    items =
+        {
+        LBUF {txt = "1\tNone"; },
+        LBUF {txt = "1\tJPEG 25kB"; },
+        LBUF {txt = "1\tJPEG 200kB"; },
+        LBUF {txt = "1\tJPEG 500kB"; },
+        LBUF {txt = "1\tPNG 15kB"; },
+        LBUF {txt = "1\tGIF 2kB"; },
+        LBUF {txt = "1\tRNG 1kB"; },
+        LBUF {txt = "1\tMIDI 10kB"; },
+        LBUF {txt = "1\tWAVE 20kB"; },
+        LBUF {txt = "1\tAMR 20kB"; },
+        LBUF {txt = "1\tExcel 15kB"; },
+        LBUF {txt = "1\tWord 20kB"; },
+        LBUF {txt = "1\tPowerPoint 40kB"; },
+        LBUF {txt = "1\tText 10kB"; },
+        LBUF {txt = "1\tText 70kB"; },
+        LBUF {txt = "1\t3GPP 70kB"; },
+        LBUF {txt = "1\tMP3 250kB"; },
+        LBUF {txt = "1\tAAC 100kB"; },
+        LBUF {txt = "1\tRM 95kB"; },        
+        LBUF {txt = "1\tBMP 25kB"; },
+        LBUF {txt = "1\tHTML 20kB"; },
+        LBUF {txt = "1\tJAD 1kB"; },
+        LBUF {txt = "1\tJAR 10kB"; },
+        LBUF {txt = "1\tJP2 65kB"; },
+        LBUF {txt = "1\tMP4 200kB"; },
+        LBUF {txt = "1\tMXMF 40kB"; },
+        LBUF {txt = "1\tRAM 1kB"; },
+        LBUF {txt = "1\tSVG 15kB"; },
+        LBUF {txt = "1\tSWF 15kB"; },
+        LBUF {txt = "1\tTIF 25kB"; },
+        LBUF {txt = "1\tVCF 1kB"; },
+        LBUF {txt = "1\tVCS 1kB"; },
+        LBUF {txt = "1\tSISX 10kB"; }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_group_creation_type_query
+//   Dialog to query a group creation type
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_group_creation_type_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control= AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_group_creation_type_query_array;
+                    };
+                heading = "Fields in contact";                
+                };
+            }
+        };
+    }
+
+RESOURCE ARRAY r_group_creation_type_query_array
+    {
+    items =
+        {
+        LBUF {txt = "Random"; },
+        LBUF {txt = "Define..."; }
+        };
+    }
+
+// ---------------------------------------------------------
+//   
+//   r_directory_query
+//   Dialog to query the directory from the user
+//
+// ---------------------------------------------------------
+//
+
+
+RESOURCE DIALOG r_directory_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control= AVKON_DATA_QUERY
+                {
+                layout = EDataLayout;
+                label = "Specify the directory";
+                control = EDWIN
+                    {
+                    };
+                };
+            }
+        };
+    }
+
+
+//
+// ---------------------------------------------------------
+//
+
+RESOURCE DIALOG r_progress_note
+    {
+    flags = EAknProgressNoteFlags;
+    buttons = R_AVKON_SOFTKEYS_CANCEL;
+    items=
+        {
+        DLG_LINE
+            {
+            type = EAknCtNote;
+            id = EProgressNote;
+            control= AVKON_NOTE 
+                { 
+                layout = EProgressLayout;
+                imagefile = AVKON_ICON_FILE;
+                imageid = EMbmAvkonQgn_note_progress;
+                imagemask = EMbmAvkonQgn_note_progress_mask;
+                };
+            }
+        };
+    }
+
+// ---------------------------------------------------------
+
+RESOURCE ARRAY r_data_firstnames
+    {
+    items=
+        {
+        LBUF { txt="John"; },
+        LBUF { txt="Francis"; },
+        LBUF { txt="Andrew"; },
+        LBUF { txt="Lawrence"; },
+        LBUF { txt="Gregory"; },
+        LBUF { txt="Fulke"; },
+        LBUF { txt="Thomas"; },
+        LBUF { txt="Nicholas"; },
+        LBUF { txt="Hakle"; },
+        LBUF { txt="Roger"; },
+        LBUF { txt="Nathaniel"; },
+        LBUF { txt="Luke"; },
+        LBUF { txt="William"; },
+        LBUF { txt="Ralph"; },
+        LBUF { txt="Leonar"; },
+        LBUF { txt="Daniel"; },
+        LBUF { txt="Aban"; },
+        LBUF { txt="Mathias"; },
+        LBUF { txt="Robert"; },
+        LBUF { txt="Christopher"; },
+        LBUF { txt="Martin"; },
+        LBUF { txt="Michael"; },
+        LBUF { txt="Barnaby"; },
+        LBUF { txt="Tobias"; },
+        LBUF { txt="Richard"; },
+        LBUF { txt="Anthony"; },
+        LBUF { txt="Simon"; },
+        LBUF { txt="Samuel"; },
+        LBUF { txt="Geoffrey"; },
+        LBUF { txt="Isaac"; },
+        LBUF { txt="Henry"; },
+        LBUF { txt="Matthew"; },
+        LBUF { txt="Peter"; },
+        LBUF { txt="Allen"; },
+        LBUF { txt="Reynold"; },
+        LBUF { txt="Jerome"; },
+        LBUF { txt="Elizabeth"; },
+        LBUF { txt="Catherine"; },
+        LBUF { txt="Frances"; },
+        LBUF { txt="Cecily"; },
+        LBUF { txt="Millicent"; },
+        LBUF { txt="Audrey"; },
+        LBUF { txt="Joan"; },
+        LBUF { txt="Elinor"; },
+        LBUF { txt="Joyce"; },
+        LBUF { txt="Frideswide"; },
+        LBUF { txt="Rose"; },
+        LBUF { txt="Helen"; },
+        LBUF { txt="Margaret"; },
+        LBUF { txt="Isabel"; },
+        LBUF { txt="Bridget"; },
+        LBUF { txt="Grace"; },
+        LBUF { txt="Thomasin"; },
+        LBUF { txt="Janet"; },
+        LBUF { txt="Agnes"; },
+        LBUF { txt="Dorothy"; },
+        LBUF { txt="Christian"; },
+        LBUF { txt="Amy"; },
+        LBUF { txt="Fortune"; },
+        LBUF { txt="Sybil"; },
+        LBUF { txt="Alice"; },
+        LBUF { txt="Margery"; },
+        LBUF { txt="Edith"; },
+        LBUF { txt="Barbara"; },
+        LBUF { txt="Gillian"; },
+        LBUF { txt="Ursula"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_surnames
+    {
+    items=
+        {
+        LBUF { txt="Lux"; },
+        LBUF { txt="Mandot"; },
+        LBUF { txt="Mansfield"; },
+        LBUF { txt="Mayberry"; },
+        LBUF { txt="McCarrel"; },
+        LBUF { txt="McDaniel"; },
+        LBUF { txt="Mefford"; },
+        LBUF { txt="Metcalf"; },
+        LBUF { txt="Metchell"; },
+        LBUF { txt="Moller"; },
+        LBUF { txt="Margan"; },
+        LBUF { txt="Keaney"; },
+        LBUF { txt="Kenyon"; },
+        LBUF { txt="Kesler"; },
+        LBUF { txt="Kinman"; },
+        LBUF { txt="Kreinert"; },
+        LBUF { txt="Kummerlin"; },
+        LBUF { txt="Lamgley"; },
+        LBUF { txt="Leas"; },
+        LBUF { txt="Leighton"; },
+        LBUF { txt="Lillie"; },
+        LBUF { txt="Hilms"; },
+        LBUF { txt="Holt"; },
+        LBUF { txt="Hosier"; },
+        LBUF { txt="Howard"; },
+        LBUF { txt="Hypes"; },
+        LBUF { txt="Jacmor"; },
+        LBUF { txt="Behnson"; },
+        LBUF { txt="Kammer"; },
+        LBUF { txt="Patts"; },
+        LBUF { txt="West"; },
+        LBUF { txt="Wilbar"; },
+        LBUF { txt="Witsan"; },
+        LBUF { txt="Gillams"; },
+        LBUF { txt="Good"; },
+        LBUF { txt="Wreght"; },
+        LBUF { txt="Worthley"; },
+        LBUF { txt="Adams"; },
+        LBUF { txt="Allen"; },
+        LBUF { txt="Ansley"; },
+        LBUF { txt="Ayries"; },
+        LBUF { txt="Bartlett"; },
+        LBUF { txt="Barton"; },
+        LBUF { txt="Payne"; },
+        LBUF { txt="Pintard"; },
+        LBUF { txt="Prence"; },
+        LBUF { txt="Richards"; },
+        LBUF { txt="Dillman"; },
+        LBUF { txt="Dory"; },
+        LBUF { txt="Edgards"; },
+        LBUF { txt="Engell"; },
+        LBUF { txt="Farprington"; },
+        LBUF { txt="Fisher"; },
+        LBUF { txt="Foed"; },
+        LBUF { txt="Burges"; },
+        LBUF { txt="Childwall"; },
+        LBUF { txt="Smith"; },
+        LBUF { txt="Sipon"; },
+        LBUF { txt="Simmons"; },
+        LBUF { txt="Stewert"; },
+        LBUF { txt="Stiles"; },
+        LBUF { txt="Stratton"; },
+        LBUF { txt="Dennis"; },
+        LBUF { txt="Talmot"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_companies
+    {
+    items=
+        {
+        LBUF { txt="CDP"; },
+        LBUF { txt="Exbox"; },
+        LBUF { txt="Munro"; },
+        LBUF { txt="Majaka"; },
+        LBUF { txt="Bitzumi"; },
+        LBUF { txt="Melroy"; },
+        LBUF { txt="Matal"; },
+        LBUF { txt="Japponi"; },
+        LBUF { txt="Siwaka"; },
+        LBUF { txt="Keiku"; },
+        LBUF { txt="Naamate"; },
+        LBUF { txt="Remonti"; },
+        LBUF { txt="Melleva"; },
+        LBUF { txt="WEX"; },
+        LBUF { txt="Chataz"; },
+        LBUF { txt="Ponly"; },
+        LBUF { txt="Alriva"; },
+        LBUF { txt="Giate"; },
+        LBUF { txt="Kesso"; },
+        LBUF { txt="Nyssa"; },
+        LBUF { txt="Peger"; },
+        LBUF { txt="Metrio"; },
+        LBUF { txt="Mitchitatchi"; },
+        LBUF { txt="Neppari"; },
+        LBUF { txt="Amcuila"; },
+        LBUF { txt="Muipitsu"; },
+        LBUF { txt="Redex"; },
+        LBUF { txt="Maariz"; },
+        LBUF { txt="Swerck"; },
+        LBUF { txt="Makiac"; },
+        LBUF { txt="Dumpia"; },
+        LBUF { txt="Worldmom"; },
+        LBUF { txt="Renfaul"; },
+        LBUF { txt="Kmartissori"; },
+        LBUF { txt="Findo"; },
+        LBUF { txt="Samsanc"; },
+        LBUF { txt="Dellervo"; },
+        LBUF { txt="Manrel"; },
+        LBUF { txt="WSMRL"; },
+        LBUF { txt="Eripox"; },
+        LBUF { txt="Abiturien"; },
+        LBUF { txt="Vesus"; },
+        LBUF { txt="MI4"; },
+        LBUF { txt="Overhiba"; },
+        LBUF { txt="Tridune"; },
+        LBUF { txt="Kyomcera"; },
+        LBUF { txt="Praston"; },
+        LBUF { txt="Gapmis"; },
+        LBUF { txt="WPPDCD"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_addresses
+    {
+    items=
+        {
+        LBUF { txt="Barnes Street"; },
+        LBUF { txt="Barnes Place"; },
+        LBUF { txt="Eastman Street"; },
+        LBUF { txt="West Park"; },
+        LBUF { txt="South Park"; },
+        LBUF { txt="Park Avenue"; },
+        LBUF { txt="Richards Court"; },
+        LBUF { txt="Pukershire Avenue"; },
+        LBUF { txt="Ellis Avenue"; },
+        LBUF { txt="East Mountain"; },
+        LBUF { txt="Chestnut Hill"; },
+        LBUF { txt="Plains Road"; },
+        LBUF { txt="Fremont Street"; },
+        LBUF { txt="Heritage Court"; },
+        LBUF { txt="Highland Avenue Extension"; },
+        LBUF { txt="Maple Heights"; },
+        LBUF { txt="McKenzie Avenue"; },
+        LBUF { txt="McKenzie Lane"; },
+        LBUF { txt="West Terrace Street"; },
+        LBUF { txt="Windsor Avenue"; },
+        LBUF { txt="Windsor Road"; },
+        LBUF { txt="Mechanic Street Extension"; },
+        LBUF { txt="Granite Place"; },
+        LBUF { txt="Meadow Street"; },
+        LBUF { txt="Sugar River"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_cities
+    {
+    items=
+        {
+        LBUF { txt="Kuopio"; },       
+        LBUF { txt="Los Angeles"; },        
+        LBUF { txt="Lappeenranta"; },
+        LBUF { txt="London"; },        
+        LBUF { txt="Bangkok"; },
+        LBUF { txt="St. Michel"; },                
+        LBUF { txt="St. Petersburg"; },        
+        LBUF { txt="Tokyo"; },
+        LBUF { txt="Helsinki"; },
+        LBUF { txt="Trondheim"; },        
+        LBUF { txt="Nairobi"; },
+        LBUF { txt="Havana"; }        
+        };
+    }
+
+RESOURCE ARRAY r_data_countries
+    {
+    items=
+        {
+        LBUF { txt="Finland"; },
+        LBUF { txt="Cuba"; },
+        LBUF { txt="United States of America"; },
+        LBUF { txt="Thailand"; },
+        LBUF { txt="Sweden"; },
+        LBUF { txt="Russia"; },
+        LBUF { txt="Japan"; },
+        LBUF { txt="Norway"; },
+        LBUF { txt="Kenya"; }                
+        };
+    }
+
+RESOURCE ARRAY r_data_postcodes
+    {
+    items=
+        {
+        LBUF { txt="00310"; },
+        LBUF { txt="FI-70100"; },
+        LBUF { txt="99002"; },
+        LBUF { txt="11233"; }            
+        };
+    }
+
+RESOURCE ARRAY r_data_states
+    {
+    items=
+        {
+        LBUF { txt="California state"; }, 
+        LBUF { txt="Alaska state"; },
+        LBUF { txt="Florida state"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_poboxes
+    {
+    items=
+        {
+        LBUF { txt="P.O BOX 5532"; },
+        LBUF { txt="P.O BOX 701"; },
+        LBUF { txt="99"; },
+        LBUF { txt="1133"; },
+        LBUF { txt="P.O. BOX 113322"; },
+        LBUF { txt="112"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_prefixes
+    {
+    items=
+        {
+        LBUF { txt="Ms."; },
+        LBUF { txt="Mrs."; }, 
+        LBUF { txt="Mr."; },
+        LBUF { txt="Dr."; }
+        
+        };
+    }
+
+RESOURCE ARRAY r_data_suffixes
+    {
+    items=
+        {
+        LBUF { txt="Jr."; },
+        LBUF { txt="Sr."; }        
+        };
+    }
+
+RESOURCE ARRAY r_data_jobtitles
+    {
+    items=
+        {
+        LBUF { txt="Doctor"; },
+        LBUF { txt="SW Engineer"; },
+        LBUF { txt="Administrative Assistant"; },
+        LBUF { txt="Bookkeeper"; },
+        LBUF { txt="Credit Controller"; },
+        LBUF { txt="Data Entry Operator"; },
+        LBUF { txt="Payroll Officer"; },
+        LBUF { txt="Receptionist"; },
+        LBUF { txt="Trainee"; },
+        LBUF { txt="Accounts Clerk"; },
+        LBUF { txt="Administrator"; },
+        LBUF { txt="Taxation Assistant"; },
+        LBUF { txt="Financial Director"; },
+        LBUF { txt="Bank Manager"; },
+        LBUF { txt="Mobile Lending"; },
+        LBUF { txt="Overseas Transactions"; },
+        LBUF { txt="Restructuring"; },
+        LBUF { txt="Business Analyst"; },
+        LBUF { txt="Call Centre Manager"; },
+        LBUF { txt="Administration"; },
+        LBUF { txt="Manager"; },
+        LBUF { txt="Student"; },
+        LBUF { txt="Mail Sorter"; },
+        LBUF { txt="Mayor"; },
+        LBUF { txt="Account Servicing"; },
+        LBUF { txt="Management"; },
+        LBUF { txt="Media Consultant"; },
+        LBUF { txt="Newsagent"; },
+        LBUF { txt="Librarian"; },
+        LBUF { txt="Creative Director"; },
+        LBUF { txt="Announcer"; },
+        LBUF { txt="Copywriter"; },
+        LBUF { txt="Presenter"; },
+        LBUF { txt="Promotions Manager"; },
+        LBUF { txt="Advertising Sales Representative"; },
+        LBUF { txt="Editor"; },
+        LBUF { txt="Marketing, Sales & Publicity"; },
+        LBUF { txt="Publisher"; },
+        LBUF { txt="Gallery Assistant"; },
+        LBUF { txt="Photographer"; },
+        LBUF { txt="Storyboard Artist"; },
+        LBUF { txt="Events Manager"; },
+        LBUF { txt="Cameraman"; },
+        LBUF { txt="Technician"; },
+        LBUF { txt="Producer"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_phonenumbers
+    {
+    items=
+        {
+        LBUF { txt="0307834387"; },
+        LBUF { txt="0230328732"; },
+        LBUF { txt="0430365562"; },
+        LBUF { txt="0530328732"; },
+        LBUF { txt="0433032865"; },
+        LBUF { txt="0542306532"; },
+        LBUF { txt="0342303777"; },
+        LBUF { txt="0250235603"; },
+        LBUF { txt="0492303652"; },
+        LBUF { txt="0542303286"; },
+        LBUF { txt="0543656546"; },
+        LBUF { txt="0545545454"; },
+        LBUF { txt="0543444454"; },
+        LBUF { txt="0776463255"; },
+        LBUF { txt="0432443343"; },
+        LBUF { txt="0243334344"; },
+        LBUF { txt="0544543443"; },
+        LBUF { txt="0231343243"; },
+        LBUF { txt="0213443434"; },
+        LBUF { txt="0143234476"; },
+        LBUF { txt="0785434444"; },
+        LBUF { txt="0454445345"; },
+        LBUF { txt="0342443433"; },
+        LBUF { txt="0432434454"; },
+        LBUF { txt="0455454454"; },
+        LBUF { txt="0656565655"; },
+        LBUF { txt="0343434443"; },
+        LBUF { txt="0565645455"; },
+        LBUF { txt="0343243243"; },
+        LBUF { txt="0565466565"; },
+        LBUF { txt="0465565655"; },
+        LBUF { txt="0435445454"; },
+        LBUF { txt="+35854553456"; },
+        LBUF { txt="+35878453486"; },
+        LBUF { txt="+35876653456"; },
+        LBUF { txt="+35834435486"; },
+        LBUF { txt="+35876766466"; },
+        LBUF { txt="+4465665456"; },
+        LBUF { txt="+4432434334"; },
+        LBUF { txt="+4488776776"; },
+        LBUF { txt="+4465655656"; },
+        LBUF { txt="+4443433434"; },
+        LBUF { txt="+4465656565"; },
+        LBUF { txt="+4454454354"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_groupnames
+    {
+    items=
+        {
+        LBUF { txt="Nice guys"; },
+        LBUF { txt="Repairs"; },
+        LBUF { txt="Office works"; },
+        LBUF { txt="The buddies"; },
+        LBUF { txt="Football team"; },
+        LBUF { txt="Gold club"; },
+        LBUF { txt="Silver club"; },
+        LBUF { txt="Bronze club"; },
+        LBUF { txt="Best buddies"; },
+        LBUF { txt="Rockers"; },
+        LBUF { txt="Science group"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_meetingreasons
+    {
+    items=
+        {
+        LBUF { txt="Security issues"; },
+        LBUF { txt="Team meeting"; },
+        LBUF { txt="Discussion about"; },
+        LBUF { txt="Work plans"; },
+        LBUF { txt="Meeting with the professor"; },
+        LBUF { txt="Meeting with the boss"; },
+        LBUF { txt="Work issues"; },
+        LBUF { txt="New workers"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_meetingplaces
+    {
+    items=
+        {
+        LBUF { txt="Room"; },
+        LBUF { txt="Home"; },
+        LBUF { txt="Auditorium"; },
+        LBUF { txt="Company"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_landmark_names
+    {
+    items=
+        {
+        LBUF { txt="Good place to fish";},
+        LBUF { txt="Uncle over board";},
+        LBUF { txt="Best food ever!";},
+        LBUF { txt="Nice beach";},
+        LBUF { txt="Good hamburgers";},
+        LBUF { txt="Nice view";},
+        LBUF { txt="John's home";},
+        LBUF { txt="Carage";},
+        LBUF { txt="Gas station";},
+        LBUF { txt="Food store";},
+        LBUF { txt="Car wash";},
+        LBUF { txt="Summer cottage";},
+        LBUF { txt="My home";},
+        LBUF { txt="Bank";},
+        LBUF { txt="Hospital";},
+        LBUF { txt="Ice hall";},
+        LBUF { txt="Work place";}
+        };
+    }
+
+RESOURCE ARRAY r_data_landmark_descriptions
+    {
+    items=
+        {
+        LBUF { txt="The salmons were really big here!";},        
+        LBUF { txt="Delicious strawberries sold here. Must visit again sometime!";},
+        LBUF { txt="Place looks really nice.";},
+        LBUF { txt="This is my favorite place";},
+        LBUF { txt="Words are not enough to describe this landmark";},        
+        LBUF { txt="What a shocking place to visit! Remember to bring camera next time :-)";}
+        };
+    }
+
+RESOURCE ARRAY r_data_memos
+    {
+    items=
+        {
+        LBUF { txt="No work today!"; },
+        LBUF { txt="Movies tonight"; },
+        LBUF { txt="Ship new binaries"; },
+        LBUF { txt="New works"; },
+        LBUF { txt="Exam"; },
+        LBUF { txt="Community service"; },
+        LBUF { txt="Volunteer work"; },
+        LBUF { txt="Don't forget the dinner at the restaurant"; },
+        LBUF { txt="Go the bank"; },
+        LBUF { txt="Go to the store"; },
+        LBUF { txt="Buy goods"; },
+        LBUF { txt="Buy food"; },
+        LBUF { txt="Buy new pair of socks"; },
+        LBUF { txt="Buy vegetables"; },
+        LBUF { txt="Buy fruits"; },
+        LBUF { txt="Umbrella"; },
+        LBUF { txt="New shoes"; },
+        LBUF { txt="New suit"; },
+        LBUF { txt="Buy flowers"; },
+        LBUF { txt="School day"; }
+        };
+    }
+RESOURCE ARRAY r_data_anniversaries
+    {
+    items=
+        {
+        LBUF { txt="birthday"; },
+        LBUF { txt="anniversary"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_todos
+    {
+    items=
+        {
+        LBUF { txt="Watch for gum on my shoe"; },
+        LBUF { txt="Watch my step in the hall"; },
+        LBUF { txt="Always think big"; },
+        LBUF { txt="Don't ever think small"; },
+        LBUF { txt="Keep pedaling my bike"; },
+        LBUF { txt="Watch for bees in my pop"; },
+        LBUF { txt="Keep moving forward"; },
+        LBUF { txt="Don't ever stop"; },
+        LBUF { txt="Keep my sled underneath me"; },
+        LBUF { txt="Keep my stick on the ice"; },
+        LBUF { txt="Don't swim in a whirlpool"; },
+        LBUF { txt="Don't look for a fight"; },
+        LBUF { txt="Don't spit in the wind"; },
+        LBUF { txt="Just do what is right"; },
+        LBUF { txt="Go out in the world"; },
+        LBUF { txt="Enjoy a warm rain"; },
+        LBUF { txt="Don't worship TV"; },
+        LBUF { txt="Keep my oars in the water"; },
+        LBUF { txt="Point my boat right downstream"; },
+        LBUF { txt="Face head on my problems"; },
+        LBUF { txt="Change underwear daily"; },
+        LBUF { txt="Believe myself first"; },
+        LBUF { txt="Go out and have fun"; },
+        LBUF { txt="Turn the cards one by one"; },
+        LBUF { txt="Get out and do something"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_reminders
+    {
+    items=
+        {
+        LBUF { txt="Remeber to fix car"; },
+        LBUF { txt="Remeber to eat vegetables"; },
+        LBUF { txt="Remeber to go shopping"; },
+        LBUF { txt="Remeber to buy boxes for moving"; },
+        LBUF { txt="Remeber to fix bike"; },
+        LBUF { txt="Remeber to buy christmast presents"; },
+        LBUF { txt="Remeber to send flowers to grandmother"; },
+        LBUF { txt="Remeber to talk with son"; },
+        LBUF { txt="Remeber to cut hedge"; },
+        LBUF { txt="Remeber to bumper potatoes"; },
+        LBUF { txt="Remeber to harvest corn field"; },
+        LBUF { txt="Remeber to sleep enaugh"; },
+        LBUF { txt="Remeber to wash teeths ewery morning"; },
+        LBUF { txt="Remeber to get sleep early"; },
+        LBUF { txt="Remeber to give some wather to flowers"; },
+        LBUF { txt="Remeber to wax snowboard"; },
+        LBUF { txt="Remeber to wax skiis"; },
+        LBUF { txt="Remeber to wax cross country skiis"; },
+        LBUF { txt="Remeber to call mother"; },
+        LBUF { txt="Remeber to call father"; },
+        LBUF { txt="Remeber to call brother"; },
+        LBUF { txt="Remeber to call sister"; },
+        LBUF { txt="Remeber to call daughter"; },
+        LBUF { txt="Remeber to call son"; },
+        LBUF { txt="Remeber to rent villa"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_messagesubjects
+    {
+    items=
+        {
+        LBUF { txt="Whaaasssaaap!!??"; },
+        LBUF { txt="Hello"; },
+        LBUF { txt="How are you doing?"; },
+        LBUF { txt="You will win the battle, GUARANTEED!"; },
+        LBUF { txt="Why pay more for something if you don't have to?"; },
+        LBUF { txt="You can afford health care now"; },
+        LBUF { txt="Re: *Buddy* *Lists*!!~ (it's soooo cool)!!~"; },
+        LBUF { txt="Weedmon say: call, we be open 7 days, mon"; },
+        LBUF { txt="Want her to look better?"; },
+        LBUF { txt="Good Morning andyw, how are you?"; },
+        LBUF { txt="Happy Assumption"; },
+        LBUF { txt="There is NO Risk involved"; },
+        LBUF { txt="Free Bottle Offer!"; },
+        LBUF { txt="Introduction on MDSL"; },
+        LBUF { txt="Theres Help out there for you"; },
+        LBUF { txt="hello there - check this out"; },
+        LBUF { txt="Darling"; },
+        LBUF { txt="It doesn't have to be that way"; },
+        LBUF { txt="Webmaster, Free health insurance quotes!"; },
+        LBUF { txt="Join us at the OSGi 2003 World Congress"; },
+        LBUF { txt="Put your subject line here"; },
+        LBUF { txt="You are not protected"; },
+        LBUF { txt="Please try again"; },
+        LBUF { txt="you didn't reply my email ? why ? ???"; },
+        LBUF { txt="A very funny game"; },
+        LBUF { txt="Meeting notice"; },
+        LBUF { txt="Opportunities"; }
+        };
+    }
+
+RESOURCE ARRAY r_data_messagetexts
+    {
+    items=
+        {
+        LBUF { txt="The contents of these pages are copyrighted. Any rights not expressly granted herein are reserved. The use of this site is permitted to private use."; },
+        LBUF { txt="Reproduction, transfer, distribution or storage of part or all of the contents in any form without the prior written permission is prohibited."; },
+        LBUF { txt="We consents to you browsing the pages on your computer or printing copies of extracts from these pages for your personal use only."; },
+        LBUF { txt="If you place an order for a product, request a service or submit content to this site, we may need to contact you for additional information."; },
+        LBUF { txt="The use of press releases and other documents classified as public is permitted in public communications if the source for the information has been stated."; },
+        LBUF { txt="For your easy accessibility we may include links to sites on the Internet that are owned or operated by third parties."; },
+        LBUF { txt="You also agree that we have no control over the content of that site and cannot assume any responsibility for material by such third-party sites."; },
+        LBUF { txt="In addition, a link to a such site does not imply that we endorses the site or the products or services referenced in such third party site."; },
+        LBUF { txt="In order to respond to your questions or manage interactive customer programs, it may be necessary to ask for personal information."; },
+        LBUF { txt="We may use this information to respond to your requests, or to contact you via mail, e-mail or phone to inform you of new products."; },
+        LBUF { txt="If you place an order for a product, request a service or submit content to this site, we may need to contact you for additional information."; }
+        };
+    }
+
+
+// ---------------------------------------------------------
+//   
+//    New framework:
+//    Secure platform and scalable UI changes 
+//
+// ---------------------------------------------------------
+//
+RESOURCE LOCALISABLE_APP_INFO r_creator_localisable_app_info
+    {
+    short_caption = "Creator";
+    caption_and_icon = 
+    CAPTION_AND_ICON_INFO
+        {
+        caption = "Creator";
+
+        number_of_icons = 1;
+
+        // Note for ROM-based apps it is recommended to add the drive letter
+        // icon_file = "z:"APP_BITMAP_DIR"\\myapp_aif.mif";
+        icon_file = APP_BITMAP_DIR"\\creator_aif.mif";
+        };
+    }
+
+RESOURCE DIALOG r_yes_no_dialog
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_YES_NO;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_CONFIRMATION_QUERY
+                {
+                layout = EConfirmationQueryLayout;
+                animation = R_QGN_NOTE_QUERY_ANIM;
+                };
+            }
+        };
+    }
+    
+RESOURCE DIALOG r_encryption_dialog
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtListQueryControl;
+            id = EListQueryControl;
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = LISTBOX
+                    {
+                    flags = EAknListBoxSelectionList;
+                    height = 3;
+                    width = 3;
+                    };
+                heading = "Encryption";
+                };
+            }
+        };
+    }
