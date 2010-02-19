@@ -23,7 +23,7 @@ NAME MEMS
 #include <data_caging_paths_strings.hrh>
 #include <appinfo.rh>
 #include <eikon.rh>
-#include <eikcore.rsg>
+#include <EIKCORE.rsg>
 #include <eikon.rsg>
 #include <avkon.rh>
 #include <eikon.rsg>

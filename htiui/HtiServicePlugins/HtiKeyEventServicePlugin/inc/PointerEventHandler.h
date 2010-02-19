@@ -15,12 +15,11 @@
 *
 */
 
-
 #ifndef CPOINTEREVENTHANDLER_H
 #define CPOINTEREVENTHANDLER_H
 
 // INCLUDES
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 #include <w32std.h>
 
 // CONSTANTS
@@ -34,6 +33,7 @@
 // FORWARD DECLARATIONS
 
 // CLASS DECLARATION
+
 
 /**
 *  Functional implentation of pointer event service.
@@ -57,6 +57,8 @@ class CPointerEventHandler : public CActive
             ETapAndDragMultipoint = 0x12,
             EPressPointerDown = 0x13,
             ELiftPointerUp = 0x14,
+			EAdvancedTapScreen = 0x15, //for advanced
+			EPinchZoom = 0x16, //for advanced
             EResultOk = 0xFF // only for response message
             };
 
@@ -66,6 +68,16 @@ class CPointerEventHandler : public CActive
             EPointerDown,
             EPointerMoving
             };
+
+        struct TAdvancedPointer
+            {
+            TUint8 PointerNum;
+            TInt   X;
+            TInt   Y;
+            TInt   Z;            
+            };			
+
+			
 
         /**
         * Two-phased constructor.
@@ -117,6 +129,8 @@ class CPointerEventHandler : public CActive
         void HandleTapAndDragL( const TDesC8& aData );
         void HandleTapAndDragMultipointL( const TDesC8& aData );
         void HandlePointerDownOrUpL( const TDesC8& aData );
+		void HandleAdvancedTapScreenL( const TDesC8& aData ); //for advanced
+        void HandlePinchZoomL( const TDesC8& aData ); //for advanced
 
         void SendOkMsgL();
         void SendErrorMessageL( TInt aError, const TDesC8& aDescription );
@@ -127,6 +141,10 @@ class CPointerEventHandler : public CActive
         void PointerUp();
         void PointerMove();
         void SimulatePointerEvent( TRawEvent::TType aType );
+        TBool IsMultitouch();
+        void AdvanceAddMiddlePointL(TInt aPointNumber,TInt aX1,TInt aY1, TInt aZ1,TInt aX2,TInt aY2, TInt aZ2 , TInt aStepCount );
+        void AdvancedAddDelayArray(TTimeIntervalMicroSeconds32 aDelay , TInt aStepCount );
+        TBool AdvancedStartDelay();
 
 
     private: // data
@@ -144,6 +162,10 @@ class CPointerEventHandler : public CActive
         TTimeIntervalMicroSeconds32 iActionDelay;
         TPointerState iState;
         RArray<TInt>* iCoords;
-    };
+		RPointerArray<TAdvancedPointer> iAdvancedPointers;
+		
+		RPointerArray<TAdvancedPointer> iAdvPointerMoveArray;
+		RPointerArray<TTimeIntervalMicroSeconds32> iDelayArray;
+		};
 
 #endif // CKEYEVENTHANDLER_H

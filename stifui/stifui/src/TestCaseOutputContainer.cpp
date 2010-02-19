@@ -23,7 +23,7 @@
 #include "AppUIAppUi.h"
 
 #include <aknlists.h>  // ListBox
-#include <akniconarray.h>  // CAknIconArray
+#include <AknIconArray.h>  // CAknIconArray
 #include <badesca.h> // CDesCArray
 #include <eikclbd.h> // CColumnListBoxData
 #include <aknnotewrappers.h>

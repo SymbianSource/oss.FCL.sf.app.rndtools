@@ -27,7 +27,7 @@
 #include <w32std.h>
 #include <SWInstDefs.h>
 #include <swi/sisregistryentry.h>
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 
 // CONSTANTS
 

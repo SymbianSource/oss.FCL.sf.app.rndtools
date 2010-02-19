@@ -20,7 +20,7 @@
 #define UITESTSERVERSTARTERAPPUI_H_
 
 //  INCLUDES
-#include <aknviewappui.h> 
+#include <aknViewAppUi.h> 
 
 // CONSTANTS
 // None

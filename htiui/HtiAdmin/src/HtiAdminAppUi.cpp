@@ -18,7 +18,7 @@
 // INCLUDE FILES
 #include <avkon.hrh>
 #include <aknnotewrappers.h>
-#include <aknquerydialog.h>
+#include <AknQueryDialog.h>
 #include <aknmessagequerydialog.h>
 #include <w32std.h>
 #include <eikmenup.h>

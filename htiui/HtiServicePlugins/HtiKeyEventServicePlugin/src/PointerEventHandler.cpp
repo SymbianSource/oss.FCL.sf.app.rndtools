@@ -15,13 +15,12 @@
 *
 */
 
-
 // INCLUDE FILES
-#include "HtiKeyEventServiceplugin.h"
+#include "HtiKeyEventServicePlugin.h"
 #include "PointerEventHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 
 // CONSTANTS
@@ -30,10 +29,14 @@ _LIT8( KErrorServiceNotReady, "Service is busy - possibly executing long running
 _LIT8( KErrorInvalidParameters, "Command parameters not valid" );
 _LIT8( KErrorUnrecognizedCommand, "Unrecognized command" );
 _LIT8( KErrorInternalFailure, "Internal pointer command failure" );
+_LIT8( KErrorGetHALData, "Can not get the HAL data" );
 
 const TInt KTapCmdLength = 10;
 const TInt KDragMultiCmdMinLength = 14;
 const TInt KSinglePointerCmdLength = 4;
+const TInt KAdvancedTapScreenCmdMinLength = 16;
+const TInt KPinchZoomCmdMinLength = 30;
+
 
 // ----------------------------------------------------------------------------
 // CPointerEventHandler::NewL()
@@ -72,6 +75,10 @@ CPointerEventHandler::~CPointerEventHandler()
         iCoords->Close();
         }
     delete iCoords;
+	
+	iAdvancedPointers.ResetAndDestroy();
+	iDelayArray.ResetAndDestroy();  
+	iAdvPointerMoveArray.ResetAndDestroy(); 
     }
 
 // ----------------------------------------------------------------------------
@@ -100,12 +107,12 @@ void CPointerEventHandler::RunL()
     {
     HTI_LOG_FUNC_IN( "CPointerEventHandler::RunL" );
 
-    if ( iCommand == ETapScreen )
+    if ( iCommand == ETapScreen || iCommand == EAdvancedTapScreen )
         {
         ChangePointerStateL();
         }
 
-    else if ( iCommand == ETapAndDrag && iState == EPointerDown )
+    else if ( iCommand == ETapAndDrag  && iState == EPointerDown )
         {
         PointerMove();
         PointerUp();
@@ -127,7 +134,16 @@ void CPointerEventHandler::RunL()
             MoveToNextPointL(); // Continuing current line
             }
         }
-
+    else if ( iCommand == EPinchZoom )
+        {
+        PointerMove();
+        if ( !AdvancedStartDelay())
+            {
+            PointerUp();
+            SendOkMsgL();
+            iReady = ETrue;
+            }
+        }		
     HTI_LOG_FUNC_OUT( "CPointerEventHandler::RunL" );
     }
 
@@ -194,6 +210,13 @@ void CPointerEventHandler::ProcessMessageL( const TDesC8& aMessage,
         case ELiftPointerUp:
             HandlePointerDownOrUpL( aMessage.Right( aMessage.Length() - 1 ) );
             break;
+		case EAdvancedTapScreen:
+		    HandleAdvancedTapScreenL( aMessage.Right( aMessage.Length() - 1 ) );
+            break;		
+		case EPinchZoom: 
+		    HandlePinchZoomL( aMessage.Right( aMessage.Length() - 1 ) );
+            break;
+		
         default:
             SendErrorMessageL( EUnrecognizedCommand,
                 KErrorUnrecognizedCommand );
@@ -240,6 +263,8 @@ void CPointerEventHandler::HandleTapScreenL( const TDesC8& aData )
 
     HTI_LOG_FUNC_OUT( "CPointerEventHandler::HandleTapScreenL" );
     }
+	
+
 
 // ----------------------------------------------------------------------------
 // CPointerEventHandler::HandleTapAndDragL()
@@ -409,6 +434,237 @@ void CPointerEventHandler::ChangePointerStateL()
         }
     HTI_LOG_FUNC_OUT( "CPointerEventHandler::ChangePointerStateL" );
     }
+	
+	// ----------------------------------------------------------------------------
+	
+// ----------------------------------------------------------------------------
+// CPointerEventHandler::HandleAdvancedTapScreenL()
+// ****cherry.
+// ----------------------------------------------------------------------------
+
+void CPointerEventHandler::HandleAdvancedTapScreenL( const TDesC8& aData )
+    {
+    
+    HTI_LOG_FUNC_IN( "CPointerEventHandler::HandleAdvancedTapScreenL" );
+
+    if ( aData.Length() < KAdvancedTapScreenCmdMinLength ) //KAdvancedTapScreenCmdMinLength needs to be defined
+        {
+        SendErrorMessageL( EInvalidParameters, KErrorInvalidParameters );
+        return;
+        }
+	TInt dataLength = aData.Length();
+	
+    // Parse the parameters - correct length is already verified
+	TInt offset = 0;
+	
+	iEventDelay = ( aData[offset] + ( aData[offset+1] << 8 ) ) * 1000;
+    offset += 2;
+    HTI_LOG_FORMAT( "Time to hold down = %d", iEventDelay.Int() );
+    iTapCount = aData[offset] + ( aData[offset+1] << 8 );
+    offset += 2;
+    HTI_LOG_FORMAT( "Tap count = %d", iTapCount );
+    iActionDelay = ( aData[offset] + ( aData[offset+1] << 8 ) ) * 1000;
+	offset += 2;
+    HTI_LOG_FORMAT( "Pause between taps = %d", iActionDelay.Int() );		
+	TInt pointerCount = aData[offset] + ( aData[offset+1] << 8 );
+	offset += 2;
+	HTI_LOG_FORMAT( "Pointer Count = %d", pointerCount );
+	
+    iAdvancedPointers.ResetAndDestroy();
+
+    // Read integers from aData to the array, all integers are 2 bytes
+    for ( TInt i = 0; i < pointerCount; i++ )
+        {
+		TAdvancedPointer* advancedPointer = new (ELeave) TAdvancedPointer;
+		
+		advancedPointer->PointerNum = aData[offset];
+		offset += 1;
+		HTI_LOG_FORMAT( "%d Pointer", advancedPointer->PointerNum );
+		
+		advancedPointer->X = aData[offset] + ( aData[offset+1] << 8 );
+		offset += 2;
+		HTI_LOG_FORMAT( "X coord down = %d", advancedPointer->X );
+		
+		advancedPointer->Y = aData[offset] + ( aData[offset+1] << 8 );
+		offset += 2;
+		HTI_LOG_FORMAT( "Y coord down = %d", advancedPointer->Y );
+
+		advancedPointer->Z = aData[offset] + ( aData[offset+1] << 8 );
+		offset += 2;
+		HTI_LOG_FORMAT( "Z coord down = %d", advancedPointer->Z );
+		
+        iAdvancedPointers.AppendL( advancedPointer );
+        }
+	
+    // Start tapping
+    iReady = EFalse;
+    ChangePointerStateL();
+
+    HTI_LOG_FUNC_OUT( "CPointerEventHandler::HandleAdvancedTapScreenL" );
+    
+    }
+	
+// ----------------------------------------------------------------------------
+// CPointerEventHandler::HandlePinchZoomL()
+// ****cherry
+// ----------------------------------------------------------------------------
+void CPointerEventHandler::HandlePinchZoomL( const TDesC8& aData )
+    {
+    HTI_LOG_FUNC_IN( "CPointerEventHandler::HandlePinchZoomL" );
+
+    if ( aData.Length() < KPinchZoomCmdMinLength ) //KPinchZoomCmdMinLength needs to be defined
+        {
+        SendErrorMessageL( EInvalidParameters, KErrorInvalidParameters );
+        return;
+        }
+	TInt dataLength = aData.Length();
+	
+    // Parse the parameters - correct length is already verified
+	TInt offset = 0;
+	
+	TTimeIntervalMicroSeconds32 eventDelay = ( aData[offset] + ( aData[offset+1] << 8 ) ) * 1000;
+	offset += 2;
+    HTI_LOG_FORMAT( "Event time = %d", eventDelay.Int() );
+	
+    TInt stepCount = aData[offset] + ( aData[offset+1] << 8 );
+    offset += 2;
+    HTI_LOG_FORMAT( "Step Count = %d", stepCount );
+        
+	TInt pointerCount = aData[offset] + ( aData[offset+1] << 8 );
+	offset += 2;
+	HTI_LOG_FORMAT( "Pointer Count = %d", pointerCount );
+	
+	iAdvPointerMoveArray.ResetAndDestroy();	
+
+    // Read integers from aData to the array, all integers are 2 bytes
+    for ( TInt i = 0; i < pointerCount; i++ )
+        {
+        TInt pointNumber,X1, Y1, Z1,X2,Y2, Z2 ;
+        
+        // start point	
+		pointNumber = aData[offset];
+		offset += 1;
+		HTI_LOG_FORMAT( "%d Pointer Start", pointNumber );
+		
+		X1 = aData[offset] + ( aData[offset+1] << 8 );
+		offset += 2;
+		HTI_LOG_FORMAT( "X coord down = %d", X1 );
+		
+		Y1 = aData[offset] + ( aData[offset+1] << 8 );
+		offset += 2;
+		HTI_LOG_FORMAT( "Y coord down = %d", Y1 );
+
+		Z1 = aData[offset] + ( aData[offset+1] << 8 );
+		offset += 2;
+		HTI_LOG_FORMAT( "Z coord down = %d", Z1 );		
+
+		// end point     
+		X2 = aData[offset] + ( aData[offset+1] << 8 );
+        offset += 2;
+        HTI_LOG_FORMAT( "X coord down = %d", X2 );
+        
+        Y2 = aData[offset] + ( aData[offset+1] << 8 );
+        offset += 2;
+        HTI_LOG_FORMAT( "Y coord down = %d", Y2 );
+
+        Z2 = aData[offset] + ( aData[offset+1] << 8 );
+        offset += 2;
+        HTI_LOG_FORMAT( "Z coord down = %d", Z2 );
+        
+        AdvanceAddMiddlePointL(pointNumber,X1, Y1, Z1,X2,Y2, Z2,stepCount );        
+
+        }
+    	
+    AdvancedAddDelayArray(eventDelay,stepCount);
+   
+    iReady = EFalse;
+    PointerDown();
+
+    if (!AdvancedStartDelay())
+        {
+        SendErrorMessageL( EInvalidParameters, KErrorInvalidParameters );
+        return;        
+        }
+
+    HTI_LOG_FUNC_OUT( "CPointerEventHandler::HandlePinchZoomL" );
+    }	
+
+// ----------------------------------------------------------------------------
+// CPointerEventHandler::AdvancedStartDelay()
+// ----------------------------------------------------------------------------
+TBool CPointerEventHandler::AdvancedStartDelay()
+    {
+    HTI_LOG_FUNC_IN( "CPointerEventHandler::AdvancedStartDelay" );
+    TBool ret=EFalse;
+    if (iDelayArray.Count()>0)
+        {
+        TTimeIntervalMicroSeconds32* time=iDelayArray[0];
+        iDelayArray.Remove(0);
+        ret=ETrue;
+  
+        iTimer.After( iStatus, *time );
+        delete time;
+        SetActive();
+        }
+    HTI_LOG_FUNC_OUT( "CPointerEventHandler::AdvancedStartDelay" );
+    return ret;
+    }
+
+// ----------------------------------------------------------------------------
+// CPointerEventHandler::AdvanceAddMiddlePointL()
+// ----------------------------------------------------------------------------
+void CPointerEventHandler::AdvanceAddMiddlePointL(TInt aPointNumber,TInt aX1,TInt aY1, TInt aZ1, 
+        TInt aX2,TInt aY2, TInt aZ2 , TInt aStepCount )
+    {
+    HTI_LOG_FUNC_IN( "CPointerEventHandler::AdvanceAddMiddlePointL" );
+    TInt dx=(aX2-aX1)/aStepCount;
+    TInt dy=(aY2-aY1)/aStepCount;  
+    
+    for (TInt i=0;i<=aStepCount+1;i++)
+        {
+        TAdvancedPointer* point = new (ELeave) TAdvancedPointer;
+        CleanupStack::PushL(point);
+        iAdvPointerMoveArray.AppendL(point);
+        CleanupStack::Pop();
+        
+        point->PointerNum=aPointNumber;
+        if (i<aStepCount)
+            {
+            point->X=aX1+i*dx;
+            point->Y=aY1+i*dy;
+            point->Z=aZ1;
+            }
+        else
+            {
+            point->X=aX2;
+            point->Y=aY2;
+            point->Z=aZ2;
+            }             
+                  
+        } 
+    
+    HTI_LOG_FUNC_OUT( "CPointerEventHandler::AdvanceAddMiddlePointL" );
+    }
+
+// ----------------------------------------------------------------------------
+// CPointerEventHandler::AdvancedAddDelayArray()
+// ----------------------------------------------------------------------------
+void CPointerEventHandler::AdvancedAddDelayArray(TTimeIntervalMicroSeconds32 aDelay , TInt aStepCount )
+    {
+    HTI_LOG_FUNC_IN( "CPointerEventHandler::AdvancedAddDelayArray" );
+    
+    TInt interval=aDelay.Int()/aStepCount;
+    iDelayArray.ResetAndDestroy();    
+    
+    for (TInt i=0;i<aStepCount;i++)
+        {
+        TTimeIntervalMicroSeconds32* time = new (ELeave) TTimeIntervalMicroSeconds32(interval);
+        CleanupStack::PushL(time);
+        iDelayArray.AppendL(time);
+        CleanupStack::Pop(time);
+        } 
+    HTI_LOG_FUNC_OUT( "CPointerEventHandler::AdvancedAddDelayArray" );
+    }
 
 // ----------------------------------------------------------------------------
 // CPointerEventHandler::MoveToNextPointL()
@@ -502,13 +758,75 @@ void CPointerEventHandler::PointerMove()
 void CPointerEventHandler::SimulatePointerEvent( TRawEvent::TType aType )
     {
     HTI_LOG_FUNC_IN( "CPointerEventHandler::SimulatePointerEvent" );
+    
     TRawEvent rawEvent;
-    rawEvent.Set( aType, iX, iY );
-    iWsSession.SimulateRawEvent( rawEvent );
+    
+    if ( iCommand == EAdvancedTapScreen )
+        {
+        TInt i;
+         for ( i = 0; i < iAdvancedPointers.Count(); i++ )
+             {
+             rawEvent.SetPointerNumber( iAdvancedPointers[i]->PointerNum ); 
+             rawEvent.Set( aType, iAdvancedPointers[i]->X, iAdvancedPointers[i]->Y, iAdvancedPointers[i]->Z);    
+             iWsSession.SimulateRawEvent( rawEvent );    
+             }      
+        }
+    else if ( iCommand == EPinchZoom  )
+        {
+        TInt i,index,pointnum=-1;
+        RPointerArray<TAdvancedPointer> array;
+        for ( i = 0; i < iAdvPointerMoveArray.Count(); i++ )
+            {
+            TAdvancedPointer* point=iAdvPointerMoveArray[i];   
+            if (point->PointerNum!=pointnum)
+                {
+                pointnum=point->PointerNum;                
+                rawEvent.SetPointerNumber( point->PointerNum ); 
+                rawEvent.Set( aType, point->X, point->Y, point->Z); 	
+                iWsSession.SimulateRawEvent( rawEvent );	
+                
+                HTI_LOG_FORMAT( "SimulateAdvanced event=%d ", aType );
+                HTI_LOG_FORMAT( "SimulateAdvanced PointerNum=%d", point->PointerNum );
+                HTI_LOG_FORMAT( "SimulateAdvanced X=%d ", point->X );
+                HTI_LOG_FORMAT( "SimulateAdvanced Y=%d ", point->Y );
+                HTI_LOG_FORMAT( "SimulateAdvanced Z=%d", point->Z );
+                
+                array.Append(point);
+                }
+            }
+        for (i=0;i<array.Count();i++)
+            {
+            index=iAdvPointerMoveArray.Find(array[i]);
+            if (index!=KErrNotFound)
+                iAdvPointerMoveArray.Remove(index);
+            }
+        array.ResetAndDestroy();
+        }
+    else
+        {	
+        rawEvent.Set( aType, iX, iY );
+        iWsSession.SimulateRawEvent( rawEvent );
+        }
+    
     iWsSession.Flush();
     HTI_LOG_FUNC_OUT( "CPointerEventHandler::SimulatePointerEvent" );
     }
 
+// ----------------------------------------------------------------------------
+// CPointerEventHandler::IsMultitouch()
+// ----------------------------------------------------------------------------
+TBool CPointerEventHandler::IsMultitouch()
+    {
+    HTI_LOG_FUNC_IN("CPointerEventHandler::IsMultitouch");
+    TBool isMultitouch = EFalse;
+    if ( iCommand == EAdvancedTapScreen || iCommand == EPinchZoom )
+        {
+        isMultitouch = ETrue;
+        }
+    HTI_LOG_FUNC_OUT("CPointerEventHandler::IsMultitouch");
+    return isMultitouch;
+    }    
+    
 // ----------------------------------------------------------------------------
 // CPointerEventHandler::SendOkMsgL()
 // ----------------------------------------------------------------------------

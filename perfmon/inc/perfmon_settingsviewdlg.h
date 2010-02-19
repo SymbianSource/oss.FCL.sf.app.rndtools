@@ -20,9 +20,9 @@
 #define PERFMON_SETTINGSVIEWDLG_H
 
 //  INCLUDES
-#include <akndialog.h>
+#include <AknDialog.h>
 #include <eiklbo.h>
-#include <akntabobserver.h> 
+#include <AknTabObserver.h> 
 #include <akntabgrp.h>
 #include <aknsettingitemlist.h> 
 #include <akncheckboxsettingpage.h> 

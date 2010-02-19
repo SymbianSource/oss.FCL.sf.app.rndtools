@@ -21,7 +21,7 @@
 #define SCREENSHOOTPLUGIN_H
 
 // INCLUDES
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 #include <w32std.h>
 #include <f32file.h>
 #include "HtiTextRcg.h"

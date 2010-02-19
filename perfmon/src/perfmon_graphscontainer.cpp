@@ -23,7 +23,7 @@
 #include "perfmon_appui.h"
 #include "perfmon_model.h"
 
-#include <aknutils.h>
+#include <AknUtils.h>
 
 const TInt KAmountOfMicroSecondsFitsScreen = 20 * 1000000;
 #define KRgbCustomGrey TRgb(0x808080)

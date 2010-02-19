@@ -16,7 +16,7 @@
 */
 
 // INCLUDE FILES
-#include  <aknviewappui.h>
+#include  <aknViewAppUi.h>
 #include  <Stifui.rsg>
 #include  "AppUIAppUi.h"
 #include  "View.h"

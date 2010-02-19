@@ -23,7 +23,7 @@
 // INCLUDES
 #include <e32property.h>
 #include <f32file.h>
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 
 // FORWARD DECLARATIONS
 class CHtiLightsController;

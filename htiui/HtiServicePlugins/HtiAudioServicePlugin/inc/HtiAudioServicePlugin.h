@@ -22,9 +22,9 @@
 
 //  INCLUDES
 #include <badesca.h>
-#include <HTIServicePluginInterface.h>
-#include <MdaAudioSamplePlayer.h>
-#include <MdaAudioTonePlayer.h>
+#include <HtiServicePluginInterface.h>
+#include <mdaaudiosampleplayer.h>
+#include <mdaaudiotoneplayer.h>
 
 // CONSTANTS
 

@@ -20,7 +20,7 @@
 #define UITESTSERVERSTARTERDOCUMENT_H_
 
 //  INCLUDES
-#include <akndoc.h>
+#include <AknDoc.h>
 
 // CONSTANTS
 // None

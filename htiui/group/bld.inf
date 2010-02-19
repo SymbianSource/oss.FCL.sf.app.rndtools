@@ -31,8 +31,8 @@ PRJ_EXPORTS
 #include "../HtiServicePlugins/HtiAppServicePlugin/group/bld.inf"
 #include "../HtiServicePlugins/HtiAudioServicePlugin/group/bld.inf"
 #include "../HtiServicePlugins/HtiKeyEventServicePlugin/group/bld.inf"
+#include "../HtiServicePlugins/HtiMessagesServicePlugin/group/bld.inf"
 #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
-    #include "../HtiServicePlugins/HtiMessagesServicePlugin/group/bld.inf"
     #include "../HtiServicePlugins/HtiPIMServicePlugin/group/bld.inf"
 #endif
 #include "../HtiServicePlugins/HtiScreenshotServicePlugin/group/bld.inf"

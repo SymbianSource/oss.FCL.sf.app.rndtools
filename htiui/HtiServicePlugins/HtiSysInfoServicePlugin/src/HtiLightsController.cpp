@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 #include "HtiLightsController.h"
 
 // CONSTANTS

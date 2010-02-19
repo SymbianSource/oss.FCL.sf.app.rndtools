@@ -20,7 +20,7 @@
 #include <avkon.hrh>
 #include <aknmessagequerydialog.h>
 #include <aknnotewrappers.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <f32file.h>
 #include <s32file.h>
 #include <hlplch.h>

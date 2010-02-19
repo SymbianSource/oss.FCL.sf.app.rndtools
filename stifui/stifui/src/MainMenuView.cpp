@@ -16,7 +16,7 @@
 */
 
 // INCLUDE FILES
-#include  <aknviewappui.h>
+#include  <aknViewAppUi.h>
 #include  <barsread.h>	//TResourceReader
 #include  <Stifui.rsg>
 #include  "MainMenuView.h"

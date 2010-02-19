@@ -19,7 +19,7 @@
 #define APPUIDOCUMENT_H
 
 // INCLUDES
-#include <akndoc.h>
+#include <AknDoc.h>
    
 // CONSTANTS
 
