@@ -42,7 +42,7 @@
 #include <StifTestInterface.h>
 
 #include <aknnotewrappers.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 
 _LIT( KTestSet, "DefaultSet" );
 

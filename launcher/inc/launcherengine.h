@@ -24,7 +24,10 @@
 #include <aknappui.h>
 #include <e32base.h>
 #include <apgcli.h>
+#include "../symbian_version.hrh"
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 #include <SendUi.h>
+#endif 
 #include <aknprogressdialog.h>
 #include <maknfileselectionobserver.h>
 
@@ -61,8 +64,10 @@ public:
     TBool BCLogFileExists();
     void AnalyseDLLsL();
     void StopLaunchingL();
+	#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     void SendLogViaSendUiL(CSendUi* aSendUi);
     void SendListOfSystemDllsViaSendUiL(CSendUi* aSendUi);
+	#endif 
     TBool SelectRequiredDLLsFileL();
         
     // From MLauncherParserObserver

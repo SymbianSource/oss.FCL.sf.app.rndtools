@@ -20,6 +20,7 @@
 #ifndef __LAUNCHER_HRH__
 #define __LAUNCHER_HRH__
 
+#include "../symbian_version.hrh"
 
 enum TLauncherCommandIds
     {
@@ -36,9 +37,12 @@ enum TLauncherCommandIds
 	ECmdSkipHiddenAndEmbedOnly,
 	ECmdDoNotSkipAnyFiles,
 	ECmdDeleteLog,
-	ECmdAbout,
+	ECmdAbout
+	#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+	,
 	ECmdSendUISystemDllFile,
 	ECmdSendUILogFile
+	#endif
     };
 
 enum TLauncherTabViewId

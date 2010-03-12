@@ -27,8 +27,10 @@
 #include <aknviewappui.h>
 #include <akntabgrp.h>
 #include <aknnavide.h>
+#include "../symbian_version.hrh"
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 #include <SendUi.h>
-
+#endif 
 #include "LauncherEngine.h"
 
 // FORWARD DECLARATIONS
@@ -94,10 +96,12 @@ class CLauncherAppUi : public CAknViewAppUi
         CAknNavigationDecorator*        iDecoratedTabGroup;
         CLauncherEngine*                iEngine;
 
+        #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
         #ifdef RD_SUPPORT_SENDUI_API_V2
           CSendUi*                        iSendUi;
         #else
           CSendAppUi*                     iSendAppUi;
+        #endif
         #endif
 
     public:
