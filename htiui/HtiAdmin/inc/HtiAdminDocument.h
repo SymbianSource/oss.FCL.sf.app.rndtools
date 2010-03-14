@@ -20,7 +20,7 @@
 #define __HTIADMIN_DOCUMENT_H__
 
 // INCLUDES
-#include <akndoc.h>
+#include <AknDoc.h>
 
 // FORWARD DECLARATIONS
 class CHtiAdminAppUi;

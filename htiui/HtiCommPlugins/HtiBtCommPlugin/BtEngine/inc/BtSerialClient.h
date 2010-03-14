@@ -23,8 +23,8 @@
 #include <e32base.h>
 #include <es_sock.h>
 #include <bt_sock.h>
-#include <BTextNotifiers.h>
-#include <BtSdp.h>
+#include <btextnotifiers.h>
+#include <btsdp.h>
 
 #include "SocketObserver.h"
 

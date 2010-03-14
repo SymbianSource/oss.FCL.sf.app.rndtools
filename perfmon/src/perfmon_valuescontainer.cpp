@@ -23,7 +23,7 @@
 #include "perfmon_appui.h"
 #include "perfmon_model.h"
 
-#include <aknutils.h>
+#include <AknUtils.h>
 
 _LIT(KPercentageFormat,"%S %d%%");
 _LIT(KFreeFormat,"%S free %S%S"); 

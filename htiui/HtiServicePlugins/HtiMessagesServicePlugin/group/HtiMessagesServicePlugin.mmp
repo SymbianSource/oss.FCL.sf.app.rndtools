@@ -60,7 +60,6 @@ LIBRARY         smcm.lib
 LIBRARY         etel.lib
 LIBRARY         etelmm.lib
 LIBRARY         etext.lib
-LIBRARY         imumutils.lib
 LIBRARY         mmsserversettings.lib
 LIBRARY         flogger.lib
 

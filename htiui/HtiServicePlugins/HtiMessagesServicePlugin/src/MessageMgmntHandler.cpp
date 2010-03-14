@@ -838,7 +838,7 @@ void CMessageMgmntHandler::HandleCreateEmailL( const TDesC8& aData )
                 waiter->StartAndWait();
                 CleanupStack::PopAndDestroy( waiter );
                 HTI_LOG_TEXT( "Attachment added succesfully" );
-
+                ls.Close();
                 attachmentsExist = ETrue;
                 }
 
@@ -1191,7 +1191,7 @@ void CMessageMgmntHandler::HandleCreateSmartMsgL( const TDesC8& aData )
         CSmsHeader* smsHeader = &( smsMtm->SmsHeader() );
         delete smsHeader;
         smsHeader = NULL;
-        smsHeader = CSmsHeader::NewL( CSmsPDU::ESmsDeliver, smsMtm->Body() );
+        smsHeader = CSmsHeader::NewL( CSmsPDU::ESmsSubmit, smsMtm->Body() );
         smsHeader->SetFromAddressL( fromTo->Des() );
 
         // set body, the actual BIO message content

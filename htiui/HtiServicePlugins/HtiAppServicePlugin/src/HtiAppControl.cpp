@@ -29,15 +29,15 @@
 
 #include "HtiAppControl.h"
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
-#include <swinstapi.h>
+#include <SWInstApi.h>
 #include <swi/sisregistrysession.h>
 #include <swi/sisregistrypackage.h>
 #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     #include <javaregistryincludes.h>
 #endif
-#include <widgetregistryclient.h>
+#include <WidgetRegistryClient.h>
 
 #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     using namespace Java;

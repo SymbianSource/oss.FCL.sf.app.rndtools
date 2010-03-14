@@ -17,7 +17,7 @@
 
 
 // INCLUDE FILES
-#include <HTILogging.h>
+#include <HtiLogging.h>
 #include "HtiPropertySubscriber.h"
 
 // CONSTANTS

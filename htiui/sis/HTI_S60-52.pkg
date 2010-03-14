@@ -18,7 +18,7 @@
 &EN
 
 ; Using UID of HtiFramework project
-#{"HTI"},(0x1020DEB6),2,15,0
+#{"HTI"},(0x1020DEB6),2,16,0
 
 ; Series60 product id for S60 5.2
 [0x20022E6D], 0, 0, 0, {"Series60ProductID"}

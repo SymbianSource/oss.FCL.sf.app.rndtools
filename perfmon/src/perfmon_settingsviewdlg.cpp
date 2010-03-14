@@ -24,12 +24,12 @@
 #include <perfmon.rsg>
 
 #include <aknsettingitemlist.h>
-#include <caknmemoryselectionsettingitem.h> 
+#include <CAknMemorySelectionSettingItem.h> 
 #include <aknlists.h>
 #include <akntitle.h>
 #include <aknnavi.h>
 #include <aknnavide.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <aknnotewrappers.h> 
 
 // ===================================== MEMBER FUNCTIONS =====================================

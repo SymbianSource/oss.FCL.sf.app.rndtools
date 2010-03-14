@@ -53,6 +53,7 @@ CHtiMessagesServicePlugin::~CHtiMessagesServicePlugin()
     delete iMessageHandler;
     delete iIAPHandler;
     delete iMailboxHandler;
+    delete iMsgSettingsHandler;
     }
 
 // ----------------------------------------------------------------------------
