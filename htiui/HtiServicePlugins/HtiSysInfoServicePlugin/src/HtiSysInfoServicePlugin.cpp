@@ -60,6 +60,7 @@ const TInt KDateTimeFormatCmdLength = 6;
 
 _LIT( KTempFilePath, "\\" );
 _LIT( KTempFileName, "HtiTempFile.tmp" );
+_LIT( KMatchFileName, "HtiTempFile.tmp*" );
 _LIT( KDateSeparatorChars, ".:/-" );
 _LIT( KTimeSeparatorChars, ".:" );
 
@@ -1088,39 +1089,25 @@ void CHtiSysInfoServicePlugin::HandleGetTotalDiskSpaceL(
 //------------------------------------------------------------------------------
 void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
     {
+    HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
+    
     if ( aMessage.Length() != 10 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
             KErrArgument,
             KErrDescrArgument,
             KSysInfoServiceUid );
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
         return;
         }
 
-
+    TFileName commonpath;
+    commonpath.Append( aMessage[1] );
+    commonpath.Append( _L( ":" ) );
+    commonpath.Append( KTempFilePath );
+    commonpath.Append( KTempFileName );
     TFileName path;
-    path.Append( aMessage[1] );
-    path.Append( _L( ":" ) );
-    path.Append( KTempFilePath );
-    path.Append( KTempFileName );
-
-    HTI_LOG_TEXT( "Temp file path:" );
-    HTI_LOG_DES( path );
-
-    // check if previous temp file exists and delete it
-    if ( BaflUtils::FileExists( iFs, path ) )
-        {
-        TInt err = iFileMan->Delete( path );
-        if ( err )
-            {
-            iDispatcher->DispatchOutgoingErrorMessage(
-                err,
-                KErrDescrDeleteTempFile,
-                KSysInfoServiceUid );
-            return;
-            }
-        }
-
+        
     // get free disk space
     TInt drive;
     RFs::CharToDrive( TChar( aMessage[1] ), drive );
@@ -1132,6 +1119,7 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
             err,
             KErrDescrVolInfo,
             KSysInfoServiceUid );
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
         return;
         }
 
@@ -1157,37 +1145,70 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
             KErrDiskFull,
             KErrDescrNotEnoughSpace,
             KSysInfoServiceUid );
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
         return;
         }
 
     // check if scaceToEat is greater than KMaxTInt
     //  --> it must be eaten in several chunks
     //  --> not yet supported.
-    if ( spaceToEat > KMaxTInt )
-        {
-        HTI_LOG_TEXT( "Cannot allocate a file bigger than KMaxTInt" );
 
-        iDispatcher->DispatchOutgoingErrorMessage(
-            KErrOverflow,
-            KErrDescrSetSizeTempFile,
-            KSysInfoServiceUid );
-        return;
+    TInt64 size;
+    for(TInt i=1;  spaceToEat>0; i++)
+        {
+        path.Zero();
+        path.Copy(commonpath);
+        path.AppendNum(i);
+        if ( BaflUtils::FileExists( iFs, path ) )
+            {
+            continue;
+            }
+        
+        if(spaceToEat > KMaxTInt)  
+            size=KMaxTInt;
+        else
+            size=spaceToEat;
+        
+        err = CreatFileToEatDiskSpace(path, size);
+        if(err)
+            { 
+            HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL CreateFile Fail" );
+            return;  
+            }        
+        
+        iFs.Volume( volInfo, drive );
+        HTI_LOG_FORMAT( "current free space: %Ld", volInfo.iFree );
+        spaceToEat = volInfo.iFree - spaceLeftFree;           
         }
 
+    // all ok, send the remaining disk size back
+    iReply = HBufC8::NewL( 8 );
+    iReply->Des().Append( ( TUint8* )( &volInfo.iFree ), 8 );
+    HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
+    }
+
+TInt CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace( TFileName aPath, TInt64 aSpaceToEat  )
+    {
+    HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace" );
+    
+    HTI_LOG_FORMAT( "Create file: %S", &aPath );
+    HTI_LOG_FORMAT( "file size %Ld", aSpaceToEat );
+    
     // create a temp file
     RFile diskEater;
-    err = diskEater.Replace( iFs, path, EFileWrite );
+    TInt err = diskEater.Replace( iFs, aPath, EFileWrite );
     if ( err )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
             err,
             KErrDescrCreateTempFile,
             KSysInfoServiceUid );
-        return;
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace Replace error" );
+        return err;
         }
-
+    
     // set the size for temp file
-    err = diskEater.SetSize( I64LOW( spaceToEat ) );
+    err = diskEater.SetSize( I64LOW( aSpaceToEat ) );
     if ( err )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1195,23 +1216,12 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
             KErrDescrSetSizeTempFile,
             KSysInfoServiceUid );
         diskEater.Close();
-        return;
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace SetSize error" );
+        return err;
         }
     diskEater.Close();
-
-    err = iFs.Volume( volInfo, drive );
-    if ( err )
-        {
-        iDispatcher->DispatchOutgoingErrorMessage(
-            err,
-            KErrDescrVolInfo,
-            KSysInfoServiceUid );
-        return;
-        }
-
-    // all ok, send the remaining disk size back
-    iReply = HBufC8::NewL( 8 );
-    iReply->Des().Append( ( TUint8* )( &volInfo.iFree ), 8 );
+    HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace" );
+    return 0;
     }
 
 //------------------------------------------------------------------------------
@@ -1219,41 +1229,33 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
 //------------------------------------------------------------------------------
 void CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL( const TDesC8& aMessage )
     {
+    HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
     if ( aMessage.Length() != 2 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
             KErrArgument,
             KErrDescrArgument,
             KSysInfoServiceUid);
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
         return;
         }
 
     TFileName path;
     path.Append( aMessage[1] );
     path.Append( _L( ":" ) );
-    path.Append( KTempFilePath );
-    path.Append( KTempFileName );
-
-    HTI_LOG_TEXT( "Temp file path:" );
-    HTI_LOG_DES( path );
-
-    TInt err = KErrNone;
-    // check that temp file exists
-    if ( BaflUtils::FileExists( iFs, path ) )
+    path.Append(KTempFilePath);
+    path.Append(KMatchFileName);
+    TInt err = iFileMan->Delete(path);
+    if ( err )
         {
-        // try to delete the temp file
-        err = iFileMan->Delete( path );
-        if ( err )
-            {
-            iDispatcher->DispatchOutgoingErrorMessage(
+        iDispatcher->DispatchOutgoingErrorMessage(
                 err,
                 KErrDescrDeleteTempFile,
                 KSysInfoServiceUid );
-
-            return;
-            }
-        }
-
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
+        return;
+        } 
+    
     // query the free disk space
     TInt drive;
     RFs::CharToDrive( TChar( aMessage[1] ), drive );
@@ -1265,13 +1267,15 @@ void CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL( const TDesC8& aMessage )
             err,
             KErrDescrVolInfo,
             KSysInfoServiceUid );
-
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
         return;
         }
 
     // all ok, send the free disk space back
     iReply = HBufC8::NewL( 8 );
     iReply->Des().Append( ( TUint8* )( &volInfo.iFree ), 8 );
+
+    HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
     }
 
 //------------------------------------------------------------------------------
@@ -2857,27 +2861,18 @@ void CHtiSysInfoServicePlugin::ParseTimeDataL( const TDesC8& aTimeData,
 TInt CHtiSysInfoServicePlugin::CleanUpTempFiles()
     {
     HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::CleanUpTempFiles" );
-
     TFindFile finder( iFs );
-    TFileName path( KTempFilePath );
-    TInt err = finder.FindByPath( KTempFileName, &path );
-
+    CDir* dir = NULL;
+    TInt err = finder.FindWildByDir(KMatchFileName, KTempFilePath, dir);
     while ( err == KErrNone )
         {
-        TFileName tempFile = finder.File();
-
-        HTI_LOG_TEXT( "Found temp file: " );
-        HTI_LOG_DES( tempFile );
-
-        err = iFileMan->Delete( tempFile );
-
-        // return if deleting does not succeed to prevent mad man loop
-        if ( err != KErrNone ) return err;
-
-        // try to find next temp file
-        err = finder.FindByPath( KTempFileName, &path );
+        TFileName path;
+        path.Copy(finder.File());
+        iFileMan->Delete(path);
+        delete dir;
+        dir = NULL;
+        err = finder.FindWildByDir(KMatchFileName, KTempFilePath, dir);
         }
-
     HTI_LOG_FUNC_OUT("CHtiSysInfoServicePlugin::CleanUpTempFiles");
     return KErrNone;
     }

@@ -39,7 +39,7 @@ APP_LAYER_SYSTEMINCLUDE
 LIBRARY         euser.lib
 LIBRARY         efsrv.lib
 LIBRARY         bluetooth.lib
-LIBRARY         htibtserialcomhelper.lib
+LIBRARY         HtiBtSerialComHelper.lib
 
 SMPSAFE
 

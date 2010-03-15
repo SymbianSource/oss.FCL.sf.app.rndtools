@@ -141,6 +141,7 @@ void CPointerEventHandler::RunL()
             {
             PointerUp();
             SendOkMsgL();
+            iAdvPointerMoveArray.ResetAndDestroy(); 
             iReady = ETrue;
             }
         }		
@@ -525,7 +526,13 @@ void CPointerEventHandler::HandlePinchZoomL( const TDesC8& aData )
 	TTimeIntervalMicroSeconds32 eventDelay = ( aData[offset] + ( aData[offset+1] << 8 ) ) * 1000;
 	offset += 2;
     HTI_LOG_FORMAT( "Event time = %d", eventDelay.Int() );
-	
+    
+    if (eventDelay.Int()<=0)
+        {
+        SendErrorMessageL( EInvalidParameters, KErrorInvalidParameters );
+        return;        
+        }
+    
     TInt stepCount = aData[offset] + ( aData[offset+1] << 8 );
     offset += 2;
     HTI_LOG_FORMAT( "Step Count = %d", stepCount );
@@ -541,6 +548,12 @@ void CPointerEventHandler::HandlePinchZoomL( const TDesC8& aData )
         {
         TInt pointNumber,X1, Y1, Z1,X2,Y2, Z2 ;
         
+        // invalid pointer array 
+        if ((dataLength-offset)<3*2*2+1)
+            {
+            SendErrorMessageL( EInvalidParameters, KErrorInvalidParameters );
+            return;        
+            }        
         // start point	
 		pointNumber = aData[offset];
 		offset += 1;

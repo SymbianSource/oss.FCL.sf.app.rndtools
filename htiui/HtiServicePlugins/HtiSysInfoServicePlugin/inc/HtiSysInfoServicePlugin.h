@@ -98,6 +98,7 @@ class CHtiSysInfoServicePlugin : public CHTIServicePluginInterface
         void ParseTimeDataL( const TDesC8& aTimeData, TTime& aResult );
         TInt CleanUpTempFiles();
         TBool CanTurnBluetoothOnL( const TBool aUseForce );
+        TInt CreatFileToEatDiskSpace( TFileName aPath, TInt64 aSpaceToEat  );
 
     private: // private data
         RFs iFs;
@@ -137,6 +138,7 @@ class CAsyncWaiter : public CActive
     private:
         CActiveSchedulerWait* iWait;
         TInt iResult;
+        
     };
 
 
