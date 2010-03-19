@@ -17,16 +17,16 @@
 
 
 // INCLUDE FILES
-#include "HtiSysInfoServiceplugin.h"
+#include "HtiSysInfoServicePlugin.h"
 #include "HtiLightsController.h"
 #include "HtiPropertySubscriber.h"
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 #include <aknkeylock.h>
 #include <AknSkinsInternalCRKeys.h>
 #include <AknsSkinUID.h>
-#include <AknSSrvClient.h>
+#include <AknsSrvClient.h>
 #include <bautils.h>
 #include <btengsettings.h>
 #include <btengdomaincrkeys.h>
@@ -41,10 +41,10 @@
 #include <hal.h>
 #include <ir_sock.h>
 #include <mmtsy_names.h>
-#include <RMmCustomAPI.h>
-#include <HWRMPowerStateSDKPSKeys.h>
-#include <ScreenSaverInternalPSKeys.h>
-#include <SettingsInternalCRKeys.h>
+#include <rmmcustomapi.h>
+#include <hwrmpowerstatesdkpskeys.h>
+#include <ScreensaverInternalPSKeys.h>
+#include <settingsinternalcrkeys.h>
 #include <sysutil.h>
 #include <tz.h>
 

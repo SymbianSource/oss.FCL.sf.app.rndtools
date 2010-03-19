@@ -1591,6 +1591,7 @@ TInt CLauncherEngine::ReadLineFromFileL(RFile& aFile, TDes& aReadBuf)
 
 // ---------------------------------------------------------------------------
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 void CLauncherEngine::SendLogViaSendUiL(CSendUi* aSendUi)
     {
     LOGSTRING("Launcher: CLauncherEngine::SendLogViaSendUiL");
@@ -1608,9 +1609,11 @@ void CLauncherEngine::SendLogViaSendUiL(CSendUi* aSendUi)
     aSendUi->ShowQueryAndSendL( messageData, TSendingCapabilities(0, 0, TSendingCapabilities::ESupportsAttachments ));
     CleanupStack::PopAndDestroy(); //messageData
     }
+#endif
 
 // ---------------------------------------------------------------------------
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 void CLauncherEngine::SendListOfSystemDllsViaSendUiL(CSendUi* aSendUi)
     {
     LOGSTRING("Launcher: CLauncherEngine::SendListOfDllsViaSendUiL");
@@ -1630,6 +1633,7 @@ void CLauncherEngine::SendListOfSystemDllsViaSendUiL(CSendUi* aSendUi)
         errorNote->ExecuteLD(message);        
         }
     }
+#endif
 
 // ---------------------------------------------------------------------------
 

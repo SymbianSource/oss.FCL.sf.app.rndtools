@@ -25,7 +25,7 @@
 #include <perfmon.rsg>
 
 #include <eikenv.h>
-#include <aknviewappui.h> 
+#include <aknViewAppUi.h> 
 
 
 // ================= MEMBER FUNCTIONS =======================

@@ -39,9 +39,9 @@
 void CLauncherAppUi::ConstructL()
     {
     BaseConstructL(EAknEnableSkin);
-
+    #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     iSendUi = CSendUi::NewL();
-
+    #endif
     // Show tabs for main views from resources
     CEikStatusPane* sp = StatusPane();
 
@@ -91,8 +91,9 @@ CLauncherAppUi::~CLauncherAppUi()
     delete iEngine;
 
     delete iDecoratedTabGroup;
-
+    #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     delete iSendUi;
+    #endif
     }
 
 // ------------------------------------------------------------------------------
@@ -114,6 +115,7 @@ void CLauncherAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane* aMenuPane)
         aMenuPane->SetItemDimmed(ECmdDeleteLog, !(iEngine->LogFileExists() || iEngine->BCLogFileExists()));
 
         // SendUI for the log file
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
         if (iEngine->LogFileExists() || iEngine->BCLogFileExists())
             {
             TInt index(0);
@@ -121,8 +123,9 @@ void CLauncherAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane* aMenuPane)
             iSendUi->AddSendMenuItemL(*aMenuPane, index-1, ECmdSendUILogFile, TSendingCapabilities(0, 0, TSendingCapabilities::ESupportsAttachments));
             aMenuPane->SetItemTextL(ECmdSendUILogFile, _L("Send log(s)"));
             }
+#endif
         }
-
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     else if (aResourceId == R_LAUNCHER_DLLINFO_SUBMENU)
         {
         //SendUI for the system dll file
@@ -133,6 +136,7 @@ void CLauncherAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane* aMenuPane)
         aMenuPane->SetItemTextL(ECmdSendUISystemDllFile, _L("Send list of DLLs"));
         aMenuPane->SetItemButtonState(ECmdSendUISystemDllFile, EEikMenuItemSymbolIndeterminate); 
         }
+#endif
     }
 
 // ----------------------------------------------------
@@ -238,7 +242,7 @@ void CLauncherAppUi::HandleCommandL(TInt aCommand)
             iEngine->StopLaunchingL();
             break;
             }
-
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
         case ECmdSendUILogFile:
             {
             iEngine->SendLogViaSendUiL(iSendUi);
@@ -250,6 +254,7 @@ void CLauncherAppUi::HandleCommandL(TInt aCommand)
             iEngine->SendListOfSystemDllsViaSendUiL(iSendUi);
             break;
             }
+#endif
         case EAknSoftkeyCancel:
             {
             iEngine->Cancel();

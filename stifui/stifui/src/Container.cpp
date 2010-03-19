@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <aknlists.h>  // ListBox
-#include <akniconarray.h> // CAknIconArray
+#include <AknIconArray.h> // CAknIconArray
 #include <aknnotewrappers.h>
 
 #include <eikclbd.h> //  CColumnListBoxData

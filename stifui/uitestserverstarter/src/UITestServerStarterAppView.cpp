@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <coemain.h>
-#include <aknviewappui.h> 
+#include <aknViewAppUi.h> 
 #include "UITestServerStarterAppView.h"
 #include "UITestServerStarterApplication.h"
 #include "UITestServerStarterAppContainer.h"

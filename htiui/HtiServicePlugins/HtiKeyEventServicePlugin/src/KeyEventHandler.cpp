@@ -17,12 +17,12 @@
 
 
 // INCLUDE FILES
-#include "HtiKeyEventServiceplugin.h"
+#include "HtiKeyEventServicePlugin.h"
 #include "KeyEventHandler.h"
 
 #include <apgtask.h>
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 
 // CONSTANTS

@@ -21,10 +21,10 @@
 #define CHTIKEYEVENTSERVICEPLUGIN_H
 
 // INCLUDES
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 #include <w32std.h>
 #include <centralrepository.h>
-#include <CenRepNotifyHandler.h>
+#include <cenrepnotifyhandler.h>
 
 
 // CONSTANTS

@@ -19,7 +19,7 @@
 */
 
 
-#include "../creator/group/bld.inf"
+// Comment out on wk43, because creator does not compile on TB10.1 yet #include "../creator/group/bld.inf"
 #include "../filebrowser/group/bld.inf"
 #include "../launcher/group/bld.inf"
 #include "../loadgen/group/bld.inf"

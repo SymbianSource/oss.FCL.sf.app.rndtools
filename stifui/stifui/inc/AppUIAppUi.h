@@ -21,7 +21,7 @@
 // INCLUDES
 #include <eikapp.h>
 #include <e32std.h>
-#include <aknviewappui.h>
+#include <aknViewAppUi.h>
 #include <akntabgrp.h>
 #include <aknnavide.h>
 #include <StifLogger.h>

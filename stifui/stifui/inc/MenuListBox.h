@@ -22,7 +22,7 @@
 #include <eiktxlbx.h>
 #include "Stifui.hrh"
 #include "AppUIAppUi.h"
-#include <AknView.h>
+#include <aknview.h>
 #include <aknlists.h>
 
 // CONSTANTS

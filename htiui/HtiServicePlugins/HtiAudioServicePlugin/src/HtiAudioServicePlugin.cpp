@@ -20,12 +20,12 @@
 
 // INCLUDE FILES
 #include <apgcli.h>
-#include <audiopreference.h>
+#include <AudioPreference.h>
 #include <bautils.h>
 #include <e32std.h>
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
-#include <PathInfo.h>
+#include <HtiLogging.h>
+#include <pathinfo.h>
 
 #include "HtiAudioServicePlugin.h"
 

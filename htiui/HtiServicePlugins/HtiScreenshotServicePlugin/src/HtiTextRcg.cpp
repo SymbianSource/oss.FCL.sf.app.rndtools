@@ -18,7 +18,7 @@
 
 #include "HtiTextRcg.h"
 #include <AknUtils.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 const static TInt KDefaultStrategy = EHintEdge;
 

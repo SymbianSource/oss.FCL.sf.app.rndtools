@@ -22,7 +22,7 @@
 
 // INCLUDES
 #include <e32base.h>
-#include <HWRMLight.h>
+#include <hwrmlight.h>
 
 // FORWARD DECLARATIONS
 class MHtiDispatcher;

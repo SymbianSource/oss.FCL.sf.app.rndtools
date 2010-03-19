@@ -17,13 +17,13 @@
 
 
 // INCLUDE FILES
-#include "HtiKeyEventServiceplugin.h"
+#include "HtiKeyEventServicePlugin.h"
 #include "KeyEventHandler.h"
 #include "PointerEventHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
-#include <HWRMLightDomainCRKeys.h>
+#include <HtiLogging.h>
+#include <hwrmlightdomaincrkeys.h>
 
 // CONSTANTS
 _LIT8( KErrorMissingCommand, "Command was not given - message was empty" );

@@ -48,6 +48,7 @@ LIBRARY         ecom.lib
 LIBRARY         euser.lib
 LIBRARY         ws32.lib
 LIBRARY         flogger.lib
+LIBRARY         hal.lib
 
 SMPSAFE
 

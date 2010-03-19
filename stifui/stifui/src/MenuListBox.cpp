@@ -17,7 +17,7 @@
 
 // INCLUDE FILES
 #include "MenuListBox.h"
-#include <AknView.h>
+#include <aknview.h>
 
 // ================= MEMBER FUNCTIONS =======================
 // ---------------------------------------------------------

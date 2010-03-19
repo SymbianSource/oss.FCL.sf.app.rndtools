@@ -18,6 +18,7 @@
 
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
+#include "../symbian_version.hrh"
 
 
 TARGET            Launcher.exe
@@ -76,7 +77,6 @@ LIBRARY           bafl.lib
 LIBRARY           eikcoctl.lib
 LIBRARY           eikctl.lib
 LIBRARY           aknnotify.lib 
-LIBRARY           sendui.lib 
 LIBRARY           egul.lib
 LIBRARY           aknicon.lib
 LIBRARY           flogger.lib
@@ -88,5 +88,8 @@ LIBRARY           gdi.lib
 LIBRARY 	      xmlframework.lib
 LIBRARY           charconv.lib
 LIBRARY           commondialogs.lib
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+LIBRARY           sendui.lib 
+#endif
 
 // End of File

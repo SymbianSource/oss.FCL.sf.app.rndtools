@@ -19,10 +19,10 @@
 // INCLUDE FILES
 #include "HtiScreenshotServicePlugin.h"
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
-#include <ImageConversion.h>
-#include <EZCompressor.h>
+#include <imageconversion.h>
+#include <ezcompressor.h>
 #include <hal.h>
 
 // CONSTANTS

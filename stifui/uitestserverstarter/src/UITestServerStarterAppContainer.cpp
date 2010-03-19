@@ -21,7 +21,7 @@
 #include <AknsDrawUtils.h>
 #include <AknsBasicBackgroundControlContext.h>
 #include <AknDef.h>
-#include <aknutils.h> 
+#include <AknUtils.h> 
 
 // EXTERNAL DATA STRUCTURES
 // None

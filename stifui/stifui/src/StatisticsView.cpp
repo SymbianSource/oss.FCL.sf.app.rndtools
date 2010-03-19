@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include  <eikmenub.h>
-#include  <aknviewappui.h>
+#include  <aknViewAppUi.h>
 #include  <aknlistquerydialog.h> 
 #include  <barsread.h>	//TResourceReader
 #include  <Stifui.rsg>
