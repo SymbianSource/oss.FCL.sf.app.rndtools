@@ -51,7 +51,7 @@ _LIT(KIncrease, "incvalueforeachcopy");
 class CCreatorScriptElementCache : public CBase
 {
 public:
-    static CCreatorScriptElementCache* CCreatorScriptElementCache::NewL();
+    static CCreatorScriptElementCache* NewL();
     virtual ~CCreatorScriptElementCache();    
         
     void RemoveElements();    
@@ -93,7 +93,7 @@ class CCreatorScriptElement : public CBase
 {
 public:
 
-    static CCreatorScriptElement* CCreatorScriptElement::NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
+    static CCreatorScriptElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
 
     /**
      * Destructor

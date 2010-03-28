@@ -275,8 +275,8 @@ class CVirtualPhonebookParameters : public CCreatorModuleBaseParameters
 public:
 	void ParseL(CCommandParser* parser, TParseParams /*aCase = 0*/);
 	
-	TInt CVirtualPhonebookParameters::ScriptLinkId() const;
-	void CVirtualPhonebookParameters::SetScriptLinkId(TInt aLinkId);
+	TInt ScriptLinkId() const;
+	void SetScriptLinkId(TInt aLinkId);
 	RPointerArray<CCreatorContactField> iContactFields;
 
     HBufC*  iGroupName;
