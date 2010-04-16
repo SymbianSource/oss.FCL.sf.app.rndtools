@@ -21,7 +21,7 @@
 
 
 // INCLUDES
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 
 // CONSTANTS
 

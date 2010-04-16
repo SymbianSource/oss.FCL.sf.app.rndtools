@@ -18,7 +18,9 @@
 
 #include "creator_factory.h"
 
-#if( defined __SERIES60_30__ || defined __SERIES60_31__ )
+#if SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4
+    #include "creator_accessPoint.h"
+#elif( defined __SERIES60_30__ || defined __SERIES60_31__ )
     #include "creator_phonebook.h"
     #include "creator_accessPoint.h"
 #else
@@ -28,17 +30,21 @@
 
 CCreatorPhonebookBase* TCreatorFactory::CreatePhoneBookL(CCreatorEngine* aEngine)
 {
-#if( defined __SERIES60_30__ || defined __SERIES60_31__ )
-    return CCreatorPhonebook::NewL(aEngine);    
+#if SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4
+	; //TODO return an object
+#elif( defined __SERIES60_30__ || defined __SERIES60_31__ )
+    return CCreatorPhonebook::NewL(aEngine);
 #else
-    return CCreatorVirtualPhonebook::NewL(aEngine);    
+    return CCreatorVirtualPhonebook::NewL(aEngine);
 #endif 
 
 }
 
 CCreatorModuleBaseParameters* TCreatorFactory::CreatePhoneBookParametersL()
 	{
-#if( defined __SERIES60_30__ || defined __SERIES60_31__ )
+#if SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4
+	; //TODO return an object
+#elif( defined __SERIES60_30__ || defined __SERIES60_31__ )
 	return new(ELeave) CPhonebookParameters;
 #else
 	return new(ELeave) CVirtualPhonebookParameters;
@@ -47,7 +53,7 @@ CCreatorModuleBaseParameters* TCreatorFactory::CreatePhoneBookParametersL()
 
 CCreatorConnectionSettingsBase* TCreatorFactory::CreateConnectionSettingsL(CCreatorEngine* aEngine)
 {
-#if( defined __SERIES60_30__ || defined __SERIES60_31__ )
+#if( defined __SERIES60_30__ || defined __SERIES60_31__ || SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4 )
     return CCreatorAccessPoints::NewL(aEngine);
 #else
     return CCreatorConnectionSettings::NewL(aEngine);    
@@ -57,7 +63,7 @@ CCreatorConnectionSettingsBase* TCreatorFactory::CreateConnectionSettingsL(CCrea
 
 CCreatorModuleBaseParameters* TCreatorFactory::CreateConnectionSettingsParametersL()
     {
-#if( defined __SERIES60_30__ || defined __SERIES60_31__ )
+#if( defined __SERIES60_30__ || defined __SERIES60_31__ || SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4 )
     return new(ELeave) CAccessPointsParameters;
 #else
     return new(ELeave) CConnectionSettingsParameters;

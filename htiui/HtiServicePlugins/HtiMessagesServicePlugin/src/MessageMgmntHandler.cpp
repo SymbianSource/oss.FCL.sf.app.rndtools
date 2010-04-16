@@ -21,7 +21,7 @@
 #include "MessageMgmntHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 #include <mtclreg.h>
 #include <smscmds.h>
 #include <smtcmtm.h>
@@ -374,6 +374,18 @@ void CMessageMgmntHandler::HandleCreateMmsL( const TDesC8& aData )
     TBool isNew = (TBool)aData[position];
     TBool isUnread = (TBool)aData[position+1];
     TFolder folder = (TFolder)aData[position+2];
+    TInt extraAttNum;
+    position += 3;
+    TInt len = aData.Length();
+    if( aData.Length() > position )
+        {
+        extraAttNum = (TInt)aData[position];
+        }
+    else
+        {
+        extraAttNum = 0;
+        }
+    position++;
 
     HTI_LOG_TEXT( "Creating MMS Client MTM" );
     CMmsClientMtm* mmsMtm = NULL;
@@ -539,72 +551,154 @@ void CMessageMgmntHandler::HandleCreateMmsL( const TDesC8& aData )
 
     // handle attachment
     TBool attachmentsExist = EFalse;
-    if ( attPath->Length() > 0 )
-        {
-        HTI_LOG_TEXT( "Handling attachment..." );
-        // check that attachment exists
-        RFs fsSession;
-        if ( fsSession.Connect() != KErrNone )
-            {
-            HTI_LOG_FORMAT( "Error in connecting to file server session: %d", err );
-            SendErrorMessageL( KErrCouldNotConnect, KErrorRfsConnectFailed );
-            CleanupStack::PopAndDestroy( store );
-            CleanupStack::PopAndDestroy( mmsMtm );
-            CleanupStack::PopAndDestroy( attPath );
-            CleanupStack::PopAndDestroy( body );
-            CleanupStack::PopAndDestroy( description );
-            CleanupStack::PopAndDestroy( fromTo );
-            return;
-            }
+	if ( attPath->Length() > 0 )
+		{
+		HTI_LOG_TEXT( "Handling attachment..." );
+		// check that attachment exists
+		RFs fsSession;
+		if ( fsSession.Connect() != KErrNone )
+			{
+			HTI_LOG_FORMAT( "Error in connecting to file server session: %d", err );
+			SendErrorMessageL( KErrCouldNotConnect, KErrorRfsConnectFailed );
+			CleanupStack::PopAndDestroy( store );
+			CleanupStack::PopAndDestroy( mmsMtm );
+			CleanupStack::PopAndDestroy( attPath );
+			CleanupStack::PopAndDestroy( body );
+			CleanupStack::PopAndDestroy( description );
+			CleanupStack::PopAndDestroy( fromTo );
+			return;
+			}
 
-        TBool fileExists = BaflUtils::FileExists( fsSession, attPath->Des() );
-        fsSession.Close();
-        if ( !fileExists )
+		TBool fileExists = BaflUtils::FileExists( fsSession, attPath->Des() );
+		fsSession.Close();
+		if ( !fileExists )
+			{
+			HTI_LOG_TEXT( "Attachment file not found" );
+			SendErrorMessageL( KErrPathNotFound, KErrorAttachmentNotFound );
+			store->RevertL();
+			CleanupStack::PopAndDestroy( store );
+			CleanupStack::PopAndDestroy( mmsMtm );
+			CleanupStack::PopAndDestroy( attPath );
+			CleanupStack::PopAndDestroy( body );
+			CleanupStack::PopAndDestroy( description );
+			CleanupStack::PopAndDestroy( fromTo );
+			return;
+			}
+		else
+			{
+			// save the attachment
+			TParse parser;
+			parser.Set( *attPath, NULL, NULL);
+			TFileName shortFileName = parser.NameAndExt();
+
+			// get the mime type
+			RApaLsSession ls;
+			User::LeaveIfError( ls.Connect() );
+			CleanupClosePushL( ls );
+			TUid appUid;
+			TDataType dataType;
+			ls.AppForDocument( *attPath, appUid, dataType );
+			CleanupStack::PopAndDestroy(); // ls
+			TPtrC8 mimeType = dataType.Des8();
+
+			// attachment settings
+			// ownership of attachment will be transferred
+			CMsvAttachment* attachment = CMsvAttachment::NewL(
+					CMsvAttachment::EMsvFile );
+			attachment->SetAttachmentNameL( shortFileName );
+			attachment->SetMimeTypeL( mimeType );
+
+			// save
+			CWaiter* waiter = CWaiter::NewLC();
+			attachMan.AddAttachmentL( *attPath, attachment, waiter->iStatus );
+			waiter->StartAndWait();
+			CleanupStack::PopAndDestroy( waiter );
+			attachmentsExist = ETrue;
+			}
+		}
+
+    do
+		{
+		HBufC16* attPath2;
+       if(extraAttNum-- > 0)
             {
-            HTI_LOG_TEXT( "Attachment file not found" );
-            SendErrorMessageL( KErrPathNotFound, KErrorAttachmentNotFound );
-            store->RevertL();
-            CleanupStack::PopAndDestroy( store );
-            CleanupStack::PopAndDestroy( mmsMtm );
-            CleanupStack::PopAndDestroy( attPath );
-            CleanupStack::PopAndDestroy( body );
-            CleanupStack::PopAndDestroy( description );
-            CleanupStack::PopAndDestroy( fromTo );
-            return;
+            attPath2 = ExtractDesLC( aData, position, 1 );
             }
         else
             {
-            // save the attachment
-            TParse parser;
-            parser.Set( *attPath, NULL, NULL);
-            TFileName shortFileName = parser.NameAndExt();
-
-            // get the mime type
-            RApaLsSession ls;
-            User::LeaveIfError( ls.Connect() );
-            CleanupClosePushL( ls );
-            TUid appUid;
-            TDataType dataType;
-            ls.AppForDocument( *attPath, appUid, dataType );
-            CleanupStack::PopAndDestroy(); // ls
-            TPtrC8 mimeType = dataType.Des8();
-
-            // attachment settings
-            // ownership of attachment will be transferred
-            CMsvAttachment* attachment = CMsvAttachment::NewL(
-                    CMsvAttachment::EMsvFile );
-            attachment->SetAttachmentNameL( shortFileName );
-            attachment->SetMimeTypeL( mimeType );
-
-            // save
-            CWaiter* waiter = CWaiter::NewLC();
-            attachMan.AddAttachmentL( *attPath, attachment, waiter->iStatus );
-            waiter->StartAndWait();
-            CleanupStack::PopAndDestroy( waiter );
-            attachmentsExist = ETrue;
+            break;
             }
-        }
 
+		if ( attPath2->Length() > 0 )
+			{
+			HTI_LOG_TEXT( "Handling attachment..." );
+			// check that attachment exists
+			RFs fsSession;
+			if ( fsSession.Connect() != KErrNone )
+				{
+				HTI_LOG_FORMAT( "Error in connecting to file server session: %d", err );
+				SendErrorMessageL( KErrCouldNotConnect, KErrorRfsConnectFailed );
+				CleanupStack::PopAndDestroy( store );
+				CleanupStack::PopAndDestroy( mmsMtm );
+				CleanupStack::PopAndDestroy( attPath );
+				CleanupStack::PopAndDestroy( body );
+				CleanupStack::PopAndDestroy( description );
+				CleanupStack::PopAndDestroy( fromTo );
+				CleanupStack::PopAndDestroy( attPath2 );
+				return;
+				}
+	
+			TBool fileExists = BaflUtils::FileExists( fsSession, attPath2->Des() );
+			fsSession.Close();
+			if ( !fileExists )
+				{
+				HTI_LOG_TEXT( "Attachment file not found" );
+				SendErrorMessageL( KErrPathNotFound, KErrorAttachmentNotFound );
+				store->RevertL();
+				CleanupStack::PopAndDestroy( store );
+				CleanupStack::PopAndDestroy( mmsMtm );
+				CleanupStack::PopAndDestroy( attPath );
+				CleanupStack::PopAndDestroy( body );
+				CleanupStack::PopAndDestroy( description );
+				CleanupStack::PopAndDestroy( fromTo );
+				CleanupStack::PopAndDestroy( attPath2 );
+				return;
+				}
+			else
+				{
+				// save the attachment
+				TParse parser;
+				parser.Set( *attPath2, NULL, NULL);
+				TFileName shortFileName = parser.NameAndExt();
+	
+				// get the mime type
+				RApaLsSession ls;
+				User::LeaveIfError( ls.Connect() );
+				CleanupClosePushL( ls );
+				TUid appUid;
+				TDataType dataType;
+				ls.AppForDocument( *attPath2, appUid, dataType );
+				CleanupStack::PopAndDestroy(); // ls
+				TPtrC8 mimeType = dataType.Des8();
+	
+				// attachment settings
+				// ownership of attachment will be transferred
+				CMsvAttachment* attachment = CMsvAttachment::NewL(
+						CMsvAttachment::EMsvFile );
+				attachment->SetAttachmentNameL( shortFileName );
+				attachment->SetMimeTypeL( mimeType );
+	
+				// save
+				CWaiter* waiter = CWaiter::NewLC();
+				attachMan.AddAttachmentL( *attPath2, attachment, waiter->iStatus );
+				waiter->StartAndWait();
+				CleanupStack::PopAndDestroy( waiter );
+				attachmentsExist = ETrue;
+				}
+
+			CleanupStack::PopAndDestroy( attPath2 );
+			}
+		} while(ETrue);
     // save the changes made to the message store
     store->CommitL();
     CleanupStack::PopAndDestroy( store );
@@ -691,6 +785,18 @@ void CMessageMgmntHandler::HandleCreateEmailL( const TDesC8& aData )
         TBool isNew = (TBool)aData[position];
         TBool isUnread = (TBool)aData[position+1];
         TFolder folder = (TFolder)aData[position+2];
+	    TInt extraAttNum;
+	    position += 3;
+	    TInt len = aData.Length();
+	    if( aData.Length() > position )
+	        {
+	        extraAttNum = (TInt)aData[position];
+	        }
+	    else
+	        {
+	        extraAttNum = 0;
+	        }
+	    position++;
 
         HTI_LOG_TEXT( "Creating SMTP Client MTM" );
         CSmtpClientMtm* smtpMtm = NULL;
@@ -844,6 +950,73 @@ void CMessageMgmntHandler::HandleCreateEmailL( const TDesC8& aData )
 
             CleanupStack::PopAndDestroy(); // fsSession
             }
+
+		do
+			{
+			HBufC16* attPath2;
+			if(extraAttNum-- > 0)
+	            {
+	            attPath2 = ExtractDesLC( aData, position, 1 );
+	            }
+	        else
+	            {
+	            break;
+	            }
+            // check that attachment exists
+            RFs fsSession;
+            if ( fsSession.Connect() != KErrNone )
+                {
+                HTI_LOG_FORMAT( "Error in connecting to file server session: %d", err );
+                SendErrorMessageL( KErrCouldNotConnect, KErrorRfsConnectFailed );
+                CleanupStack::PopAndDestroy( smtpMtm );
+                CleanupStack::PopAndDestroy( attPath );
+                CleanupStack::PopAndDestroy( body );
+                CleanupStack::PopAndDestroy( description );
+                CleanupStack::PopAndDestroy( fromTo );
+                CleanupStack::PopAndDestroy( attPath2 );
+                return;
+                }
+            CleanupClosePushL( fsSession );
+
+            TBool fileExists = BaflUtils::FileExists( fsSession, attPath2->Des() );
+            if ( !fileExists )
+                {
+                HTI_LOG_TEXT( "Attachment file not found" );
+                SendErrorMessageL( KErrPathNotFound, KErrorAttachmentNotFound );
+                CleanupStack::PopAndDestroy(); // fsSession
+                CleanupStack::PopAndDestroy( smtpMtm );
+                CleanupStack::PopAndDestroy( attPath );
+                CleanupStack::PopAndDestroy( body );
+                CleanupStack::PopAndDestroy( description );
+                CleanupStack::PopAndDestroy( fromTo );
+                CleanupStack::PopAndDestroy( attPath2 );
+                return;
+                }
+            else
+                {
+                // get the mime type
+                HTI_LOG_TEXT( "Getting the attachment's mime type" );
+                RApaLsSession ls;
+                User::LeaveIfError( ls.Connect() );
+                TUid appUid;
+                TDataType dataType;
+                ls.AppForDocument( *attPath2, appUid, dataType );
+                TPtrC8 mimeType = dataType.Des8();
+
+                HTI_LOG_TEXT( "Adding the attachment" );
+                CWaiter* waiter = CWaiter::NewLC();
+                smtpMtm->AddAttachmentL( attPath2->Des(), mimeType, charset,
+                        waiter->iStatus );
+                waiter->StartAndWait();
+                CleanupStack::PopAndDestroy( waiter );
+                HTI_LOG_TEXT( "Attachment added succesfully" );
+                ls.Close();
+                attachmentsExist = ETrue;
+                }
+
+            CleanupStack::PopAndDestroy(); // fsSession
+			CleanupStack::PopAndDestroy( attPath2 );
+		} while(ETrue);
 
         // save the message
         smtpMtm->SaveMessageL();
@@ -1574,6 +1747,28 @@ TBool CMessageMgmntHandler::ValidateAddMmsOrAddEmailCommand( const TDesC8& aData
                        1 + // is unread
                        1;  // folder
 
+    TInt extraAttPathLength = 0;
+    TInt extraAttNum = 0;
+    TInt extraNumLen = 0;
+    if( wholeLength < aData.Length() )
+    	{
+    	offset = wholeLength;
+        extraAttNum = aData[offset];
+        offset ++;
+
+        extraNumLen = 1;
+
+	    while( offset < aData.Length() && extraAttNum > 0)
+	    	{
+	        extraAttPathLength += aData[offset];
+	        extraAttPathLength ++;
+	        extraAttNum --;
+	        offset += 1 + aData[offset];
+	    	}
+	    }
+
+	wholeLength += extraNumLen + extraAttPathLength;
+	
     if ( wholeLength != aData.Length() )
         {
         HTI_LOG_TEXT( "Error: wrong length of data (wholeLength)" );

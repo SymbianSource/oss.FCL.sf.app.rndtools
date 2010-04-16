@@ -23,10 +23,6 @@
 PRJ_EXPORTS
 ../rom/htiui.iby        CORE_IBY_EXPORT_PATH(tools,htiui.iby)
 
-
-// Communication plugins
-#include "../HtiCommPlugins/HtiBtCommPlugin/group/bld.inf"
-
 // Service plugins
 #include "../HtiServicePlugins/HtiAppServicePlugin/group/bld.inf"
 #include "../HtiServicePlugins/HtiAudioServicePlugin/group/bld.inf"

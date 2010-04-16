@@ -31,7 +31,7 @@ TInt CCreatorContactSet::LinkId() const
     return iLinkId;
     }
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 void CCreatorContactSet::AppendL(MVPbkContactLink* aContactLink)
     {
     iContactLinks.AppendL(aContactLink);
@@ -78,7 +78,7 @@ public:
     static CContactLinkCacheImp* NewL();
     virtual ~CContactLinkCacheImp();
     virtual void AppendL(CCreatorContactSet* aContactSet);
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     virtual RPointerArray<MVPbkContactLink>& ContactLinks(TInt aLinkId);
     virtual const RPointerArray<MVPbkContactLink>& ContactLinks(TInt aLinkId) const;
 #endif        
@@ -90,7 +90,7 @@ public:
 private:
     void ConstructL();
     CContactLinkCacheImp();
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)    
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)    
     RPointerArray<MVPbkContactLink> iEmptyLinks;
 #endif    
     RPointerArray<CCreatorContactSet> iContactSets;
@@ -118,7 +118,7 @@ CContactLinkCacheImp::CContactLinkCacheImp()
 
 CContactLinkCacheImp::~CContactLinkCacheImp()
     {
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)    
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)    
     iEmptyLinks.ResetAndDestroy(); // just in case...
     iEmptyLinks.Close();
 #endif
@@ -131,7 +131,7 @@ void CContactLinkCacheImp::AppendL(CCreatorContactSet* aContactSet)
     iContactSets.AppendL(aContactSet);
     }
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 
 RPointerArray<MVPbkContactLink>& CContactLinkCacheImp::ContactLinks(TInt aLinkId)
     {

@@ -24,7 +24,7 @@
 #include "HtiMsgSettingsHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 // CONSTANTS
 _LIT8( KErrorMissingCommand, "Command was not given - message was empty" );

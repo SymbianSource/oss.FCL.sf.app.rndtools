@@ -26,7 +26,7 @@
 #include "creator_appui.h"
 #include "creator_app.h" // KUidCreatorApp
 #include "creator_file.h"
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
   #include "creator_contactsetcache.h"
 #endif
 
@@ -199,9 +199,9 @@ void CCreatorEngine::RunL()
 	    case ECmdCreatePhoneBookEntryContacts: { iPhonebook->CreateContactEntryL(iCommandArray->At(iCurrentEntry).iParameters); } break;
 	    case ECmdCreatePhoneBookEntryGroups: { iPhonebook->CreateGroupEntryL(iCommandArray->At(iCurrentEntry).iParameters); } break;
 	    case ECmdCreatePhoneBookEntrySubscribedContacts: { iPhonebook->CreateSubscribedContactEntryL(iCommandArray->At(iCurrentEntry).iParameters); } break;
-
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
 	    case ECmdCreateMiscEntryNotes: { iNotepad->CreateNoteEntryL(reinterpret_cast<CNotepadParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
-
+#endif
 	    case ECmdCreateLogEntryMissedCalls: { iLogs->CreateMissedCallEntryL(reinterpret_cast<CLogsParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 	    case ECmdCreateLogEntryReceivedCalls: { iLogs->CreateReceivedCallEntryL(reinterpret_cast<CLogsParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 	    case ECmdCreateLogEntryDialledNumbers: { iLogs->CreateDialledNumberEntryL(reinterpret_cast<CLogsParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
@@ -213,11 +213,11 @@ void CCreatorEngine::RunL()
         case ECmdCreateMiscEntryLandmarks: { iLandmarks->CreateLandmarkEntryL(reinterpret_cast<CLandmarkParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
         
 	    case ECmdCreateMessagingEntryMailboxes: { iMailboxes->CreateMailboxEntryL(reinterpret_cast<CMailboxesParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
-
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
         #ifdef __PRESENCE
   	     case ECmdCreateMiscEntryIMPSServers: { iIMPS->CreateIMPSServerEntryL(reinterpret_cast<CIMPSParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
         #endif
-
+#endif
 	    case ECmdCreateMessagingEntryMessages:  { iMessages->CreateMessageEntryL(reinterpret_cast<CMessagesParameters*>(iCommandArray->At(iCurrentEntry).iParameters), ETrue); } break;
 	    case ECmdCreateMessagingEntryMessagesViaScript:  { iMessages->CreateMessageEntryL(reinterpret_cast<CMessagesParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 
@@ -360,17 +360,27 @@ void CCreatorEngine::RunL()
             }
         case ECmdDeleteNotes:
             {
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
             iNotepad->DeleteAllL();
+#endif
             break;
             }
         case ECmdDeleteIMPSs:
             {
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
+#ifdef __PRESENCE
             iIMPS->DeleteAllL();
+#endif
+#endif            
             break;
             }
         case ECmdDeleteCreatorIMPSs:
             {
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4            
+#ifdef __PRESENCE
             iIMPS->DeleteAllCreatedByCreatorL();
+#endif
+#endif            
             break;
             }
         case ECmdDeleteBrowserBookmarks:
@@ -600,22 +610,24 @@ void CCreatorEngine::StartEnginesL()
     TInt err(KErrNone);
     TRAP(err, iBrowser = CCreatorBrowser::NewL(this));
     TRAP(err, iCalendar = CCreatorInterimCalendar::NewL(this));
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
     TRAP(err, iPhonebook = (CCreatorPhonebookBase*)TCreatorFactory::CreatePhoneBookL(this));
     TRAP(err, iNotepad = CCreatorNotepad::NewL(this));
+#endif
     TRAP(err, iLogs = CCreatorLogs::NewL(this));
     TRAP(err, iAccessPoints = (CCreatorConnectionSettingsBase*)TCreatorFactory::CreateConnectionSettingsL(this));
     TRAP(err, iMailboxes = CCreatorMailboxes::NewL(this));
     TRAP(err, iFiles = CCreatorFiles::NewL(this));
     TRAP(err, iMessages = CCreatorMessages::NewL(this));
     TRAP(err, iLandmarks = CCreatorLandmarks::NewL(this));
-
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
     #ifdef __PRESENCE
       TRAP(err, iIMPS = CCreatorIMPS::NewL(this));
     #endif 
-    
+#endif    
       
       
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)     
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)     
     // Initialize contact-set cache:
    ContactLinkCache::InitializeL();
 #endif
@@ -649,10 +661,13 @@ void CCreatorEngine::ShutDownEnginesL()
     iAccessPoints = NULL;
     delete iLogs;
     iLogs = NULL;
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
     delete iNotepad;
     iNotepad = NULL;
+
     delete iPhonebook;
     iPhonebook = NULL;
+#endif    
     delete iCalendar;
     iCalendar = NULL;
     delete iBrowser;
@@ -680,7 +695,7 @@ void CCreatorEngine::ShutDownEnginesL()
 	fileMan->RmDir( iTempPath->Des() );
 	CleanupStack::PopAndDestroy(); //fileMan
 	
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)	
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)	
 	// Cleanup the contact-set cache:
 	ContactLinkCache::DestroyL();
 #endif    
@@ -882,7 +897,9 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
 	    case ECmdCreateMiscEntryNotes:
 	    case ECmdDeleteNotes:
             {
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
             iUsedOptionsMenuModule = iNotepad;
+#endif
             }
             break;
 
@@ -911,7 +928,7 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
             iUsedOptionsMenuModule = iMailboxes;
             }
             break;
-
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
         #ifdef __PRESENCE
 	      case ECmdCreateMiscEntryIMPSServers:
 	      case ECmdDeleteIMPSs:
@@ -921,7 +938,7 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
             }
             break;
         #endif
-
+#endif
 	      case ECmdCreateFileEntryEmptyFolder:
 	      case ECmdCreateFileEntry3GPP_70kB:
 	      case ECmdCreateFileEntryAAC_100kB:
@@ -999,18 +1016,21 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
             {
             if ( YesNoQueryDialogL( _L("Delete all entries?") ) )
                 {
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
                 AppendToCommandArrayL( ECmdDeleteContacts, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteContactGroups, NULL, 1 );
+                AppendToCommandArrayL( ECmdDeleteMessages, NULL, 1 );
+                AppendToCommandArrayL( ECmdDeleteIMPSs, NULL, 1 );
+                AppendToCommandArrayL( ECmdDeleteNotes, NULL, 1 );
+            
+#endif            
                 AppendToCommandArrayL( ECmdDeleteCalendarEntries, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteBrowserBookmarks, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteBrowserBookmarkFolders, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteBrowserSavedPages, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteBrowserSavedPageFolders, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteLogs, NULL, 1 );
-                AppendToCommandArrayL( ECmdDeleteMessages, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteIAPs, NULL, 1 );
-                AppendToCommandArrayL( ECmdDeleteIMPSs, NULL, 1 );
-                AppendToCommandArrayL( ECmdDeleteNotes, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteLandmarks, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorFiles, NULL, 1 );
                 
@@ -1027,8 +1047,12 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
             {
             if ( YesNoQueryDialogL( _L("Delete all entries created with Creator?") ) )
                 {
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4            
                 AppendToCommandArrayL( ECmdDeleteCreatorContacts, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorContactGroups, NULL, 1 );
+                AppendToCommandArrayL( ECmdDeleteCreatorMessages, NULL, 1 );
+                AppendToCommandArrayL( ECmdDeleteCreatorIMPSs, NULL, 1 );
+#endif
                 AppendToCommandArrayL( ECmdDeleteCreatorCalendarEntries, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorBrowserBookmarks, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorBrowserBookmarkFolders, NULL, 1 );
@@ -1036,9 +1060,7 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
                 AppendToCommandArrayL( ECmdDeleteCreatorBrowserSavedPageFolders, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorFiles, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorLogs, NULL, 1 );
-                AppendToCommandArrayL( ECmdDeleteCreatorMessages, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorIAPs, NULL, 1 );
-                AppendToCommandArrayL( ECmdDeleteCreatorIMPSs, NULL, 1 );
                 AppendToCommandArrayL( ECmdDeleteCreatorLandmarks, NULL, 1 );
                 
                 // started exucuting delete commands

@@ -83,16 +83,20 @@ CCreatorScriptElement* TCreatorScriptElementFactory::CreateElementL(CCreatorEngi
         {
         return CCreatorLogElement::NewL(aEngine, aElementName, aContext);
         }
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
     else if( aElementName == creatornote::KNote )
         {
         return CCreatorNoteElement::NewL(aEngine, aElementName, aContext);
         }
-	#ifdef __PRESENCE
+#endif
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
+    #ifdef __PRESENCE
     else if( aElementName == creatorimps::KImpsServer )
         {
         return CCreatorImpsServerElement::NewL(aEngine, aElementName, aContext);
         }
 	#endif // __PRESENCE
+#endif    
     else if( aElementName == creatorlandmark::KLandmark )
         {
         return CCreatorLandmarkElement::NewL(aEngine, aElementName, aContext);

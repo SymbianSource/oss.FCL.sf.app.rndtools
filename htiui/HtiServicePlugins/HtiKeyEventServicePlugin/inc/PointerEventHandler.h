@@ -21,7 +21,7 @@
 // INCLUDES
 #include <HtiServicePluginInterface.h>
 #include <w32std.h>
-
+#include "MultiTouchPointerEventHandler.h"
 // CONSTANTS
 
 // MACROS
@@ -38,7 +38,9 @@
 /**
 *  Functional implentation of pointer event service.
 */
-class CPointerEventHandler : public CActive
+class CPointerEventHandler : 
+	public CActive,
+	public MHtiMultiTouchObserver
     {
     public:
 
@@ -57,8 +59,9 @@ class CPointerEventHandler : public CActive
             ETapAndDragMultipoint = 0x12,
             EPressPointerDown = 0x13,
             ELiftPointerUp = 0x14,
-			EAdvancedTapScreen = 0x15, //for advanced
-			EPinchZoom = 0x16, //for advanced
+			EAdvancedTapScreen = 0x15, //for advanced pointer
+			EPinchZoom = 0x16, //for advanced pointer
+			EMultiTouch = 0x17, //for advanced pointer
             EResultOk = 0xFF // only for response message
             };
 
@@ -111,6 +114,9 @@ class CPointerEventHandler : public CActive
         void RunL();
         TInt RunError(TInt aError);
         void DoCancel();
+        
+        // From MHtiMultiTouchObserver
+        void NotifyMultiTouchComplete();
 
     private:
 
@@ -129,8 +135,11 @@ class CPointerEventHandler : public CActive
         void HandleTapAndDragL( const TDesC8& aData );
         void HandleTapAndDragMultipointL( const TDesC8& aData );
         void HandlePointerDownOrUpL( const TDesC8& aData );
-		void HandleAdvancedTapScreenL( const TDesC8& aData ); //for advanced
-        void HandlePinchZoomL( const TDesC8& aData ); //for advanced
+        
+        //for advanced pointer
+		void HandleAdvancedTapScreenL( const TDesC8& aData ); 
+        void HandlePinchZoomL( const TDesC8& aData ); 
+        void HandleMultiTouchL( const TDesC8& aData );
 
         void SendOkMsgL();
         void SendErrorMessageL( TInt aError, const TDesC8& aDescription );
@@ -166,6 +175,8 @@ class CPointerEventHandler : public CActive
 		
 		RPointerArray<TAdvancedPointer> iAdvPointerMoveArray;
 		RPointerArray<TTimeIntervalMicroSeconds32> iDelayArray;
+		
+		CMultiTouchPointerEventHandler* iMultiTouchHandler;
 		};
 
 #endif // CKEYEVENTHANDLER_H

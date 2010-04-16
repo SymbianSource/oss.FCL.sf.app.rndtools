@@ -32,11 +32,15 @@
 #include "creator_browser.h"
 #include "creator_calendar.h"
 #include "creator_phonebookbase.h"
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
 #include "creator_note.h"
+#endif
 #include "creator_log.h"
 #include "creator_connectionmethodbase.h"
 #include "creator_mailbox.h"
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
 #include "creator_imps.h"
+#endif
 #include "creator_message.h"
 #include "creator_landmark.h"
 #include "creator_randomdataparser.h"
@@ -56,7 +60,9 @@ class CCreatorAppUi;
 class TCommand;
 class CCreatorBrowser;
 class CCreatorCalendarBase;
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
 class CCreatorNotepad;
+#endif
 class CCreatorLogs;
 class CCreatorAccessPoints;
 class CCreatorMailboxes;
@@ -285,7 +291,9 @@ private:
     CCreatorBrowser* iBrowser;
     CCreatorCalendarBase* iCalendar;
     CCreatorPhonebookBase* iPhonebook;
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
     CCreatorNotepad* iNotepad;
+#endif
     CCreatorLogs* iLogs;
     CCreatorConnectionSettingsBase* iAccessPoints;
     CCreatorMailboxes* iMailboxes;

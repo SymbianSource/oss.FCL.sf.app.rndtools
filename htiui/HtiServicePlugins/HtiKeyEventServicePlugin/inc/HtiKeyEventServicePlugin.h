@@ -67,6 +67,7 @@ private:
 
     CKeyEventHandler* iKeyHandler;
     CPointerEventHandler* iPointerHandler;
+
     TInt iLightTimeout;
     CRepository* iCenRepSession;
     CCenRepNotifyHandler* iLightTimeoutSettingHandler;

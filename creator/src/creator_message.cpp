@@ -21,9 +21,10 @@
 #include "creator_traces.h"
 #include "creator_contactsetcache.h"
 #include <apgcli.h>
-#include <MuiuMsvUiServiceUtilities.h>
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+//#include <MuiuServiceUtilities.h>
+
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include <MVPbkFieldType.h>
 #include <MVPbkContactOperationBase.h>
 #include <MVPbkStoreContactFieldCollection.h>
@@ -132,7 +133,7 @@ CCreatorMessages::~CCreatorMessages()
     delete iTmpPhoneNumber;
     delete iTmpEmail;
     delete iAttachments;
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     delete iExistingContacts;
     if( iContactManager )
     	iContactManager->ContactStoresL().CloseAll(*this);
@@ -475,7 +476,7 @@ TInt CCreatorMessages::CreateMessageEntryL(CMessagesParameters *aParameters, TBo
         }
     
     
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     
     // Get number of existing senders and recipients:
     for( TInt i = 0; i < parameters->iRecipientLinkIds.Count(); ++i )
@@ -1822,7 +1823,7 @@ void CCreatorMessages::GetLinkedAddressesL(
         TBool aUseEmailAddress,
         TInt aNumOfExistingAddresses )
     {
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     
     if( aNumOfExistingAddresses > 0 || aLinkIds.Count() > 0 )
         {
@@ -1949,7 +1950,7 @@ void CCreatorMessages::GetLinkedAddressesL(
 }
 
 //----------------------------------------------------------------------------
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 void CCreatorMessages::VPbkSingleContactOperationComplete(
             MVPbkContactOperationBase& /*aOperation*/,
             MVPbkStoreContact* aContact )

@@ -16,6 +16,7 @@
 */
 
 #include <platform_paths.hrh>
+#include "../symbian_version.hrh"
 
 PRJ_EXPORTS
 ../group/backup_registration.xml    Z:/private/20011383/backup_registration.xml

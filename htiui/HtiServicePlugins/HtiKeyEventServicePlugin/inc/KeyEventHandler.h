@@ -64,6 +64,7 @@ public:
         ELongKeyPress     = 0x05,
         ETypeTextPassword = 0x06,
         EPressKeySequence = 0x07,
+        EPointer          = 0x10,
         EResultOk = 0xFF // only for response message
         };
 

@@ -47,7 +47,7 @@
 #include <btcmtm.h>
 #include <mmsvattachmentmanager.h>
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include <MVPbkSingleContactOperationObserver.h>
 #include <MVPbkContactStoreListObserver.h>
 #include <MVPbkContactFindObserver.h>
@@ -94,7 +94,7 @@ private:
     HBufC* iEmailAddress;
 };
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 class CCreatorMessages : public CBase, public MCreatorModuleBase, public MMsvSessionObserver, 
     public MVPbkSingleContactOperationObserver, public MVPbkContactStoreListObserver, public MVPbkContactFindObserver
 #else
@@ -147,7 +147,7 @@ public:
     void DeleteAllL();
     void DeleteAllCreatedByCreatorL();
     
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     // From MVPbkSingleContactOperationObserver:
     virtual void VPbkSingleContactOperationComplete(
             MVPbkContactOperationBase& aOperation,
@@ -183,7 +183,7 @@ private:
     HBufC*                  iTmpEmail;
     RArray<TInt>            iEntryIds; // TMsvId ( == TInt32 ) TMsvEntry::Id()
     CMsvSession*            iSession;
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     MVPbkContactLinkArray*  iExistingContacts;
     CVPbkContactManager* iContactManager;
     MVPbkContactStore* iStore;

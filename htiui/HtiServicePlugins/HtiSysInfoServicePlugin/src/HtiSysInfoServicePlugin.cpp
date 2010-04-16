@@ -23,7 +23,11 @@
 #include <HtiDispatcherInterface.h>
 #include <HtiLogging.h>
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 #include <aknkeylock.h>
+#include <ScreensaverInternalPSKeys.h>
+#endif
+
 #include <AknSkinsInternalCRKeys.h>
 #include <AknsSkinUID.h>
 #include <AknsSrvClient.h>
@@ -43,7 +47,6 @@
 #include <mmtsy_names.h>
 #include <rmmcustomapi.h>
 #include <hwrmpowerstatesdkpskeys.h>
-#include <ScreensaverInternalPSKeys.h>
 #include <settingsinternalcrkeys.h>
 #include <sysutil.h>
 #include <tz.h>
@@ -60,6 +63,7 @@ const TInt KDateTimeFormatCmdLength = 6;
 
 _LIT( KTempFilePath, "\\" );
 _LIT( KTempFileName, "HtiTempFile.tmp" );
+_LIT( KMatchFileName, "HtiTempFile.tmp*" );
 _LIT( KDateSeparatorChars, ".:/-" );
 _LIT( KTimeSeparatorChars, ".:" );
 
@@ -79,7 +83,6 @@ _LIT8( KErrDescrDeleteTempFile, "Error deleting temp file" );
 _LIT8( KErrDescrSysUtil, "SysUtil failed" );
 _LIT8( KErrDescrSetTime, "Setting time failed" );
 _LIT8( KErrDescrDateTimeFormat, "Setting date and time formats failed" );
-_LIT8( KErrDescrScreenSaver, "Setting screen saver state failed" );
 _LIT8( KErrDescrGetNetworkModes, "Getting network modes failed" );
 _LIT8( KErrDescrSetNetworkMode, "Setting network mode failed" );
 _LIT8( KErrDescrIrActivation, "IR activation failed" );
@@ -89,11 +92,14 @@ _LIT8( KErrDescrBtOnDenied, "Turning BT on not allowed (Offline mode)" );
 _LIT8( KErrDescrBtOffDenied, "Turning BT off not allowed (active connections)" );
 _LIT8( KErrDescrBtSettings, "Bluetooth settings failed" );
 _LIT8( KErrDescrBtDeletePairings, "Deleting Bluetooth pairing(s) failed" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 _LIT8( KErrDescrKeyLock, "Key lock toggle failed" );
-_LIT8( KErrDescrInvalidTime, "Auto key guard time value too large (max 3600)" );
-_LIT8( KErrDescrAutoKeyGuardFailed, "Setting auto key guard time failed" );
+_LIT8( KErrDescrScreenSaver, "Setting screen saver state failed" );
 _LIT8( KErrDescrInvalidSSTimeout, "Invalid screen saver timeout value" );
 _LIT8( KErrDescrSSTimeoutFailed, "Setting screen saver timeout failed" );
+#endif
+_LIT8( KErrDescrInvalidTime, "Auto key guard time value too large (max 3600)" );
+_LIT8( KErrDescrAutoKeyGuardFailed, "Setting auto key guard time failed" );
 _LIT8( KErrDescrDrmDbConnect, "DRM DB connect failed." );
 _LIT8( KErrDescrDrmDbDelete,  "DRM DB delete failed." );
 _LIT8( KErrDescrBatteryLevel, "Getting battery level failed." );
@@ -175,9 +181,12 @@ CHtiSysInfoServicePlugin* CHtiSysInfoServicePlugin::NewL()
 // Constructor
 //------------------------------------------------------------------------------
 CHtiSysInfoServicePlugin::CHtiSysInfoServicePlugin():
-    iMemEater( NULL ), iReply( NULL ), iAllowSSValue( -1 ),
-    iAllowSSPropertyAttached( EFalse ), iGalleryUpdateSupported( ETrue )
+    iMemEater( NULL ), iReply( NULL ), iGalleryUpdateSupported( ETrue )
     {
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+        iAllowSSValue = -1;
+        iAllowSSPropertyAttached = EFalse;
+#endif
     }
 
 //------------------------------------------------------------------------------
@@ -198,7 +207,9 @@ CHtiSysInfoServicePlugin::~CHtiSysInfoServicePlugin()
         {
         iAllowSSSubscriber->Unsubscribe();
         }
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     iAllowSSProperty.Close();
+#endif 
     delete iAllowSSSubscriber;
     }
 
@@ -513,6 +524,7 @@ void CHtiSysInfoServicePlugin::NotifyMemoryChange( TInt aAvailableMemory )
         }
     }
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 //------------------------------------------------------------------------------
 // CHtiSysInfoServicePlugin::HandleAllowSSPropertyChange
 //------------------------------------------------------------------------------
@@ -536,7 +548,7 @@ TInt CHtiSysInfoServicePlugin::HandleAllowSSPropertyChange( TAny* aPtr )
     return err;
     }
 
-
+#endif
 /*
  * Private helper methods
  */
@@ -1088,39 +1100,25 @@ void CHtiSysInfoServicePlugin::HandleGetTotalDiskSpaceL(
 //------------------------------------------------------------------------------
 void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
     {
+    HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
+    
     if ( aMessage.Length() != 10 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
             KErrArgument,
             KErrDescrArgument,
             KSysInfoServiceUid );
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
         return;
         }
 
-
+    TFileName commonpath;
+    commonpath.Append( aMessage[1] );
+    commonpath.Append( _L( ":" ) );
+    commonpath.Append( KTempFilePath );
+    commonpath.Append( KTempFileName );
     TFileName path;
-    path.Append( aMessage[1] );
-    path.Append( _L( ":" ) );
-    path.Append( KTempFilePath );
-    path.Append( KTempFileName );
-
-    HTI_LOG_TEXT( "Temp file path:" );
-    HTI_LOG_DES( path );
-
-    // check if previous temp file exists and delete it
-    if ( BaflUtils::FileExists( iFs, path ) )
-        {
-        TInt err = iFileMan->Delete( path );
-        if ( err )
-            {
-            iDispatcher->DispatchOutgoingErrorMessage(
-                err,
-                KErrDescrDeleteTempFile,
-                KSysInfoServiceUid );
-            return;
-            }
-        }
-
+        
     // get free disk space
     TInt drive;
     RFs::CharToDrive( TChar( aMessage[1] ), drive );
@@ -1132,6 +1130,7 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
             err,
             KErrDescrVolInfo,
             KSysInfoServiceUid );
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
         return;
         }
 
@@ -1157,37 +1156,70 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
             KErrDiskFull,
             KErrDescrNotEnoughSpace,
             KSysInfoServiceUid );
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
         return;
         }
 
     // check if scaceToEat is greater than KMaxTInt
     //  --> it must be eaten in several chunks
     //  --> not yet supported.
-    if ( spaceToEat > KMaxTInt )
-        {
-        HTI_LOG_TEXT( "Cannot allocate a file bigger than KMaxTInt" );
 
-        iDispatcher->DispatchOutgoingErrorMessage(
-            KErrOverflow,
-            KErrDescrSetSizeTempFile,
-            KSysInfoServiceUid );
-        return;
+    TInt64 size;
+    for(TInt i=1;  spaceToEat>0; i++)
+        {
+        path.Zero();
+        path.Copy(commonpath);
+        path.AppendNum(i);
+        if ( BaflUtils::FileExists( iFs, path ) )
+            {
+            continue;
+            }
+        
+        if(spaceToEat > KMaxTInt)  
+            size=KMaxTInt;
+        else
+            size=spaceToEat;
+        
+        err = CreatFileToEatDiskSpace(path, size);
+        if(err)
+            { 
+            HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL CreateFile Fail" );
+            return;  
+            }        
+        
+        iFs.Volume( volInfo, drive );
+        HTI_LOG_FORMAT( "current free space: %Ld", volInfo.iFree );
+        spaceToEat = volInfo.iFree - spaceLeftFree;           
         }
 
+    // all ok, send the remaining disk size back
+    iReply = HBufC8::NewL( 8 );
+    iReply->Des().Append( ( TUint8* )( &volInfo.iFree ), 8 );
+    HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleEatDiskSpaceL" );
+    }
+
+TInt CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace( TFileName aPath, TInt64 aSpaceToEat  )
+    {
+    HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace" );
+    
+    HTI_LOG_FORMAT( "Create file: %S", &aPath );
+    HTI_LOG_FORMAT( "file size %Ld", aSpaceToEat );
+    
     // create a temp file
     RFile diskEater;
-    err = diskEater.Replace( iFs, path, EFileWrite );
+    TInt err = diskEater.Replace( iFs, aPath, EFileWrite );
     if ( err )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
             err,
             KErrDescrCreateTempFile,
             KSysInfoServiceUid );
-        return;
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace Replace error" );
+        return err;
         }
-
+    
     // set the size for temp file
-    err = diskEater.SetSize( I64LOW( spaceToEat ) );
+    err = diskEater.SetSize( I64LOW( aSpaceToEat ) );
     if ( err )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1195,23 +1227,12 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
             KErrDescrSetSizeTempFile,
             KSysInfoServiceUid );
         diskEater.Close();
-        return;
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace SetSize error" );
+        return err;
         }
     diskEater.Close();
-
-    err = iFs.Volume( volInfo, drive );
-    if ( err )
-        {
-        iDispatcher->DispatchOutgoingErrorMessage(
-            err,
-            KErrDescrVolInfo,
-            KSysInfoServiceUid );
-        return;
-        }
-
-    // all ok, send the remaining disk size back
-    iReply = HBufC8::NewL( 8 );
-    iReply->Des().Append( ( TUint8* )( &volInfo.iFree ), 8 );
+    HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::CreatFileToEatDiskSpace" );
+    return 0;
     }
 
 //------------------------------------------------------------------------------
@@ -1219,41 +1240,33 @@ void CHtiSysInfoServicePlugin::HandleEatDiskSpaceL( const TDesC8& aMessage )
 //------------------------------------------------------------------------------
 void CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL( const TDesC8& aMessage )
     {
+    HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
     if ( aMessage.Length() != 2 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
             KErrArgument,
             KErrDescrArgument,
             KSysInfoServiceUid);
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
         return;
         }
 
     TFileName path;
     path.Append( aMessage[1] );
     path.Append( _L( ":" ) );
-    path.Append( KTempFilePath );
-    path.Append( KTempFileName );
-
-    HTI_LOG_TEXT( "Temp file path:" );
-    HTI_LOG_DES( path );
-
-    TInt err = KErrNone;
-    // check that temp file exists
-    if ( BaflUtils::FileExists( iFs, path ) )
+    path.Append(KTempFilePath);
+    path.Append(KMatchFileName);
+    TInt err = iFileMan->Delete(path);
+    if ( err )
         {
-        // try to delete the temp file
-        err = iFileMan->Delete( path );
-        if ( err )
-            {
-            iDispatcher->DispatchOutgoingErrorMessage(
+        iDispatcher->DispatchOutgoingErrorMessage(
                 err,
                 KErrDescrDeleteTempFile,
                 KSysInfoServiceUid );
-
-            return;
-            }
-        }
-
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
+        return;
+        } 
+    
     // query the free disk space
     TInt drive;
     RFs::CharToDrive( TChar( aMessage[1] ), drive );
@@ -1265,13 +1278,15 @@ void CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL( const TDesC8& aMessage )
             err,
             KErrDescrVolInfo,
             KSysInfoServiceUid );
-
+        HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
         return;
         }
 
     // all ok, send the free disk space back
     iReply = HBufC8::NewL( 8 );
     iReply->Des().Append( ( TUint8* )( &volInfo.iFree ), 8 );
+
+    HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleReleaseDiskSpaceL" );
     }
 
 //------------------------------------------------------------------------------
@@ -1454,6 +1469,9 @@ void CHtiSysInfoServicePlugin::HandleLightsCommandL( const TDesC8& aMessage )
 void CHtiSysInfoServicePlugin::HandleScreenSaverCommandL(
                                     const TDesC8& aMessage )
     {
+    HTI_LOG_FUNC_IN(
+            "CHtiSysInfoServicePlugin::HandleScreenSaverCommandL" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 ) 
     if ( aMessage.Length() != 1 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1518,6 +1536,12 @@ void CHtiSysInfoServicePlugin::HandleScreenSaverCommandL(
 
     iReply = HBufC8::NewL( 1 );
     iReply->Des().Append( 0 );
+#else
+    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+            KErrDescrNotSupported, KSysInfoServiceUid);
+#endif 
+    HTI_LOG_FUNC_OUT(
+                "CHtiSysInfoServicePlugin::HandleScreenSaverCommandL" );
     }
 
 //------------------------------------------------------------------------------
@@ -1528,6 +1552,7 @@ void CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL(
     {
     HTI_LOG_FUNC_IN(
             "CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     if ( aMessage.Length() != 2 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1562,6 +1587,10 @@ void CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL(
         }
 
     delete persRep;
+#else
+    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+            KErrDescrNotSupported, KSysInfoServiceUid);
+#endif 
     HTI_LOG_FUNC_OUT(
         "CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL" );
     }
@@ -2141,7 +2170,7 @@ void CHtiSysInfoServicePlugin::HandleBtDeletePairingsL( const TDesC8& aMessage )
 void CHtiSysInfoServicePlugin::HandleKeyLockToggleL( const TDesC8& aMessage )
     {
     HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::HandleKeyLockToggleL" );
-
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 ) 
     if ( aMessage.Length() != 3 )
         {
         iDispatcher->DispatchOutgoingErrorMessage( KErrArgument,
@@ -2208,7 +2237,10 @@ void CHtiSysInfoServicePlugin::HandleKeyLockToggleL( const TDesC8& aMessage )
         }
 
     keyLock.Close();
-
+#else
+    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+            KErrDescrNotSupported, KSysInfoServiceUid);
+#endif    
     HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleKeyLockToggleL" );
     }
 
@@ -2857,27 +2889,25 @@ void CHtiSysInfoServicePlugin::ParseTimeDataL( const TDesC8& aTimeData,
 TInt CHtiSysInfoServicePlugin::CleanUpTempFiles()
     {
     HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::CleanUpTempFiles" );
-
     TFindFile finder( iFs );
-    TFileName path( KTempFilePath );
-    TInt err = finder.FindByPath( KTempFileName, &path );
-
-    while ( err == KErrNone )
+    CDir* dir = NULL;
+    TInt err = finder.FindWildByDir(KMatchFileName, KTempFilePath, dir);
+    TInt safeDeleteCount = 0;
+    while ( err == KErrNone && safeDeleteCount < 20)
         {
-        TFileName tempFile = finder.File();
-
-        HTI_LOG_TEXT( "Found temp file: " );
-        HTI_LOG_DES( tempFile );
-
-        err = iFileMan->Delete( tempFile );
-
-        // return if deleting does not succeed to prevent mad man loop
-        if ( err != KErrNone ) return err;
-
-        // try to find next temp file
-        err = finder.FindByPath( KTempFileName, &path );
+        safeDeleteCount++;
+        TFileName path;
+        path.Copy(finder.File());
+        HTI_LOG_FORMAT( "found file: %S", &path );
+        TInt ret = iFileMan->Delete(path);
+        delete dir;
+        dir = NULL;
+        if(ret != KErrNone)
+            {
+            break;
+            }
+        err = finder.FindWildByDir(KMatchFileName, KTempFilePath, dir);
         }
-
     HTI_LOG_FUNC_OUT("CHtiSysInfoServicePlugin::CleanUpTempFiles");
     return KErrNone;
     }

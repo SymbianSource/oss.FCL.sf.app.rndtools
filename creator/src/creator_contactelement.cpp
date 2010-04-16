@@ -18,14 +18,14 @@
 
 #include "creator_contactelement.h"
 #include "creator_traces.h"
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include "creator_virtualphonebook.h"
 #endif
 #include "creator_factory.h"
 #include "creator_contactsetcache.h"
 #include <xml/documentparameters.h>
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include "VPbkEng.rsg"
 #endif
 
@@ -49,7 +49,7 @@ public:
     TInt  iFieldCode;
     TContactFieldDataType iDataType;
 };
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 FieldMapping fieldMappingTbl[] = {
        {TPtrC(KFirstname), R_VPBK_FIELD_TYPE_FIRSTNAME, EDataTypeText},
        {TPtrC(KLastname), R_VPBK_FIELD_TYPE_LASTNAME, EDataTypeText},
@@ -170,7 +170,7 @@ CCreatorContactElementBase(aEngine)
     iIsCommandElement = ETrue;
     }
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 void CCreatorContactElement::ExecuteCommandL()
     {    
     LOGSTRING("Creator: CCreatorContactElement::ExecuteCommandL");
@@ -405,7 +405,7 @@ CCreatorContactElementBase(aEngine)
     iIsCommandElement = ETrue;
     }
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ )
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 void CCreatorContactGroupElement::ExecuteCommandL()
     {
     LOGSTRING("Creator: CCreatorContactGroupElement::ExecuteCommandL");

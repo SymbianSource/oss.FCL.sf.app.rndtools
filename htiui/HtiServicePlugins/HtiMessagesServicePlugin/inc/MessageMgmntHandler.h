@@ -22,7 +22,7 @@
 
 // INCLUDES
 #include <msvapi.h>
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 
 // CONSTANTS
 

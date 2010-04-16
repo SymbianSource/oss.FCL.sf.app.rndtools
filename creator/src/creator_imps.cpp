@@ -15,7 +15,7 @@
 *
 */
 
-
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
 #ifdef __PRESENCE
 
 #include "creator_imps.h" 
@@ -257,4 +257,4 @@ void CCreatorIMPS::DeleteAllCreatedByCreatorL()
     }
 
 #endif //__PRESENCE
-
+#endif

@@ -34,14 +34,10 @@
 #include <SWInstApi.h>
 #include <swi/sisregistrysession.h>
 #include <swi/sisregistrypackage.h>
-#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
-    #include <javaregistryincludes.h>
-#endif
+#include <javaregistryincludes.h>
 #include <WidgetRegistryClient.h>
 
-#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
-    using namespace Java;
-#endif
+using namespace Java;
 
 // CONSTANTS
 const static TUid KAppServiceUid = { 0x1020DEC7 }; //This is Uid of AppServiceOS
@@ -1638,7 +1634,6 @@ TInt CHtiAppControl::GetPackageUidL( const TDesC& aPackageName,
 
     else if ( aMimeIndex > 2 && aMimeIndex < 7 ) // Java
         {
-        #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
             RArray<TUid> uids;
             CleanupClosePushL( uids );
 
@@ -1675,9 +1670,6 @@ TInt CHtiAppControl::GetPackageUidL( const TDesC& aPackageName,
             CleanupStack::PopAndDestroy( &uids );
             User::LeaveIfError( uid );
             return uid;
-        #else
-            User::Leave( KErrNotSupported );
-        #endif
         }
 
     else if ( aMimeIndex == 7 ) // Widget

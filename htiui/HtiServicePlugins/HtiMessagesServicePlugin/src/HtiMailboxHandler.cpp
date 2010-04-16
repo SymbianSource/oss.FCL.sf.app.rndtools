@@ -26,13 +26,13 @@
 #include <iapprefs.h>
 #include <imapset.h>
 #include <mtmuibas.h>
-#include <senduiconsts.h>
+#include <SendUiConsts.h>
 #include <pop3set.h>
 #include <smtpset.h>
 #include <txtrich.h>
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 #include "HtiMessagesServicePlugin.h"
 #include "HtiMailboxHandler.h"
 

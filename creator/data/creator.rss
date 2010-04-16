@@ -139,14 +139,14 @@ RESOURCE MENU_PANE r_creator_menu
             cascade = r_creator_miscentries_submenu;
              txt = "Misc";
             },
-
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
         MENU_ITEM 
             {
             command = ECmdCreatePhoneBookEntries;
             cascade = r_creator_phonebookentries_submenu;
              txt = "Phonebook";
             },
-
+#endif
         MENU_ITEM 
             {
             command = ECmdDeleteEntries;
@@ -525,6 +525,7 @@ RESOURCE MENU_PANE r_creator_miscentries_submenu
              txt = "App menu folders";
             },
 */
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4            
     #ifdef __PRESENCE
         MENU_ITEM 
             {
@@ -537,9 +538,9 @@ RESOURCE MENU_PANE r_creator_miscentries_submenu
             {
             command = ECmdCreateMiscEntryNotes;
              txt = "Notes";
-            }
+            },
  
-
+#endif
 /*            
             ,
         MENU_ITEM 
@@ -548,7 +549,7 @@ RESOURCE MENU_PANE r_creator_miscentries_submenu
              txt = "Sync settings";
             }
 */
-            ,
+            
         MENU_ITEM 
             {
             command = ECmdCreateMiscEntryLandmarks;
@@ -638,12 +639,14 @@ RESOURCE MENU_PANE r_creator_deleteentries_submenu
             cascade = r_creator_deletelogs_submenu;
             txt = "Logs";
             },
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4            
         MENU_ITEM 
             {
             command = ECmdDeleteMessages;
             cascade = r_creator_deletemessages_submenu;
             txt = "Messages";
             },
+#endif            
         MENU_ITEM 
             {
             command = ECmdDeleteIAPs; // ECmdDeleteMiscEntryAccessPoints
@@ -654,6 +657,7 @@ RESOURCE MENU_PANE r_creator_deleteentries_submenu
             txt = "Connection methods";
 #endif
             },
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4            
         MENU_ITEM 
             {
             command = ECmdDeleteIMPSs;
@@ -666,25 +670,29 @@ RESOURCE MENU_PANE r_creator_deleteentries_submenu
             cascade = r_creator_deletenotes_submenu;
             txt = "Notes";
             },
+#endif            
         MENU_ITEM 
             {
             command = ECmdDeleteLandmarks;
             cascade = r_creator_deletelandmarks_submenu;
             txt = "Landmarks";
-            },            
+            }
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4            
+            ,
+            
         MENU_ITEM 
             {
             command = ECmdDeleteContacts;
             cascade = r_creator_deletecontacts_submenu;
             txt = "Contacts";
-            },
+            },           
         MENU_ITEM 
             {
             command = ECmdDeleteContactGroups;
             cascade = r_creator_deletecontactgroups_submenu;
             txt = "Contact groups";
             }
-            
+#endif            
         /*
         MENU_ITEM 
             {

@@ -21,7 +21,7 @@
 #include "HtiIAPHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 #include <cmconnectionmethodext.h>
 #include <cmconnectionmethoddef.h>
 #include <cmdestinationext.h>
@@ -30,7 +30,7 @@
 #include <cmpluginhscsddef.h>
 #include <cmpluginpacketdatadef.h>
 #include <cmpluginwlandef.h>
-#include <RConnMon.h>
+#include <rconnmon.h>
 
 using namespace CMManager;
 

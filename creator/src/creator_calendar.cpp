@@ -19,7 +19,7 @@
 #include "creator_calendar.h" 
 #include "creator_traces.h"
 #include "creator_scriptentry.h"
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include "creator_contactsetcache.h"
 #include "creator_virtualphonebook.h"
 #endif
@@ -28,7 +28,7 @@
 #include <calrrule.h> 
 #include <calalarm.h>
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include <MVPbkFieldType.h>
 #include <MVPbkContactOperationBase.h>
 #include <MVPbkStoreContactFieldCollection.h>
@@ -343,7 +343,7 @@ CCreatorInterimCalendar::~CCreatorInterimCalendar ( )
     delete iWaiter;
     delete iTmpCN;
     delete iTmpEmail;
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     delete iExistingContacts;
     delete iTempContact;
     delete iContactManager;
@@ -797,7 +797,7 @@ void CCreatorInterimCalendar::AddAttendeesL(CCalEntry& aCalEntry, CCalenderInter
         }
     
     // Linked attendees:
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     
     CVPbkContactStoreUriArray* uriArray = CVPbkContactStoreUriArray::NewLC();
     uriArray->AppendL( TVPbkContactStoreUriPtr(VPbkContactStoreUris::DefaultCntDbUri()));
@@ -1444,7 +1444,7 @@ void CCreatorInterimCalendar::DeleteAllCreatedByCreatorL()
     }
 
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 void CCreatorInterimCalendar::VPbkSingleContactOperationComplete(
             MVPbkContactOperationBase& /*aOperation*/,
             MVPbkStoreContact* aContact )

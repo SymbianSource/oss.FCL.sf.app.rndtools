@@ -21,7 +21,7 @@
 #define CREATORCONTACTSETCACHE_H_
 
 #include <e32base.h>
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include <MVPbkContactLink.h>
 #endif
 
@@ -33,7 +33,7 @@ class CCreatorContactSet : public CBase
 public:
     static CCreatorContactSet* NewL(TInt aLinkId, TInt aNumOfExistingContacts);
     virtual ~CCreatorContactSet();
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)    
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)    
     void AppendL(MVPbkContactLink*);
     TInt NumberOfExistingContacts() const;
     RPointerArray<MVPbkContactLink>& ContactLinks();
@@ -46,7 +46,7 @@ private:
     //void ConstructL();
     TInt iLinkId;
     TInt iNumOfExistingContacts;
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)    
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)    
     RPointerArray<MVPbkContactLink> iContactLinks;
 #endif
 };
@@ -55,7 +55,7 @@ class MContactLinkCache
 {
 public:
     virtual void AppendL(CCreatorContactSet* aContactSet) = 0;
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)    
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)    
     virtual RPointerArray<MVPbkContactLink>& ContactLinks(TInt aLinkId) = 0;
     virtual const RPointerArray<MVPbkContactLink>& ContactLinks(TInt aLinkId) const = 0;    
 #endif    

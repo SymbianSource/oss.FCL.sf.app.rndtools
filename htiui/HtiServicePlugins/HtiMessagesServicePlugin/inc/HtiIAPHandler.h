@@ -22,7 +22,7 @@
 
 // INCLUDES
 #include <cmpsettingsconsts.h>
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 
 // CONSTANTS
 

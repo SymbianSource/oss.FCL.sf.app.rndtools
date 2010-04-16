@@ -17,6 +17,7 @@
 
 
 #include <platform_paths.hrh>
+#include "../../../symbian_version.hrh"
 
 TARGET          HtiSysInfoServicePlugin.dll
 TARGETTYPE      PLUGIN
@@ -41,8 +42,11 @@ START RESOURCE  ../data/10210CC6.rss
 TARGET          HtiSysInfoServicePlugin.rsc
 END
 
-LIBRARY         aknskinsrv.lib
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 LIBRARY         avkon.lib
+#endif
+
+LIBRARY         aknskinsrv.lib
 LIBRARY         bafl.lib
 LIBRARY         btdevice.lib
 LIBRARY         btmanclient.lib

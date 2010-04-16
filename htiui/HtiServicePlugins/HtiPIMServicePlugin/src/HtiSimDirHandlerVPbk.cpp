@@ -67,6 +67,8 @@ _LIT8( KErrorSimCardInfoFailed, "Failed to get SIM card info" );
 _LIT8( KErrorSimStoreOpenFailed, "Failed to open SIM contact store" );
 _LIT8( KErrorSimStoreUnavailable, "SIM contact store unavailable" );
 
+_LIT8( KErrorContactOperationFailed, "SIM contact operation failed" );
+
 // MODULE DATA STRUCTURES
 
 // LOCAL FUNCTION PROTOTYPES
@@ -420,13 +422,16 @@ void CHtiSimDirHandlerVPbk::ContactOperationCompleted( TContactOpResult /*aResul
 // Called when a contact operation has failed.
 // From MVPbkContactObserver
 // ----------------------------------------------------------------------------
-void CHtiSimDirHandlerVPbk::ContactOperationFailed( TContactOp /*aOpCode*/,
-                                                    TInt /*aErrorCode*/,
-                                                    TBool /*aErrorNotified*/ )
+void CHtiSimDirHandlerVPbk::ContactOperationFailed( TContactOp aOpCode,
+                                                    TInt aErrorCode,
+                                                    TBool aErrorNotified )
     {
 
     HTI_LOG_FUNC_IN( "CHtiSimDirHandlerVPbk::ContactOperationFailed" );
-
+    HTI_LOG_FORMAT( "aOpCode: %d", aOpCode );
+    HTI_LOG_FORMAT( "aErrorCode: %d", aErrorCode );
+    HTI_LOG_FORMAT( "aErrorNotified: %d", aErrorNotified );
+    TRAP_IGNORE( SendErrorMessageL( aErrorCode, KErrorContactOperationFailed ) );
     HTI_LOG_FUNC_OUT( "CHtiSimDirHandlerVPbk::ContactOperationFailed" );
     }
 
@@ -767,6 +772,7 @@ void CHtiSimDirHandlerVPbk::HandleSimContactImportL()
                 break;
             case EAdditNumberField:
                 param.Add( EVPbkVersitParamCELL );
+                param.Add( EVPbkVersitParamHOME );
                 prop.SetName( EVPbkVersitNameTEL );
                 prop.SetParameters( param );
                 fieldType = iContactManager->FieldTypes().FindMatch( prop, 0 );

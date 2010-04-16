@@ -21,7 +21,7 @@
 #define CHTIMESSAGESSERVICEPLUGIN_H
 
 // INCLUDES
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 
 // CONSTANTS
 const TInt KHtiMessagesServiceUidValue = 0x10210CCF; // ECOM Implementation UID

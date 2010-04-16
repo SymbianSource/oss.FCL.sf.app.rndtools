@@ -37,7 +37,7 @@
 #include <calcategory.h>
 #include <caluser.h>
 #include <calrrule.h>
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 #include <MVPbkSingleContactOperationObserver.h>
 #include <MVPbkContactStoreListObserver.h>
 #include <MVPbkContactFindObserver.h>
@@ -48,7 +48,7 @@ class CCreatorEngine;
 class CCalenderInterimParameters;
 class CAsyncWaiter;
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
 class CCreatorInterimCalendar : public CCreatorCalendarBase, public MCalProgressCallBack, 
 public MVPbkSingleContactOperationObserver, public MVPbkContactStoreListObserver, public MVPbkContactFindObserver
 #else
@@ -85,7 +85,7 @@ public:
     void DeleteAllCreatedByCreatorL();
     
 public:
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     // From MVPbkSingleContactOperationObserver:
     virtual void VPbkSingleContactOperationComplete(
             MVPbkContactOperationBase& aOperation,
@@ -123,7 +123,7 @@ private:
     HBufC* iTmpEmail;
     RArray<TUint32> iEntryIds; // TCalLocalUid ( == TUint32 ) CCalEntry::LocalUidL
     
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && SYMBIAN_VERSION_SUPPORT < SYMBIAN_4)
     CVPbkContactManager* iContactManager;
     MVPbkContactLinkArray* iExistingContacts;
     MVPbkStoreContact* iTempContact;

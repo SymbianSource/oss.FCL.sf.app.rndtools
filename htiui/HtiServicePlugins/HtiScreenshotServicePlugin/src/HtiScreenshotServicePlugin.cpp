@@ -17,6 +17,9 @@
 
 
 // INCLUDE FILES
+#include "../../../symbian_version.hrh"
+
+
 #include "HtiScreenshotServicePlugin.h"
 #include <HtiDispatcherInterface.h>
 #include <HtiLogging.h>
@@ -24,6 +27,14 @@
 #include <imageconversion.h>
 #include <ezcompressor.h>
 #include <hal.h>
+
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+
+#include <AknLayoutConfig.h>
+#include <apgtask.h> 
+#include <AknCapServerDefs.h>
+
+#endif
 
 // CONSTANTS
 const static TUid KScreenshotServiceUid = {0x1020DEC3};
@@ -55,6 +66,9 @@ enum TScreenCommands
 
     // Gets the current screen size and orientation
     ECmdScreenMode            = 0x3A,
+    
+    // Rotates the screen to portrait or landscape
+    ECmdRotateScreen          = 0x3B,
 
     // Screencapture on updated part of screen only
     ECmdDeltaCaptureMask           = 0x80,
@@ -91,14 +105,16 @@ const static TInt KHtiFontAttSubscriptValue = 1;
 const static TInt KMinScreenRegionCmdLength = 9;
 const static TInt KScreenDisplayOffset = 1;
 const static TInt KScreenMIMEOffset = KScreenDisplayOffset + 1;
+const static TInt KScreenScreenNumber = KScreenMIMEOffset + 8;
 const static TInt KRegionDisplayOffset = KMinScreenRegionCmdLength;
 const static TInt KRegionMIMEOffset = KRegionDisplayOffset + 1;
-
+const static TInt KRegionScreenNumber = KRegionMIMEOffset + 8;
 
 const static TInt KSeriesDurationOffset = 1;
 const static TInt KSeriesIntervalOffset = KSeriesDurationOffset + 4;
 const static TInt KSeriesDisplayOffset = KSeriesIntervalOffset + 4;
 const static TInt KSeriesMIMEOffset = KSeriesDisplayOffset + 1;
+const static TInt KSeriesScreenNumber = KSeriesMIMEOffset + 8;
 const static TInt KMinSeriesCmdLength = KSeriesMIMEOffset;
 
 const static TInt KRegionSeriesTlX = KSeriesDisplayOffset + 1;
@@ -106,6 +122,7 @@ const static TInt KRegionSeriesTlY = KRegionSeriesTlX + 2;
 const static TInt KRegionSeriesBlX = KRegionSeriesTlY + 2;
 const static TInt KRegionSeriesBlY = KRegionSeriesBlX + 2;
 const static TInt KRegionSeriesMIMEOffset = KRegionSeriesBlY + 2;
+const static TInt KRegionSeriesScreenNumber = KRegionSeriesMIMEOffset + 8;
 const static TInt KMinRegionSeriesCmdLength = KRegionSeriesMIMEOffset;
 
 const static TInt KDeltaResetCmdLength = 1;
@@ -113,6 +130,7 @@ const static TInt KScreenModeCmdLength = 1;
 
 const static TInt KScreenNrOffset = 1;
 const static TInt KSelectScreenCmdLength = 2;
+const static TInt KRotateScreenCmdLength = 2;
 
 _LIT( KSeriesShotPath, "c:\\Hti\\SeriesShot\\" );
 
@@ -1189,11 +1207,44 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                         }
                     }
 
+                bool screenNumberSet = false;
+                //check screen number
+                if ( (aMessage.Length() > KScreenScreenNumber) && 
+                        ((aMessage[aMessage.Length()-1] == 0) || (aMessage[aMessage.Length()-1] == 1)))
+                    {
+                    TInt screenNumber = aMessage[aMessage.Length()-1];
+                    HTI_LOG_FORMAT( "set screen number: %d", screenNumber );
+                    screenNumberSet = true;
+                    TInt screens;
+                    TInt ret = HAL::Get(HAL::EDisplayNumberOfScreens, screens);
+                    if(ret)
+                        {
+                        HTI_LOG_FORMAT( "HAL::Get failed %d", ret );
+                        User::Leave(ret);
+                        }
+                    HTI_LOG_FORMAT( "HAL::Get number of screens %d", screens );
+                    if( ( screenNumber>screens-1 ) || ( screenNumber<0 ) )
+                        {
+                        iDispatcher->DispatchOutgoingErrorMessage(
+                                KErrArgument, KErrDescrScreenNotSupported, KScreenshotServiceUid);
+                        return;
+                        }
+                    SetScreenNumber(screenNumber);
+                    }
+
                 CreateBitmapL( empty, displayMode );
+
                 //check mime
                 if ( aMessage.Length() > KScreenMIMEOffset )
                     {
-                    mime.Set( aMessage.Mid( KScreenMIMEOffset ) );
+                    if(screenNumberSet)
+                        {
+                        mime.Set( aMessage.Mid( KScreenMIMEOffset, aMessage.Length()-1-KScreenMIMEOffset ) );
+                        }
+                    else
+                        {
+                        mime.Set( aMessage.Mid( KScreenMIMEOffset ) );
+                        }
                     if ( !IsMIMETypeSupported( mime ) )
                         {
                         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1203,7 +1254,7 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                         return;
                         }
                     }
-                }
+                }              
                 break;
 
             case ECmdScreenRegion:
@@ -1211,6 +1262,30 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
             case ECmdDeltaScreenRegion:
             case ECmdDeltaScreenRegionZip:
                 {
+                //check screen number
+                bool screenNumberSet = false;
+                if ( (aMessage.Length() > KRegionScreenNumber) && 
+                        ((aMessage[aMessage.Length()-1] == 0) || (aMessage[aMessage.Length()-1] == 1)))
+                    {
+                    TInt screenNumber = aMessage[aMessage.Length()-1];
+                    screenNumberSet = true;
+                    TInt screens;
+                    TInt ret = HAL::Get(HAL::EDisplayNumberOfScreens, screens);
+                    if(ret)
+                        {
+                        HTI_LOG_FORMAT( "HAL::Get failed %d", ret );
+                        User::Leave(ret);
+                        }
+                    HTI_LOG_FORMAT( "HAL::Get number of screens %d", screens );
+                    if( ( screenNumber>screens-1 ) || ( screenNumber<0 ) )
+                        {
+                        iDispatcher->DispatchOutgoingErrorMessage(
+                                KErrArgument, KErrDescrScreenNotSupported, KScreenshotServiceUid);
+                        return;
+                        }
+                    SetScreenNumber(screenNumber);
+                    }
+
                 if ( aMessage.Length() >= KMinScreenRegionCmdLength )
                     {
                     TRect region;
@@ -1271,11 +1346,18 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                                         KScreenshotServiceUid );
                         return;
                         }
-
+                    
                     //check mime
                     if ( aMessage.Length() > KRegionMIMEOffset )
                         {
-                        mime.Set( aMessage.Mid( KRegionMIMEOffset ) );
+                        if(!screenNumberSet)
+                            {
+                            mime.Set( aMessage.Mid( KRegionMIMEOffset ) );
+                            }
+                        else
+                            {
+                            mime.Set( aMessage.Mid( KRegionMIMEOffset, aMessage.Length()-1-KRegionMIMEOffset ) );
+                            }
                         if ( !IsMIMETypeSupported( mime ) )
                             {
                             iDispatcher->DispatchOutgoingErrorMessage(
@@ -1285,6 +1367,7 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                             return;
                             }
                         }
+
                     }
                 else
                     {
@@ -1308,6 +1391,30 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                                     KScreenshotServiceUid );
                     return;
                     }
+                
+                bool screenNumberSet = false;
+                if ( (aMessage.Length() > KSeriesScreenNumber) && 
+                        ((aMessage[aMessage.Length()-1] == 0) || (aMessage[aMessage.Length()-1] == 1)) )
+                    {
+                    TInt screenNumber = aMessage[aMessage.Length()-1];
+                    screenNumberSet = true;
+                    TInt screens;
+                    TInt ret = HAL::Get(HAL::EDisplayNumberOfScreens, screens);
+                    if(ret)
+                        {
+                        HTI_LOG_FORMAT( "HAL::Get failed %d", ret );
+                        User::Leave(ret);
+                        }
+                    HTI_LOG_FORMAT( "HAL::Get number of screens %d", screens );
+                    if( ( screenNumber>screens-1 ) || ( screenNumber<0 ) )
+                        {
+                        iDispatcher->DispatchOutgoingErrorMessage(
+                                KErrArgument, KErrDescrScreenNotSupported, KScreenshotServiceUid);
+                        return;
+                        }
+                    SetScreenNumber(screenNumber);
+                    }
+
                 TInt duration = ParseInt32( aMessage.Ptr() + KSeriesDurationOffset );
                 TInt interval = ParseInt32( aMessage.Ptr() + KSeriesIntervalOffset );
 
@@ -1320,10 +1427,17 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                                     KScreenshotServiceUid );
                     return;
                     }
-
+                
                 if ( aMessage.Length() > KSeriesMIMEOffset )
                     {
-                    mime.Set( aMessage.Mid( KSeriesMIMEOffset ) );
+                    if(screenNumberSet)
+                        {
+                        mime.Set( aMessage.Mid( KSeriesMIMEOffset, aMessage.Length()-1-KSeriesMIMEOffset ) );
+                        }
+                    else
+                        {
+                        mime.Set( aMessage.Mid( KSeriesMIMEOffset ) );
+                        }
                     if ( !IsMIMETypeSupported( mime ) )
                         {
                         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1342,6 +1456,29 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
             case ECmdScreenRegionSeries:
             case ECmdScreenRegionZipSeries:
                 {
+                bool screenNumberSet = false;
+                if ( (aMessage.Length() > KRegionSeriesScreenNumber) && 
+                        ((aMessage[aMessage.Length()-1] == 0) || (aMessage[aMessage.Length()-1] == 1)) )
+                    {
+                    TInt screenNumber = aMessage[aMessage.Length()-1];
+                    screenNumberSet = true;
+                    TInt screens;
+                    TInt ret = HAL::Get(HAL::EDisplayNumberOfScreens, screens);
+                    if(ret)
+                        {
+                        HTI_LOG_FORMAT( "HAL::Get failed %d", ret );
+                        User::Leave(ret);
+                        }
+                    HTI_LOG_FORMAT( "HAL::Get number of screens %d", screens );
+                    if( ( screenNumber>screens-1 ) || ( screenNumber<0 ) )
+                        {
+                        iDispatcher->DispatchOutgoingErrorMessage(
+                                KErrArgument, KErrDescrScreenNotSupported, KScreenshotServiceUid);
+                        return;
+                        }
+                    SetScreenNumber(screenNumber);
+                    }
+
                 if ( aMessage.Length() < KMinRegionSeriesCmdLength )
                     {
                     iDispatcher->DispatchOutgoingErrorMessage(
@@ -1403,10 +1540,17 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                                     KScreenshotServiceUid );
                     return;
                     }
-
+                
                 if ( aMessage.Length() > KRegionSeriesMIMEOffset )
                     {
-                    mime.Set( aMessage.Mid( KRegionSeriesMIMEOffset ) );
+                    if(screenNumberSet)
+                        {
+                        mime.Set( aMessage.Mid( KRegionSeriesMIMEOffset, aMessage.Length()-1-KRegionSeriesMIMEOffset ) );
+                        }
+                    else
+                        {
+                        mime.Set( aMessage.Mid( KRegionSeriesMIMEOffset ) );
+                        }
                     if ( !IsMIMETypeSupported( mime ) )
                         {
                         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1526,7 +1670,17 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                     respMsg.AllocL(), KScreenshotServiceUid );
                 }
                 return;
-
+           case ECmdRotateScreen:
+               {
+               if (aMessage.Length() != KRotateScreenCmdLength)
+                   {
+                   iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+                           KErrDescrInvalid, KScreenshotServiceUid);
+                   return;
+                   }
+               HandleRotateScreen(aMessage.Right(aMessage.Length() -1));
+               return;
+               }
             default:
                 //Error: unknown command
                 iDispatcher->DispatchOutgoingErrorMessage(
@@ -1559,7 +1713,109 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
     HTI_LOG_FUNC_OUT( "HtiScreenshotServicePlugin::ProcessMessage" );
     }
 
+// ----------------------------------------------------------------------------
+void CHtiScreenshotServicePlugin::HandleRotateScreen(const TDesC8& aData)
+    {
+    HTI_LOG_FUNC_IN( "CHtiScreenshotServicePlugin::HandleRotateScreen" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )               
+    TInt orientation = aData[0];
+    if (orientation > 1 || orientation < 0)
+        {
+        iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+                KErrDescrInvalid, KScreenshotServiceUid);
+        return;
+        }
 
+    TBool isLandScape = orientation;
+
+    RWsSession ws;
+    User::LeaveIfError(ws.Connect());
+    CWsScreenDevice* screenDevice = new (ELeave) CWsScreenDevice(ws);
+    CleanupStack::PushL(screenDevice);
+    User::LeaveIfError(screenDevice->Construct());
+    TSize currentScreenSize = screenDevice->SizeInPixels();
+
+    TBool needsRotating = ETrue;
+    if (currentScreenSize.iWidth > currentScreenSize.iHeight && isLandScape)
+        {
+        // we are already in landscape 
+        HTI_LOG_TEXT("The screen are already in landscape.");
+        needsRotating = EFalse;
+        }
+    if (currentScreenSize.iWidth < currentScreenSize.iHeight
+            && (!isLandScape))
+        {
+        // we are already in portrait 
+        HTI_LOG_TEXT("The screen are already in portrait.");
+        needsRotating = EFalse;
+        }
+
+    CAknLayoutConfig* layoutConfigPtr = CAknLayoutConfig::NewL();
+    CleanupStack::PushL(layoutConfigPtr);
+
+    CAknLayoutConfig& layoutConfig = *layoutConfigPtr;
+
+    const CAknLayoutConfig::THardwareStateArray& hwStates =
+            layoutConfig.HardwareStates();
+    const CAknLayoutConfig::TScreenModeArray& screenModes =
+            layoutConfig.ScreenModes();
+
+    TInt newHwStateIndex = KErrNotFound;
+
+    // lets select alternate state from current
+    TSize newScreenSize;
+    if (needsRotating)
+        {
+        newScreenSize = TSize(currentScreenSize.iHeight,
+                currentScreenSize.iWidth);
+        HTI_LOG_FORMAT("Rotate the screen to the new width %d", newScreenSize.iWidth);
+        HTI_LOG_FORMAT("Rotate the screen to the new height %d", newScreenSize.iHeight);
+        }
+    else // basicly select current state again to ensure correct mode is informed to akncapserver
+        {
+        newScreenSize = TSize(currentScreenSize.iWidth,
+                currentScreenSize.iHeight);
+        }
+
+    for (TInt i = 0; i < hwStates.Count(); i++)
+        {
+        const CAknLayoutConfig::THardwareState hwState = hwStates.At(i);
+
+        const CAknLayoutConfig::TScreenMode normal = screenModes.Find(
+                hwState.ScreenMode());
+
+        if (normal.SizeInPixels() == newScreenSize)
+            {
+            newHwStateIndex = i;
+            break;
+            }
+        }
+
+    if (newHwStateIndex >= 0)
+        {
+        const CAknLayoutConfig::THardwareState newHwState = hwStates.At(
+                newHwStateIndex);
+        TApaTaskList taskList(ws);
+        TApaTask aknCapsrvTask = taskList.FindApp(KAknCapServerUid);
+        TInt keyCode = newHwState.KeyCode();
+        HTI_LOG_FORMAT( "Send key code %d to akncapserver", keyCode );
+        aknCapsrvTask.SendKey(keyCode, 0);
+        }
+
+    TBuf8<1> okMsg;
+    okMsg.Append(0);
+    iDispatcher->DispatchOutgoingMessage(okMsg.AllocL(),
+            KScreenshotServiceUid);
+
+    CleanupStack::PopAndDestroy(layoutConfigPtr);
+    CleanupStack::PopAndDestroy(screenDevice);
+    ws.Close();
+#else
+    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+            KErrDescrScreenNotSupported, KScreenshotServiceUid);
+#endif               
+    HTI_LOG_FUNC_OUT( "CHtiScreenshotServicePlugin::HandleRotateScreen" );
+    }
 // ----------------------------------------------------------------------------
 void CHtiScreenshotServicePlugin::CreateBitmapL( TRect& aRegion,
                                                  TDisplayMode aMode )
@@ -1958,6 +2214,28 @@ TBool CHtiScreenshotServicePlugin::StartShotL(TRect aRegion, TDisplayMode aDispl
 
     HTI_LOG_FUNC_OUT( "CHtiScreenshotServicePlugin::StartShot" );
     return iScreen ? ETrue : EFalse;
+    }
+
+// ----------------------------------------------------------------------------
+void CHtiScreenshotServicePlugin::SetScreenNumber(TInt aScreenNumber)
+    {
+    HTI_LOG_FUNC_IN("CHtiScreenshotServicePlugin::SetScreenNumber");
+    TInt currentScreen = iScreenDevice->GetScreenNumber();
+    HTI_LOG_FORMAT("current screen: %d", currentScreen);
+    HTI_LOG_FORMAT("new screen number: %d", aScreenNumber);
+    if(aScreenNumber == currentScreen)
+        {
+        return;
+        }
+
+    // Clear the previous delta bitmap to avoid error
+    iPreviousBitmap->Reset();
+    //delete old screendevice and create a new one
+    delete iScreenDevice;
+    iScreenDevice = NULL;
+    iScreenDevice = new (ELeave) CWsScreenDevice(iWs);
+    User::LeaveIfError(iScreenDevice->Construct(aScreenNumber));
+    HTI_LOG_FUNC_OUT("CHtiScreenshotServicePlugin::SetScreenNumber");
     }
 
 // ----------------------------------------------------------------------------

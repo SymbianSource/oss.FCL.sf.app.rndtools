@@ -15,7 +15,7 @@
 *
 */
 
-
+#if SYMBIAN_VERSION_SUPPORT < SYMBIAN_4
 #ifdef __PRESENCE
 
 #include "creator_impselement.h"
@@ -144,3 +144,4 @@ void CCreatorImpsServerElement::ExecuteCommandL()
     }
 
 #endif // __PRESENCE
+#endif
