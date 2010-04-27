@@ -1,12 +1,11 @@
 ========================================================================
-RELEASE NOTE FOR STIF UI - STIF_201012 (7.3.29)
-SUPPORTING SERIES 60 3.0 ->
+RELEASE NOTE FOR STIFQTUI - STIF_201014 (7.3.30)
 ========================================================================
 
 Product Description:
 ====================
-STIF UI is Series 60 UI application for STIF project.
-STIF is a test harness for testing Symbian & S60 non-UI components.
+STIFQTUI is Series QT UI application for STIF project.
+STIF is a test harness for testing Symbian components.
 This widely used test framework can be used for both test case implementation and test cases execution.
 
 Features :
@@ -28,7 +27,11 @@ N/A
 System Requirements:
 ====================
 Basic Requirements:
-- S60/Symbian OS development environment installed 
+
+- StifQtUI project is written by QT C++ and Symbian C++.
+- It should be compiled by QT for S60 4.6.0 under proper S60 SDK.
+
+You can get QT for S60 from: http://qt.nokia.com/downloads/downloads
 
 - stif project needs to be compiled/installed before stifui can be used
 
@@ -36,11 +39,6 @@ Basic Requirements:
 Compatibility Issues:
 =====================
 N/A 
-
-Known Issues:
-===========
-If problems with compilation appears (missing platform_paths.hrh file error message), 
-please use EnvPatcher.pl script from stif/envpatcher folder to fix environment. 
 
 
 Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
