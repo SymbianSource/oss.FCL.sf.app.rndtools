@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE SystemDefinition SYSTEM "sysdef_1_5_1.dtd" [
+  <!ENTITY layer_real_source_path "sf/app/rndtools" >
+]>
+
+<SystemDefinition name="rndtools" schema="1.5.1">
+  <systemModel>
+    <layer name="app_layer">
+      <module name="rndtools">
+        <unit unitID="tools.rndtools" mrp="" bldFile="&layer_real_source_path;/group" name="rndtools" />
+      </module>
+      <module name="screengrabber">
+				<unit unitID="tools.screengrabberqt" mrp="" bldFile="&layer_real_source_path;/screengrabber" name="screengrabber" proFile="screengrabber.pro" />
+			</module>
+			<module name="perfmon">
+				<unit unitID="tools.perfmonqt" mrp="" bldFile="&layer_real_source_path;/perfmon" name="perfmon" proFile="perfmon.pro" />
+			</module>
+    </layer>
+  </systemModel>
+</SystemDefinition>

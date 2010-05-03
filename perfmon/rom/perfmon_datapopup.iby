@@ -15,16 +15,11 @@
 *
 */
 
-#include <platform_paths.hrh>
 
-prj_platforms
+#ifndef __PERFMON_DATAPOPUP_IBY__
+#define __PERFMON_DATAPOPUP_IBY__
 
-WINSCW GCCE ARMV5 ARMV6
+file=ABI_DIR\BUILD_DIR\PerfMonDataPopupPlugin.dll       SHARED_LIB_DIR\PerfMonDataPopupPlugin.dll
+data=DATAZ_\PRIVATE\20011385\PerfMonDataPopupPlugin.qtplugin PRIVATE\20011385\PerfMonDataPopupPlugin.qtplugin
 
-#include "bld_generic.inf"
-
-#include "../ui/avkon/group/bld.inf"
-
-prj_mmpfiles
-
-prj_extensions
+#endif // __PERFMON_DATAPOPUP_IBY__
