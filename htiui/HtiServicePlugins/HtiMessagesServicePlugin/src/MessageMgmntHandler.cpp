@@ -21,7 +21,7 @@
 #include "MessageMgmntHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 #include <mtclreg.h>
 #include <smscmds.h>
 #include <smtcmtm.h>

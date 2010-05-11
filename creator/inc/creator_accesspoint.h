@@ -27,11 +27,11 @@
 
 #include <e32base.h>
 #include <commdb.h>
-#include <apselect.h>
-#include <apdatahandler.h>
-#include <apaccesspointitem.h>
-#include <aputils.h>
-#include <apengineconsts.h>
+#include <ApSelect.h>
+#include <ApDataHandler.h>
+#include <ApAccessPointItem.h>
+#include <ApUtils.h>
+#include <ApEngineConsts.h>
 #include <msvapi.h>
 #include <mtclreg.h>
 #include <mmsclient.h>

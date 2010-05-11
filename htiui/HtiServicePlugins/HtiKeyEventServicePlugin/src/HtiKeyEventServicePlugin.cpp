@@ -61,6 +61,7 @@ CHtiKeyEventServicePlugin::~CHtiKeyEventServicePlugin()
     HTI_LOG_TEXT( "CHtiKeyEventServicePlugin destroy" );
     delete iKeyHandler;
     delete iPointerHandler;
+
     if ( iLightTimeoutSettingHandler )
         {
         iLightTimeoutSettingHandler->StopListening();
@@ -120,7 +121,7 @@ void CHtiKeyEventServicePlugin::ProcessMessageL( const TDesC8& aMessage,
         iKeyHandler->ProcessMessageL( aMessage, aPriority );
         }
 
-    else
+    else 
         {
         if ( iPointerHandler == NULL )
             {
@@ -128,7 +129,8 @@ void CHtiKeyEventServicePlugin::ProcessMessageL( const TDesC8& aMessage,
             iPointerHandler->SetDispatcher( iDispatcher );
             }
         iPointerHandler->ProcessMessageL( aMessage, aPriority );
-        }
+        }   
+
 
     HTI_LOG_FUNC_OUT( "CHtiKeyEventServicePlugin::ProcessMessageL: Done" );
     }

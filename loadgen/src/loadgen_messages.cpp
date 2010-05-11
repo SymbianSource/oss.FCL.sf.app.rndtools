@@ -377,7 +377,7 @@ void CMessageManager::HandleStatus( TInt /*aErr*/ )
 #include <smscmds.h>
 #include <mtmuibas.h>
 #include <mtmdef.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include "smutset.h"
 #include "smuthdr.h"
  
@@ -738,8 +738,8 @@ void CSmsHandler::ScheduleL()
 #include <f32file.h>                
 #include <coeutils.h>                  // Check the file exist
 
-#include <CMsvMimeHeaders.h>        //Attachemt mimeheader
-#include <MMsvAttachmentManager.h>    //Attachment manager
+#include <cmsvmimeheaders.h>        //Attachemt mimeheader
+#include <mmsvattachmentmanager.h>    //Attachment manager
 
 // -----------------------------------------------------------------------------
 // CMmsHandler::CSmsHandler()

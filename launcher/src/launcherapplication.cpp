@@ -16,8 +16,8 @@
 */
 
 
-#include "LauncherDocument.h"
-#include "LauncherApplication.h"
+#include "launcherdocument.h"
+#include "launcherapplication.h"
 
 // local constants
 static const TUid KUidLauncherApp = {0x101FB74F}; 

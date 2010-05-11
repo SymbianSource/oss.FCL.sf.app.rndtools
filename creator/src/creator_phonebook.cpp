@@ -20,7 +20,7 @@
 #include "creator_phonebook.h" 
 #include "creator_traces.h"
 
-#include <cpbkcontactiter.h>
+#include <CPbkContactIter.h>
 
 //----------------------------------------------------------------------------
 

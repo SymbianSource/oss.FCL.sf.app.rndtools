@@ -22,7 +22,7 @@
 // INCLUDES
 #include <aknview.h>
 
-#include "LauncherEngine.h"
+#include "launcherengine.h"
 
 // CONSTANTS
 // UID of view

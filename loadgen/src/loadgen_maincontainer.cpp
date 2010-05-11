@@ -28,12 +28,12 @@
 #include <eikclb.h>
 #include <eikclbd.h>
 #include <aknconsts.h>
-#include <aknutils.h>
+#include <AknUtils.h>
 #include <aknnotewrappers.h>
-#include <akniconarray.h> 
+#include <AknIconArray.h> 
 #include <f32file.h>
 #include <AknIconUtils.h>
-#include <akndef.h>
+#include <AknDef.h>
 #include <akntitle.h>
 #include <eikspane.h> 
 

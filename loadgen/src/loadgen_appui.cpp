@@ -25,7 +25,7 @@
 #include <loadgen.rsg>
 
 #include <avkon.hrh>
-#include <aknquerydialog.h>
+#include <AknQueryDialog.h>
 #include <aknmessagequerydialog.h> 
 
 

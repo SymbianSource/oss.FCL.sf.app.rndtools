@@ -17,7 +17,7 @@
 
 
 
-#include "LauncherApplication.h"
+#include "launcherapplication.h"
 #include <eikstart.h>
     
 

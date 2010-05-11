@@ -19,8 +19,8 @@
 
 #include "creator_accesspoint.h" 
 #include "creator_traces.h"
-#include <aplistitemlist.h>
-#include <aplistitem.h> 
+#include <ApListItemList.h>
+#include <ApListItem.h> 
 
 static const TInt KAccessPointsFieldLength = 128;
 

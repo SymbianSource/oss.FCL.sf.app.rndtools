@@ -22,7 +22,7 @@
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <ECam.h>  // CCamera, MCameraObserver
+#include <ecam.h>  // CCamera, MCameraObserver
 
 #include "loadgen_loadbase.h"
 #include "loadgen_loadattributes.h"

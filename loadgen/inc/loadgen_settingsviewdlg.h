@@ -20,9 +20,9 @@
 #define LOADGEN_SETTINGSVIEWDLG_H
 
 //  INCLUDES
-#include <akndialog.h>
+#include <AknDialog.h>
 #include <eiklbo.h>
-#include <akntabobserver.h> 
+#include <AknTabObserver.h> 
 #include <akntabgrp.h>
 
 //  FORWARD DECLARATIONS

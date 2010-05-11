@@ -25,8 +25,8 @@
 #include <cmdestination.h>
 #include <cmmanager.h>
 
-#include <FavouritesItem.h>
-#include <FavouritesItemList.h>
+#include <favouritesitem.h>
+#include <favouritesitemlist.h>
 #include <FavouritesDb.h>
 #include <FavouritesFile.h>
 #include <FavouritesWapAp.h>

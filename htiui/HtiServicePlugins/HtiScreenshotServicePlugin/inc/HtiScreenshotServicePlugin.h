@@ -232,7 +232,10 @@ protected:
     //void InitFontCache();
 
     TBool IsMIMETypeSupported(TDesC8 &aMime);
-
+    
+    void SetScreenNumber(TInt aScreenNumber);
+    
+    void HandleRotateScreen(const TDesC8& aData);
 protected:
     CFbsBitmap* iScreen; //raw screen bitmap
     HBufC8* iEncodedBitmap; //ready to send

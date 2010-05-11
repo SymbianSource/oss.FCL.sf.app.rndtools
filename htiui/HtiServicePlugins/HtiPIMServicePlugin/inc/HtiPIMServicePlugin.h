@@ -21,7 +21,7 @@
 #define CHTIPIMSERVICEPLUGIN_H
 
 // INCLUDES
-#include <HTIServicePluginInterface.h>
+#include <HtiServicePluginInterface.h>
 #include <w32std.h>
 
 // CONSTANTS
@@ -31,8 +31,7 @@ const TUid KPIMServiceUid = { KPIMServiceUidValue };
 // FORWARD DECLARATIONS
 class CPIMHandler;
 class CHtiBookmarkHandler;
-class CHtiSimDirHandlerVPbk;
-
+class CHtiSimDirHandler;
 // CLASS DECLARATION
 
 /**
@@ -54,6 +53,9 @@ class CHtiPIMServicePlugin : public CHTIServicePluginInterface
             ENotepadAddMemoFromFile = 0x06,
             ENotepadDeleteAll       = 0x07,
 
+            EOpenCalendarFile       = 0x08,
+            EListCalendarFiles      = 0x09,
+            
             ESimCardInfo            = 0x10,
             EImportSimContact       = 0x11,
             EDeleteSimContact       = 0x12,
@@ -99,7 +101,7 @@ class CHtiPIMServicePlugin : public CHTIServicePluginInterface
 
         CPIMHandler* iPimHandler;
         CHtiBookmarkHandler* iBookmarkHandler;
-        CHtiSimDirHandlerVPbk* iSimDirHandler;
+        CHtiSimDirHandler* iSimDirHandler;
         };
 
 #endif // CHTIPIMSERVICEPLUGIN_H

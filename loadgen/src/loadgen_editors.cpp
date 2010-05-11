@@ -22,11 +22,11 @@
 #include "loadgen.hrh"
 #include <loadgen.rsg>
 
-#include <aknform.h> 
+#include <AknForm.h> 
 #include <eikedwin.h> 
 #include <eikmfne.h>
-#include <aknpopupfieldtext.h>
-#include <aknqueryvaluetext.h>
+#include <AknPopupFieldText.h>
+#include <AknQueryValueText.h>
 #include <eikspane.h> 
 #include <akntitle.h> 
 #include <eikcapc.h>

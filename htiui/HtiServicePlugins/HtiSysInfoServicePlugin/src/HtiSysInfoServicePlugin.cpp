@@ -2864,13 +2864,20 @@ TInt CHtiSysInfoServicePlugin::CleanUpTempFiles()
     TFindFile finder( iFs );
     CDir* dir = NULL;
     TInt err = finder.FindWildByDir(KMatchFileName, KTempFilePath, dir);
-    while ( err == KErrNone )
+    TInt safeDeleteCount = 0;
+    while ( err == KErrNone && safeDeleteCount < 20)
         {
+        safeDeleteCount++;
         TFileName path;
         path.Copy(finder.File());
-        iFileMan->Delete(path);
+        HTI_LOG_FORMAT( "found file: %S", &path );
+        TInt ret = iFileMan->Delete(path);
         delete dir;
         dir = NULL;
+        if(ret != KErrNone)
+            {
+            break;
+            }
         err = finder.FindWildByDir(KMatchFileName, KTempFilePath, dir);
         }
     HTI_LOG_FUNC_OUT("CHtiSysInfoServicePlugin::CleanUpTempFiles");

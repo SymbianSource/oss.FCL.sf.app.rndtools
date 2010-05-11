@@ -19,6 +19,7 @@
 #include "HtiKeyEventServicePlugin.h"
 #include "PointerEventHandler.h"
 
+
 #include <HtiDispatcherInterface.h>
 #include <HtiLogging.h>
 
@@ -56,7 +57,7 @@ CPointerEventHandler* CPointerEventHandler::NewL()
 // CPointerEventHandler::CPointerEventHandler()
 // ----------------------------------------------------------------------------
 CPointerEventHandler::CPointerEventHandler()
-    : CActive( CActive::EPriorityStandard ), iReady( ETrue ), iCommand( 0 ),
+    : CActive( CActive::EPriorityStandard ), iReady( ETrue ), iCommand( 0 ), iMultiTouchHandler(NULL),
       iState( EPointerUp )
     {
     }
@@ -75,6 +76,7 @@ CPointerEventHandler::~CPointerEventHandler()
         iCoords->Close();
         }
     delete iCoords;
+    delete iMultiTouchHandler;
 	
 	iAdvancedPointers.ResetAndDestroy();
 	iDelayArray.ResetAndDestroy();  
@@ -134,6 +136,7 @@ void CPointerEventHandler::RunL()
             MoveToNextPointL(); // Continuing current line
             }
         }
+    
     else if ( iCommand == EPinchZoom )
         {
         PointerMove();
@@ -144,6 +147,13 @@ void CPointerEventHandler::RunL()
             iAdvPointerMoveArray.ResetAndDestroy(); 
             iReady = ETrue;
             }
+        }		
+    
+    else if ( iCommand == EMultiTouch )
+        {
+        SendOkMsgL();
+        iMultiTouchHandler->Clear();
+        iReady = ETrue;
         }		
     HTI_LOG_FUNC_OUT( "CPointerEventHandler::RunL" );
     }
@@ -217,7 +227,9 @@ void CPointerEventHandler::ProcessMessageL( const TDesC8& aMessage,
 		case EPinchZoom: 
 		    HandlePinchZoomL( aMessage.Right( aMessage.Length() - 1 ) );
             break;
-		
+		case EMultiTouch:
+			HandleMultiTouchL(aMessage.Right( aMessage.Length() - 1 ));
+			break;
         default:
             SendErrorMessageL( EUnrecognizedCommand,
                 KErrorUnrecognizedCommand );
@@ -601,7 +613,40 @@ void CPointerEventHandler::HandlePinchZoomL( const TDesC8& aData )
 
     HTI_LOG_FUNC_OUT( "CPointerEventHandler::HandlePinchZoomL" );
     }	
-
+// ----------------------------------------------------------------------------
+// void CPointerEventHandler::HandleMultiTouchL()
+// ----------------------------------------------------------------------------
+void CPointerEventHandler::HandleMultiTouchL( const TDesC8& aData )
+	{
+	HTI_LOG_FUNC_IN( "CPointerEventHandler::HandleMultiTouchL" );	
+	
+	if (iMultiTouchHandler == NULL)
+		iMultiTouchHandler=CMultiTouchPointerEventHandler::NewL(*this);	
+	
+    if ( !iMultiTouchHandler->HandleMultiTouchL ( aData ) )
+    	{
+		iMultiTouchHandler->Clear();
+		SendErrorMessageL( EInvalidParameters, KErrorInvalidParameters );
+    	}
+    else
+		iReady = EFalse;
+	
+	HTI_LOG_FUNC_OUT( "CPointerEventHandler::HandleMultiTouchL" );
+	}
+// ----------------------------------------------------------------------------
+// void CPointerEventHandler::NotifyMultiTouchComplete()
+// ----------------------------------------------------------------------------
+void CPointerEventHandler::NotifyMultiTouchComplete()
+    {
+    HTI_LOG_FUNC_IN("CPointerEventHandler::NotifyMultiTouchComplete"); 
+    
+    // wait for 1000 microsecond then clear multi touch and send ok msg 
+    TTimeIntervalMicroSeconds32 time(1000);
+    iTimer.After( iStatus, time );
+    SetActive();    
+    
+    HTI_LOG_FUNC_OUT("CPointerEventHandler::NotifyMultiTouchComplete");
+    }
 // ----------------------------------------------------------------------------
 // CPointerEventHandler::AdvancedStartDelay()
 // ----------------------------------------------------------------------------

@@ -17,15 +17,15 @@
 
 
 // INCLUDE FILES
-#include "LauncherContainerOutput.h"
-#include "LauncherEngine.h"
+#include "launchercontaineroutput.h"
+#include "launcherengine.h"
 
 
 #include <AknBidiTextUtils.h>
-#include <aknutils.h>
+#include <AknUtils.h>
 #include <aknnotewrappers.h>
 #include <eiksbfrm.h>
-#include <akndef.h>
+#include <AknDef.h>
 
 const TUint KLeftMargin = 2;
 const TUint KRightMargin = 2;

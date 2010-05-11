@@ -20,7 +20,7 @@
 
 #if( defined __SERIES60_30__ || defined __SERIES60_31__ )
     #include "creator_phonebook.h"
-    #include "creator_accessPoint.h"
+    #include "creator_accesspoint.h"
 #else
     #include "creator_virtualphonebook.h"
     #include "creator_connectionmethod.h"

@@ -262,9 +262,43 @@ void CContainer::Draw(const TRect& /*aRect*/) const
 void CContainer::SelectedTestCases
                             (RPointerArray<CTestInfo>& aSelectedTestCases)
     {
-    aSelectedTestCases.Append( iTestCasesInView[iListBox->CurrentItemIndex()] );
+    TInt selectedItemIdx = iListBox->CurrentItemIndex();
+    if ( ( selectedItemIdx >= 0 ) && ( iTestCasesInView.Count() > selectedItemIdx ) )
+        {
+        aSelectedTestCases.Append( iTestCasesInView[ selectedItemIdx ] );    
+        }
     }
 
+// ----------------------------------------------------------------------------
+// CContainer::SelectedTestCaseInfo
+// 
+// Returns pointers to currently selected (in list box) test cases info.
+// ----------------------------------------------------------------------------
+//
+CTestInfo* CContainer::SelectedTestCaseInfo()
+    {
+    TInt selectedItemIdx = iListBox->CurrentItemIndex();
+    if ( ( selectedItemIdx >= 0 ) && ( iTestCasesInView.Count() > selectedItemIdx ) )
+        {
+        return iTestCasesInView[ selectedItemIdx ];
+        }
+    return NULL;
+    }
+
+// ----------------------------------------------------------------------------
+// CContainer::TestCaseInfo
+// 
+// Returns pointers to selected test cases info.
+// ----------------------------------------------------------------------------
+//
+CTestInfo* CContainer::TestCaseInfo( TInt aIndex )
+    {
+    if ( ( aIndex >=0 ) && ( iTestCasesInView.Count() > aIndex ) )
+        {
+        return iTestCasesInView[ aIndex ];
+        }
+    return NULL;
+    }
     
 // ----------------------------------------------------------------------------
 // CContainer::HandleMarkCommandL

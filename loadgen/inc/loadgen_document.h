@@ -20,7 +20,7 @@
 #define LOADGEN_DOCUMENT_H
 
 // INCLUDES
-#include <akndoc.h>
+#include <AknDoc.h>
    
 // CONSTANTS
 

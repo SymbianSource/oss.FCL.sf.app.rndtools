@@ -19,21 +19,21 @@
 
 #include <aknnotewrappers.h>
 #include <avkon.hrh>
-#include <aknwaitdialog.h>
-#include <aknglobalnote.h>
+#include <AknWaitDialog.h>
+#include <AknGlobalNote.h>
 #include <coeutils.h> 
-#include <akncommondialogs.h>
+#include <AknCommonDialogs.h>
 #include <eikprogi.h>
 
-#include <LAUNCHER.rsg>
+#include <launcher.rsg>
 
-#include "LauncherAppUi.h"
-#include "LauncherEngine.h"
-#include "Launcher.hrh"
-#include "LauncherViewApps.h"
-#include "LauncherViewOutput.h"
-#include "LauncherContainerApps.h"
-#include "LauncherContainerOutput.h"
+#include "launcherappui.h"
+#include "launcherengine.h"
+#include "launcher.hrh"
+#include "launcherviewapps.h"
+#include "launcherviewoutput.h"
+#include "launchercontainerapps.h"
+#include "launchercontaineroutput.h"
 #include "launcherdllparser.h"
 #include "launcherxmlparser.h"
 
@@ -46,8 +46,8 @@
 #include <pathinfo.h> 
 #include <e32cmn.h>
 
-#include "LauncherTraces.h"
-#include "E32Image.h"
+#include "launchertraces.h"
+#include "e32image.h"
 
 _LIT(KLogFileName, "LauncherLog.txt");
 _LIT(KBCLogFileName, "LauncherBCLog.txt");

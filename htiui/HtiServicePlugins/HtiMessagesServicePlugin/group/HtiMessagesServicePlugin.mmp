@@ -54,7 +54,6 @@ LIBRARY         efsrv.lib
 LIBRARY         euser.lib
 LIBRARY         gsmu.lib
 LIBRARY         imcm.lib
-LIBRARY         mmscli.lib
 LIBRARY         msgs.lib
 LIBRARY         smcm.lib
 LIBRARY         etel.lib

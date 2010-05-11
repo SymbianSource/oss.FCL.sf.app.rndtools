@@ -212,6 +212,8 @@ void CAknUiEnvProxy::PressKeyL( TRequestStatus* aStatus, TUint aKeyCode, TInt aK
 	TInt ret = wsSession.SendEventToWindowGroup( wgId, wsEvent );
 	User::LeaveIfError( ret );
 	
+	wsSession.Flush();
+	
 	// Request notification when key press is handled
 	*aStatus = KRequestPending;
 	iAppUi->NotifyAboutHandledKeyPress( aStatus );
@@ -257,6 +259,7 @@ void CAknUiEnvProxy::PressKeyL( TUint aKeyCode, TInt aKeyScanCode,
 	TInt wgId = wsSession.GetFocusWindowGroup();	
 	TInt ret = wsSession.SendEventToWindowGroup( wgId, wsEvent );	
 	User::LeaveIfError( ret );
+	wsSession.Flush();
 	}
 
 
@@ -309,6 +312,7 @@ void CAknUiEnvProxy::TypeTextL( TRequestStatus* aStatus, const TDesC& aText )
 		// Send single character from text to UI component
 		TInt ret = wsSession.SendEventToWindowGroup( wgId, wsEvent );
 		User::LeaveIfError( ret );
+		wsSession.Flush();
 		}
 		
 	// Request notification when send text is recived
@@ -359,6 +363,7 @@ void CAknUiEnvProxy::TypeTextL( const TDesC& aText )
 		// Send single character from text to UI component
 		TInt ret = wsSession.SendEventToWindowGroup( wgId, wsEvent );			
 		User::LeaveIfError( ret );
+		wsSession.Flush();
 		}
 	}
 
@@ -422,7 +427,9 @@ void CAknUiEnvProxy::SendPointerEventL( TUint aType, const TPoint& aPosition )
 				User::Leave( KErrArgument );
 			}
 		wsSession.SimulateRawEvent( pointerEventDown );
+		wsSession.Flush();
 		wsSession.SimulateRawEvent( pointerEventUp );
+		wsSession.Flush();
 		}
 	else
 		{
@@ -497,11 +504,13 @@ void CAknUiEnvProxy::SendPointerEventL( TRequestStatus* aStatus, TUint aType, co
 			}
 		
 			CCoeEnv::Static()->RootWin().SimulatePointerEvent( pointerEventDown );
+			wsSession.Flush();
 			
 			// Send info to AppUi that we are going to send key event
 			iAppUi->PrepareToPointerEvent();
 	
 			CCoeEnv::Static()->RootWin().SimulatePointerEvent( pointerEventUp );
+			wsSession.Flush();
 	
 			// Request notification when key press is handled
 			*aStatus = KRequestPending;

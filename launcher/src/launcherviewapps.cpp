@@ -17,14 +17,14 @@
 
 
 // INCLUDE FILES
-#include <aknviewappui.h>
+#include <aknViewAppUi.h>
 #include <avkon.hrh>
-#include <Launcher.rsg>
+#include <launcher.rsg>
 #include <AknUtils.h>
 #include <eikmenup.h>
 
-#include "LauncherViewApps.h"
-#include "LauncherContainerApps.h" 
+#include "launcherviewapps.h"
+#include "launchercontainerapps.h" 
 
 // ================= MEMBER FUNCTIONS =======================
 

@@ -26,7 +26,7 @@
 #include <loadgen.rsg>
 
 #include <eikenv.h>
-#include <aknviewappui.h> 
+#include <aknViewAppUi.h> 
 #include <aknnotewrappers.h>
 
 

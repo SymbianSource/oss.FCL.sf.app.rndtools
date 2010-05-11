@@ -94,8 +94,7 @@ class CTestCaseListBoxModel : public CBase, public MDesCArray
         *         descriptor element located at position aIndex within 
         *         the array.
         */
-        virtual TPtrC MdcaPoint(TInt aIndex) const;
-
+        virtual TPtrC MdcaPoint( TInt aIndex ) const;
     protected:
         /**
         * Symbian OS two phased constructor.
@@ -155,6 +154,19 @@ class CContainer : public CCoeControl
         */
         virtual void SelectedTestCases(RPointerArray<CTestInfo>& aSelectedTestCases);
 
+        /**
+        * Returns pointers to currently (in list box) selected test cases info.
+        * @return Currently selected test case info.
+        */
+        virtual CTestInfo* SelectedTestCaseInfo();
+        
+        /**
+        * Returns pointers to selected test cases info.
+        * @param aIndex test case index
+        * @return Currently selected test case info.
+        */
+        virtual CTestInfo* TestCaseInfo( TInt aIndex );
+        
         /**
         * Sets graphic icon using listbox as CEikColumnListBox.
         * @param aListBox Pointer to list box.

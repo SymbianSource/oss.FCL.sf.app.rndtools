@@ -31,11 +31,11 @@
 #include <cntitem.h>
 #include <cntfldst.h>
 #include <cntview.h>
-#include <cpbkcontactengine.h>
-#include <cpbkcontactitem.h> 
-#include <cpbkfieldinfo.h> 
-#include <cpbkfieldsinfo.h> 
-#include <pbkfields.hrh>
+#include <CPbkContactEngine.h>
+#include <CPbkContactItem.h> 
+#include <CPbkFieldInfo.h> 
+#include <CPbkFieldsInfo.h> 
+#include <PbkFields.hrh>
 
 
 

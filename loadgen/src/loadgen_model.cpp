@@ -41,13 +41,13 @@
 #include <coeutils.h>
 #include <bautils.h>
 #include <eikenv.h>
-#include <aknquerydialog.h>
+#include <AknQueryDialog.h>
 #include <e32math.h> 
 #include <u32hal.h>
 #include <hal.h> 
 #include <hal_data.h>
 
-#include <ECam.h>
+#include <ecam.h>
 #include <aknnotewrappers.h>
 #include <featdiscovery.h>
 

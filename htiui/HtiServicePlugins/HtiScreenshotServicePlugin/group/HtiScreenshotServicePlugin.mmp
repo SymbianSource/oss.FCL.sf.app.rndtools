@@ -17,6 +17,7 @@
 
 
 #include <platform_paths.hrh>
+#include "../../../symbian_version.hrh"
 
 TARGET          HtiScreenshotServicePlugin.dll
 TARGETTYPE      PLUGIN
@@ -40,7 +41,10 @@ START RESOURCE  ../data/1020DEC2.rss
 TARGET          HtiScreenshotServicePlugin.rsc
 END
 
-LIBRARY         avkon.lib  // AknUtils for font handling
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+LIBRARY         alfclient.lib
+#endif
+LIBRARY         avkon.lib
 LIBRARY         bitgdi.lib
 LIBRARY         ecom.lib
 LIBRARY         efsrv.lib
@@ -53,6 +57,7 @@ LIBRARY         hal.lib
 LIBRARY         imageconversion.lib
 LIBRARY         ws32.lib
 LIBRARY         flogger.lib
+LIBRARY         apgrfx.lib
 
 SMPSAFE
 

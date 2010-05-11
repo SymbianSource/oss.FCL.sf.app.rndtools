@@ -21,7 +21,7 @@
 #include "HtiMsgSettingsHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 #include <cmconnectionmethod.h>
 #include <cmconnectionmethoddef.h>
@@ -31,7 +31,7 @@
 #include <csmsaccount.h>
 #include <mmssettings.h>
 #include <smutset.h>
-#include <CentralRepository.h>
+#include <centralrepository.h>
 
 // EXTERNAL DATA STRUCTURES
 

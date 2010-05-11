@@ -17,11 +17,11 @@
 
 
 // INCLUDE FILES
-#include  <aknviewappui.h>
+#include  <aknViewAppUi.h>
 #include  <avkon.hrh>
 #include  <Launcher.rsg>
-#include  "LauncherViewOutput.h"
-#include  "LauncherContainerOutput.h" 
+#include  "launcherviewoutput.h"
+#include  "launchercontaineroutput.h" 
 
 // ================= MEMBER FUNCTIONS =======================
 

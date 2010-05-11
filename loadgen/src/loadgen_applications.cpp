@@ -298,7 +298,7 @@ void CAppLauncherManager::SimulateEventL()
 #include <apgtask.h>
 #include <bautils.h>
 #include <s32file.h>
-#include <APGWGNAM.H> 
+#include <apgwgnam.h> 
 
 // ---------------------------------------------------------------------------
 

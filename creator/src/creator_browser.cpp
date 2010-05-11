@@ -20,7 +20,7 @@
 #include "creator_browser.h" 
 #include "creator_traces.h"
 
-#include <FavouritesWapAp.h> 
+#include <favouriteswapap.h> 
 
 
 static const TInt KBrowserFieldLength = 128;

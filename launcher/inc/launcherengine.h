@@ -18,7 +18,7 @@
 #ifndef __LAUNCHER_ENGINE_H__
 #define __LAUNCHER_ENGINE_H__
 
-#include "Launcher.hrh"
+#include "launcher.hrh"
 #include "launcherparserobserver.h"
 
 #include <aknappui.h>
@@ -26,10 +26,10 @@
 #include <apgcli.h>
 #include "../symbian_version.hrh"
 #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
-#include <SendUi.h>
+#include <sendui.h>
 #endif 
-#include <aknprogressdialog.h>
-#include <maknfileselectionobserver.h>
+#include <AknProgressDialog.h>
+#include <MAknFileSelectionObserver.h>
 
 class CLauncherAppUi;
 class CLauncherContainerApps;

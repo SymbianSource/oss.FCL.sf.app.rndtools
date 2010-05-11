@@ -22,7 +22,7 @@
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <aknform.h> 
+#include <AknForm.h> 
 
 #include "loadgen_loadattributes.h"
 

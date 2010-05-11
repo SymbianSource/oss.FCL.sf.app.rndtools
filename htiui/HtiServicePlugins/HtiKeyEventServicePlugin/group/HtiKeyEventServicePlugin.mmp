@@ -33,6 +33,7 @@ SOURCE          proxy.cpp
 SOURCE          HtiKeyEventServicePlugin.cpp
 SOURCE          KeyEventHandler.cpp
 SOURCE          PointerEventHandler.cpp
+SOURCE			MultiTouchPointerEventHandler.cpp MultiTouchPointerEvent.cpp
 
 USERINCLUDE     ../inc
 APP_LAYER_SYSTEMINCLUDE

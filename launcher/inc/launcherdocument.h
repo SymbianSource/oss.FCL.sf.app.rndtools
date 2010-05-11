@@ -21,7 +21,7 @@
 #define __LAUNCHER_DOCUMENT_H__
 
 
-#include <akndoc.h>
+#include <AknDoc.h>
 
 // Forward references
 class CLauncherAppUi;

@@ -251,7 +251,7 @@ void CStartCasesView::DynInitMenuPaneL(
         for (i = 0; i < moduleCount; i++)
             {
             //item.iText = modules[i].iModuleName;
-            item.iText = modules[i];
+            item.iText.Copy( modules[i].Left( item.iText.MaxLength() ) ) ;
             aMenuPane->AddMenuItemL(item);
             item.iCommandId++; // command IDs 0x1000 - 0x1FFF are reserved for modules in hrh file
             }
@@ -284,7 +284,7 @@ void CStartCasesView::DynInitMenuPaneL(
 
         for (i = 0; i < testCaseFileCount; i++)
             {
-            item.iText = testCaseFiles[i];
+            item.iText.Copy( testCaseFiles[i].Left( item.iText.MaxLength() ) );
             // If there´s no test case file, don´t add item to menu.
             if ( testCaseFiles[i].Length() > 0 )
                 {
@@ -372,26 +372,18 @@ void CStartCasesView::StartTestCaseL()
     CAknListQueryDialog* startDialog = new (ELeave) CAknListQueryDialog(&selectedItem);
     if ( startDialog->ExecuteLD(R_START_TESTCASE_LIST_QUERY) )
         {
-        RRefArray<CTestInfo> testInfo;
-        TInt ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->TestCases( testInfo );
-        if( KErrNone != ret )
-            {
-            testInfo.Reset();
-            testInfo.Close();
-            User::Leave( ret );
-            }
-        TInt testCaseNumber = iCurrentTestCase;   
-       
+        CTestInfo* testCaseInfo = iContainer->SelectedTestCaseInfo();
+
+        User::LeaveIfNull( testCaseInfo );
+        
         TInt testCaseIndex( 0 );
 
-        ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->StartTestCase( testInfo[testCaseNumber], testCaseIndex );
+        TInt ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->StartTestCase( *testCaseInfo, testCaseIndex );
       
         if( KErrNone != ret )
             {
             User::Leave( ret );
             }
-        testInfo.Reset();
-        testInfo.Close();
 
         // Increment the counter value
         ((CAppUIAppUi*)AppUi())->iUIStoreHandler->iExecutedTestCaseCount++;
@@ -426,23 +418,16 @@ void CStartCasesView::StartTestCasesL( RArray<TInt> aSelectedIndexes )
     CAknListQueryDialog* startDialog = new (ELeave) CAknListQueryDialog(&selectedItem);
     if ( startDialog->ExecuteLD(R_START_MULTIPLE_TESTCASES_LIST_QUERY) )
     	{
-    	RRefArray<CTestInfo> testInfo;
-    	CleanupClosePushL( testInfo );
-
     	ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->CreateTestSet( KTempSet );
     	
-        ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->TestCases( testInfo );
-        if( KErrNone != ret )
-            {
-            testInfo.Reset();
-            testInfo.Close();
-            User::Leave( ret );
-            }
+        User::LeaveIfError( ret );
         
         for( i = 0; i < aSelectedIndexes.Count(); i++ )
         	{
-    		ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->AddToTestSet( KTempSet,
-    		 testInfo[ aSelectedIndexes[i] ] );
+            CTestInfo* testCaseInfo = iContainer->TestCaseInfo( aSelectedIndexes[i] );
+            User::LeaveIfNull( testCaseInfo );
+        
+    		ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->AddToTestSet( KTempSet, *testCaseInfo );
     		if( KErrNone != ret )
     			{
     			User::Leave( ret );
@@ -466,8 +451,6 @@ void CStartCasesView::StartTestCasesL( RArray<TInt> aSelectedIndexes )
 	    	}
 
         ret = ((CAppUIAppUi*)AppUi())->UIStoreHandler()->RemoveTestSet( KTempSet );
-
-  		CleanupStack::PopAndDestroy();
     	}
     }
 

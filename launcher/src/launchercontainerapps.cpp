@@ -17,20 +17,20 @@
 
 
 // INCLUDE FILES
-#include "LauncherContainerApps.h"
-#include "LauncherEngine.h"
+#include "launchercontainerapps.h"
+#include "launcherengine.h"
 
 
 #include <eikclb.h>
 #include <eikclbd.h>
 #include <aknconsts.h>
-#include <aknutils.h>
+#include <AknUtils.h>
 #include <aknnotewrappers.h>
-#include <akniconarray.h> 
+#include <AknIconArray.h> 
 #include <f32file.h>
 #include <avkon.mbg>
 #include <AknIconUtils.h>
-#include <akndef.h>
+#include <AknDef.h>
 
 
 _LIT(KTab,"\t");

@@ -24,14 +24,14 @@
 #include <eikdoc.h>
 #include <e32std.h>
 #include <coeccntx.h>
-#include <aknviewappui.h>
+#include <aknViewAppUi.h>
 #include <akntabgrp.h>
 #include <aknnavide.h>
 #include "../symbian_version.hrh"
 #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
-#include <SendUi.h>
+#include <sendui.h>
 #endif 
-#include "LauncherEngine.h"
+#include "launcherengine.h"
 
 // FORWARD DECLARATIONS
 class CLauncherContainerApps;

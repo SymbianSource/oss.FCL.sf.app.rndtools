@@ -25,9 +25,9 @@
 #include <e32hal.h>
 #include <u32hal.h>
 #include <e32math.h>
-#include <EIKENV.H>
+#include <eikenv.h>
 #include <btserversdkcrkeys.h>
-#include <BtnotifierAPI.h>
+#include <btnotifierapi.h>
 #include <btpm.h>
 
 _LIT(KThreadName, "Bluetooth %d");

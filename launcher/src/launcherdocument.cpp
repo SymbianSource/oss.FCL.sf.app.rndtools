@@ -17,8 +17,8 @@
 
 
 
-#include "LauncherAppUi.h"
-#include "LauncherDocument.h"
+#include "launcherappui.h"
+#include "launcherdocument.h"
 
 
 // Standard Symbian OS construction sequence

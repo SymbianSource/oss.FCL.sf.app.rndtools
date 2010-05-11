@@ -17,10 +17,10 @@
 
 
 // INCLUDE FILES
-#include "LauncherAppUi.h"
-#include "LauncherViewApps.h"
-#include "LauncherViewOutput.h"
-#include <Launcher.rsg>
+#include "launcherappui.h"
+#include "launcherviewapps.h"
+#include "launcherviewoutput.h"
+#include <launcher.rsg>
 #include "launcher.hrh"
 
 #include <avkon.hrh>
