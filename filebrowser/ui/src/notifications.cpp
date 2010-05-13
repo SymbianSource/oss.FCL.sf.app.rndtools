@@ -29,22 +29,24 @@ void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QStr
 {
     HbMessageBox *messageBox = new HbMessageBox(type);
     messageBox->setText(text);
-    if (label.length()) {
+    if(label.length())
+        {
         HbLabel *header = new HbLabel(label, messageBox);
         messageBox->setHeadingWidget(header);
-    }
+        }
     messageBox->setAttribute(Qt::WA_DeleteOnClose);
     messageBox->setTimeout(timeout);
     messageBox->open();
 }
 
-void Notifications::showAboutNote()
+void Notifications::about()
 {
-    showMessageBox(HbMessageBox::MessageTypeInformation,
-                   "Version 5.0.0 - 23h April 2010. Copyright © 2010 Nokia Corporation"
-                        "and/or its subsidiary(-ies). All rights reserved."
-                        "Licensed under Eclipse Public License v1.0.",
-                   "About File Browser"
+    showMessageBox(
+        HbMessageBox::MessageTypeInformation, 
+        "Version 5.0.0 - 23h April 2010. Copyright © 2010 Nokia Corporation"
+            "and/or its subsidiary(-ies). All rights reserved."
+            "Licensed under Eclipse Public License v1.0.", 
+        "About File Browser"
         );
 }
 
@@ -60,16 +62,16 @@ void Notifications::showAboutNote()
 
 // ---------------------------------------------------------------------------
 
-void Notifications::showInformationNote(const QString &text, const QString &title)
+void Notifications::showInformationNote(const QString &text)
 {
-    showMessageBox(HbMessageBox::MessageTypeInformation, text, title, false);
+    showMessageBox(HbMessageBox::MessageTypeInformation, text, "", false);
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::showErrorNote(const QString &text, bool noTimeout)
 {
-    showMessageBox(HbMessageBox::MessageTypeWarning, text, "", noTimeout ? HbPopup::NoTimeout : HbPopup::StandardTimeout);
+    showMessageBox(HbMessageBox::MessageTypeWarning, text, "", noTimeout ? HbPopup::NoTimeout : 3000);
 }
 
 // ---------------------------------------------------------------------------
@@ -83,7 +85,7 @@ void Notifications::showConfirmationNote(const QString &text, bool noTimeout)
 
 bool Notifications::showConfirmationQuery(const QString &aText)
 {
-    return false; //HbMessageBox::question(aText);
+    return HbMessageBox::question(aText);
 }
 
 // ---------------------------------------------------------------------------

@@ -18,12 +18,11 @@
 #ifndef FILEBROWSERVIEWH_H_
 #define FILEBROWSERVIEWH_H_
 
+#include <hbview.h>
+#include <hbmainwindow.h>
+#include <hbapplication.h>
 #include "menuaction.h"
 #include "enginewrapper.h"
-
-#include <HbView>
-#include <HbMainWindow>
-#include <HbApplication>
 
 #include <QDir>
 
@@ -67,7 +66,8 @@ public:
 public slots:
 
 private:
-    void fileOverwriteDialog();
+    void fileOpenDialog(const QString &fileName);
+    OverwriteOptions fileOverwriteDialog();
     void openListDialog(const QStringList& items, const QString &aTitleText, QObject* receiver, const char* member);
 
     void diskAdmin(int cmd);
@@ -76,10 +76,10 @@ private:
                             const QString &primaryActionText,
                             const QString &secondaryActionText);
 
-//    HbDialog *openTextQuery(const QString &headingText,
-//                            const QString &text,
-//                            const QString &primaryActionText,
-//                            const QString &secondaryActionText);
+    HbDialog *openTextQuery(const QString &headingText,
+                            const QString &text,
+                            const QString &primaryActionText,
+                            const QString &secondaryActionText);
 
     HbDialog *openNumberQuery(const QString &headingText,
                               const QString &text,
@@ -109,36 +109,23 @@ private:
     void refreshList();
     void populateFolderContent();
 
-private slots:
+private slots: // option menu slots
     // menu action slots
     // file menu
     void fileBackMoveUp();
     void fileOpenDrive();
     void fileOpenDirectory();
     void fileSearch();
-
     void fileNewFile();
     void doFileNewFile(HbAction *);
-
     void fileNewDirectory();
     void doFileNewDirectory(HbAction *);
-
     void fileDelete();
     void doFileDelete(HbAction *);
-
     void fileRename();
-    void doFileRename(HbAction *);
-    void doFileRenameFileExist(HbAction *);
-
     void fileTouch();
     void doFileTouch(HbAction *);
     void fileProperties();
-
-    void fileChecksumsMD5();
-    void fileChecksumsMD2();
-    void fileChecksumsSHA1();
-    void fileChecksums(TFileBrowserCmdFileChecksums checksumType);
-
     void fileSetAttributes();
 
     // edit menu
@@ -146,13 +133,10 @@ private slots:
     void editCut();
     void editCopy();
     void editPaste();
-
     void editCopyToFolder();
     void doEditCopyToFolder(HbAction *);
-
     void editMoveToFolder();
     void doEditMoveToFolder(HbAction *);
-
     void editSelect();
     void editUnselect();
     void editSelectAll();
@@ -196,18 +180,13 @@ private slots:
     void diskAdminEjectDrive();
     void diskAdminDismountDrive();
     void doDiskAdminDismountDrive(HbAction *);
-
     void diskAdminEraseMBR();
     void doDiskAdminEraseMBR(HbAction *);
     void doDiskAdminReallyEraseMBR(HbAction *);
     void doDiskAdminNotRemovableReallyEraseMBR(HbAction *);
     
-    void diskAdminPartitionDrive();
-    void diskAdminPartitionDriveProceed(HbAction *);
-    void diskAdminPartitionDriveReallyProceed(HbAction *);
-    void diskAdminPartitionDriveIsNotRemovable(HbAction *);
-    void diskAdminPartitionDriveEraseMbr(HbAction *);
     void diskAdminPartitionDriveGetCount(HbAction*);
+    void diskAdminPartitionDrive();
 
     // tools menu
     void toolsAllAppsToTextFile();
@@ -263,10 +242,6 @@ private slots:
     void activateSelectionMode();
     void deActivateSelectionMode();
 
-    void fileOpen(HbAction *);
-    void fileOverwrite(HbAction *);
-    void fileOverwritePostfix(HbAction *);
-
 private:
     FileBrowserMainWindow &mMainWindow;
     EngineWrapper *mEngineWrapper;
@@ -287,6 +262,8 @@ private:
     MenuAction mFileViewMenuActions;
     HbAction *mToolbarBackAction;
 
+    // editor
+    EditorView *mEditor;
     // search
     SearchView *mSearch;
     // settings
@@ -298,16 +275,10 @@ private:
     bool mRemoveFileAfterCopied;
     bool mClipBoardInUse;
     bool mFolderContentChanged;
-
-    // temporarily storage
+    bool mEraseMBR;
+    // temporarily stored old passwird
     QString mOldPassword;
     QString mPanicCategory;
-    QString mAbsoluteFilePath;
-    OverwriteOptions mOverwriteOptions;
-    QModelIndex mModelIndex;
-    bool mIsRenameAllowed;
-    bool mProceed;
-    bool mEraseMBR;
 };
 
 

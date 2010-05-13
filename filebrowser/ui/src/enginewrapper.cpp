@@ -686,11 +686,6 @@ void EngineWrapper::toolsSetDebugMask(quint32 aDbgMask)
     mEngine->FileUtils()->SetDebugMaskL(aDbgMask);
 }
 
-void EngineWrapper::showFileCheckSums(const QModelIndex &aIndex, TFileBrowserCmdFileChecksums checksumType)
-{
-    mEngine->FileUtils()->ShowFileCheckSumsL(aIndex.row(), checksumType);
-}
-
 // ---------------------------------------------------------------------------
 // Functions that are called from engine
 // ---------------------------------------------------------------------------
@@ -705,11 +700,10 @@ void EngineWrapper::ShowErrorNote(const TDesC& aDescText, TBool aNoTimeout /*= E
 
 // ---------------------------------------------------------------------------
 
-void EngineWrapper::ShowInformationNote(const TDesC &aDescText, const TDesC &aDescTitle)
+void EngineWrapper::ShowInformationNote(const TDesC& aDescText)
 {
-    QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
-    QString qTitle = QString::fromUtf16(aDescTitle.Ptr(), aDescTitle.Length());
-    Notifications::showInformationNote(qText, qTitle);
+    QString qStringText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
+    Notifications::showInformationNote(qStringText);
 }
 
 // ---------------------------------------------------------------------------

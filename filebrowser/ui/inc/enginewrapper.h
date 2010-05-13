@@ -18,17 +18,16 @@
 #ifndef ENGINEWRAPPER_H
 #define ENGINEWRAPPER_H
 
-#include "driveentry.h"
-#include "fileentry.h"
-#include "filebrowsersettings.h"
-
-#include "engine.h"
-#include "FBFileUtils.h"
-#include "FB.hrh"
-
 #include <QString>
 #include <QStringList>
 #include <QModelIndexList>
+#include <driveentry.h>
+#include <fileentry.h>
+#include <engine.h>
+
+#include "filebrowsersettings.h"
+
+#include <FBFileUtils.h>
 
 class CEngine;
 class SearchAttributes;
@@ -76,7 +75,9 @@ public:
 
 public: // from MFileBrowserUI
     /* Functions that are called from engine: */
-    void ShowInformationNote(const TDesC &aDescText, const TDesC &aDescTitle);
+//    TInt QueryCurrentItemIndex();
+
+    void ShowInformationNote(const TDesC& aDescText);
     void ShowErrorNote(const TDesC& aDescText, TBool aNoTimeout = EFalse);
     void ShowConfirmationNote(const TDesC& aDescText, TBool aNoTimeout = EFalse);
     TBool ShowConfirmationQuery(const TDesC& aDescText);
@@ -157,8 +158,6 @@ public:
 
     quint32 getDebugMask();
     void toolsSetDebugMask(quint32 aDbgMask);
-
-    void showFileCheckSums(const QModelIndex &aIndex, TFileBrowserCmdFileChecksums checksumType);
 
 private:
     // FB engine
