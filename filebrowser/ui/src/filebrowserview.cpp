@@ -67,7 +67,6 @@ FileBrowserView::FileBrowserView(FileBrowserMainWindow &mainWindow)
     mFileBrowserModel(0),
     mFileViewMenuActions(),
     mToolbarBackAction(0),
-    mEditor(0),
     mSearch(0),
     mSettingsView(0),
     mItemHighlighted(false),
@@ -75,6 +74,12 @@ FileBrowserView::FileBrowserView(FileBrowserMainWindow &mainWindow)
     mRemoveFileAfterCopied(false),
     mClipBoardInUse(false),
     mFolderContentChanged(false),
+    mOldPassword(),
+    mPanicCategory(),
+    mAbsoluteFilePath(),
+    mOverwriteOptions(),
+    mIsRenameAllowed(true),
+    mProceed(false),
     mEraseMBR(false)
 {
     setTitle("File Browser");
@@ -124,9 +129,6 @@ void FileBrowserView::init(EngineWrapper *engineWrapper)
 
 FileBrowserView::~FileBrowserView()
 {  
-    if (mEditor){
-        delete mEditor;
-    }
 //    if (mSearch !=0) {
 //        delete mSearch;
 //    }
@@ -204,6 +206,12 @@ void FileBrowserView::createFileMenu()
     mFileViewMenuActions.mFileRename = mFileViewMenuActions.mFileMenu->addAction("Rename", this, SLOT(fileRename()));
     mFileViewMenuActions.mFileTouch = mFileViewMenuActions.mFileMenu->addAction("Touch", this, SLOT(fileTouch()));
     mFileViewMenuActions.mFileProperties = mFileViewMenuActions.mFileMenu->addAction("Properties", this, SLOT(fileProperties()));
+
+    mFileViewMenuActions.mFileChecksumsMenu = mFileViewMenuActions.mFileMenu->addMenu("Checksums");
+    mFileViewMenuActions.mFileChecksumsMD5 = mFileViewMenuActions.mFileChecksumsMenu->addAction("MD5", this, SLOT(fileChecksumsMD5()));
+    mFileViewMenuActions.mFileChecksumsMD2 = mFileViewMenuActions.mFileChecksumsMenu->addAction("MD2", this, SLOT(fileChecksumsMD2()));
+    mFileViewMenuActions.mFileChecksumsSHA1 = mFileViewMenuActions.mFileChecksumsMenu->addAction("SHA-1", this, SLOT(fileChecksumsSHA1()));
+
     mFileViewMenuActions.mFileSetAttributes = mFileViewMenuActions.mFileMenu->addAction("Set attributes...", this, SLOT(fileSetAttributes()));
     mFileViewMenuActions.mFileSetAttributes->setVisible(false);
 }
@@ -494,104 +502,70 @@ void FileBrowserView::populateFolderContent()
 
 // ---------------------------------------------------------------------------	
 
-void FileBrowserView::fileOpenDialog(const QString& fileName)
-{
-    Q_UNUSED(fileName);
-    HbDialog *dialog = new HbDialog();
-    dialog->setDismissPolicy(HbPopup::TapOutside);
-    dialog->setTimeout(HbPopup::NoTimeout);
+void FileBrowserView::fileOpen(HbAction *action)
+{  
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(!action && dlg && dlg->selectedModelIndexes().count()){
+        int selectionIndex = dlg->selectedModelIndexes().at(0).row();
 
-    // Create a list and some simple content for it
-    HbListWidget *list = new HbListWidget();
-    HbLabel *title = new HbLabel();
-    title->setPlainText("Open File");
-    dialog->setHeadingWidget(title);
-    list->addItem("View as text/hex");
-    list->addItem("Open w/ AppArc");
-    list->addItem("Open w/ DocH. embed");
-
-    // Connect list item activation signal to close the popup
-    connect(list, SIGNAL(activated(HbListWidgetItem*)), dialog, SLOT(close()));
-
-    HbAction *cancelAction = new HbAction(cancelActionText);
-    dialog->setPrimaryAction(cancelAction);
-
-    // Set listwidget to be popup's content
-    dialog->setContentWidget(list);
-    // Launch popup and handle the user response:
-    if (dialog->exec() != cancelAction){
-        if (list->currentRow() == 0) {
-            // create and launch editor with selected file item:
-            if(mEditor != 0){
-                delete mEditor;
-                mEditor = 0;
-            }
-            emit aboutToShowEditorView(fileName, true);
-        }
-        else if (list->currentRow() == 1) {
+        if (selectionIndex == 0) {
+            // open editor view
+            emit aboutToShowEditorView(mAbsoluteFilePath, true);
+        } else if (selectionIndex == 1) {
             // AppArc
-            mEngineWrapper->openAppArc(fileName);
+            mEngineWrapper->openAppArc(mAbsoluteFilePath);
         } else {
             // DocHandler
-            mEngineWrapper->openDocHandler(fileName, true);
+            mEngineWrapper->openDocHandler(mAbsoluteFilePath, true);
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-
-OverwriteOptions FileBrowserView::fileOverwriteDialog()
+/**
+  Open overwrite dialog
+  */
+void FileBrowserView::fileOverwriteDialog()
 {
-    HbDialog *dialog = new HbDialog();
-    dialog->setDismissPolicy(HbPopup::TapOutside);
-    dialog->setTimeout(HbPopup::NoTimeout);
+    mOverwriteOptions = OverwriteOptions();
+    // open user-dialog to select: view as text/hex,  open w/AppArc or open w/DocH. embed
+    QStringList list;
+    list << QString("Overwrite all")
+            << QString("Skip all existing")
+            << QString("Gen. unique filenames")
+            << QString("Query postfix");
+    openListDialog(list, QString("Overwrite?"), this, SLOT(fileOverwrite(HbAction *)));
+}
 
-    // Create a list and some simple content for it
-
-    HbLabel *title = new HbLabel();
-    title->setPlainText("Overwrite?");
-    dialog->setHeadingWidget(title);
-
-    HbListWidget *list = new HbListWidget();
-    list->addItem("Overwrite all");
-    list->addItem("Skip all existing");
-    list->addItem("Gen. unique filenames");
-    list->addItem("Query postfix");
-
-    // Connect list item activation signal to close the popup
-    connect(list, SIGNAL(activated(HbListWidgetItem*)), dialog, SLOT(close()));
-
-    HbAction *cancelAction = new HbAction(cancelActionText);
-    dialog->setPrimaryAction(cancelAction);
-
-    // Set listwidget to be popup's content
-    dialog->setContentWidget(list);
-
-    OverwriteOptions overwriteOptions;
-    // Launch popup and handle the user response:
-    if (dialog->exec() != cancelAction) {
-        overwriteOptions.queryIndex = list->currentRow();
-        if (overwriteOptions.queryIndex == EFileActionQueryPostFix) {
-            HbDialog* dialog = filePathQuery(QString("Postfix"),
-                                             QString(),
-                                             okActionText,
-                                             cancelActionText);
-            HbAction *action = 0;
-            action = dialog->exec();
-
-            HbLineEdit * lineEdit= qobject_cast<HbLineEdit *>(dialog->contentWidget());
-            if (action && action->text() == "OK" && lineEdit && lineEdit->text() != "") {
-                overwriteOptions.postFix = lineEdit->text();
-            } else {
-                overwriteOptions.doFileOperations = false;
-            }
-        } else if (overwriteOptions.queryIndex == EFileActionSkipAllExisting) {
-            overwriteOptions.overWriteFlags = 0;
+/**
+  File overwrite
+  */
+void FileBrowserView::fileOverwrite(HbAction *action)
+{
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(!action && dlg && dlg->selectedModelIndexes().count()) {
+        mOverwriteOptions.queryIndex = dlg->selectedModelIndexes().at(0).row();
+        if (mOverwriteOptions.queryIndex == EFileActionQueryPostFix) {
+            QString heading = QString("Postfix");
+            HbInputDialog::getText(heading, this, SLOT(fileOverwritePostfix(HbAction *)), QString(), scene());
+        } else if (mOverwriteOptions.queryIndex == EFileActionSkipAllExisting) {
+            mOverwriteOptions.overWriteFlags = 0;
         }
     } else {
-        overwriteOptions.doFileOperations = false;
+        mOverwriteOptions.doFileOperations = false;
     }
-    return overwriteOptions;
+}
+
+/**
+  File overwrite postfix query dialog
+  */
+void FileBrowserView::fileOverwritePostfix(HbAction *action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->primaryAction()) {
+        mOverwriteOptions.postFix = dlg->value().toString();
+    } else {
+        mOverwriteOptions.doFileOperations = false;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -646,28 +620,28 @@ HbDialog *FileBrowserView::filePathQuery(const QString &headingText,
 
 // ---------------------------------------------------------------------------
 
-HbDialog *FileBrowserView::openTextQuery(const QString &headingText,
-                                         const QString &text,
-                                         const QString &primaryActionText,
-                                         const QString &secondaryActionText)
-{
-    HbDialog *dialog = new HbDialog();
-    dialog->setDismissPolicy(HbPopup::TapOutside);
-    dialog->setTimeout(HbPopup::NoTimeout);
-    HbLineEdit *edit = new HbLineEdit();
-    HbAction *primaryAction = new HbAction(primaryActionText);
-    HbAction *secondaryAction = new HbAction(secondaryActionText);
-    // connect signal to close pop-up if cancel selected:
-    connect(secondaryAction, SIGNAL(triggered()), dialog, SLOT(close()));
-    edit->setText(text);
-    dialog->setHeadingWidget(new HbLabel(headingText));
-    //popup->setHeadingWidget(dlgTitle);
-    dialog->setContentWidget(edit);
-    dialog->setPrimaryAction(primaryAction);
-    dialog->setSecondaryAction(secondaryAction);
-
-    return dialog;
-}
+//HbDialog *FileBrowserView::openTextQuery(const QString &headingText,
+//                                         const QString &text,
+//                                         const QString &primaryActionText,
+//                                         const QString &secondaryActionText)
+//{
+//    HbDialog *dialog = new HbDialog();
+//    dialog->setDismissPolicy(HbPopup::TapOutside);
+//    dialog->setTimeout(HbPopup::NoTimeout);
+//    HbLineEdit *edit = new HbLineEdit();
+//    HbAction *primaryAction = new HbAction(primaryActionText);
+//    HbAction *secondaryAction = new HbAction(secondaryActionText);
+//    // connect signal to close pop-up if cancel selected:
+//    connect(secondaryAction, SIGNAL(triggered()), dialog, SLOT(close()));
+//    edit->setText(text);
+//    dialog->setHeadingWidget(new HbLabel(headingText));
+//    //popup->setHeadingWidget(dlgTitle);
+//    dialog->setContentWidget(edit);
+//    dialog->setPrimaryAction(primaryAction);
+//    dialog->setSecondaryAction(secondaryAction);
+//
+//    return dialog;
+//}
 
 // ---------------------------------------------------------------------------
 
@@ -912,45 +886,56 @@ void FileBrowserView::doFileDelete(HbAction* action)
 }
 
 /**
-  Rename actually selected files
+  Open rename dialog for actually selected files
   */
 void FileBrowserView::fileRename()
 {
-    QModelIndex index;
     QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
     mEngineWrapper->setCurrentSelection(currentSelection);
 
-    for (int i(0), ie(currentSelection.count()); i<ie; ++i ) {
-        index = currentSelection.at(i);
-        QString newName;
-        FileEntry entry = mEngineWrapper->getFileEntry(index);
-        HbDialog* dialog = filePathQuery(QString("Enter new name"),
-                                         entry.name(),
-                                         okActionText,
-                                         cancelActionText);
-        HbAction *action = 0;
-        action = dialog->exec();
+    for (int i(0), ie(currentSelection.count()); i < ie; ++i ) {
+        mModelIndex = currentSelection.at(i);
+        FileEntry entry = mEngineWrapper->getFileEntry(mModelIndex);
 
-        bool doRenameOperation(true);
-        HbLineEdit * lineEdit= qobject_cast<HbLineEdit *>(dialog->contentWidget());
-        if (action && action->text() == okActionText && lineEdit && lineEdit->text() != "") {
-            newName = lineEdit->text();
+        QString heading = QString("Enter new name");
+        HbInputDialog::getText(heading, this, SLOT(doFileRename(HbAction*)), entry.name(), scene());
 
-            if (mEngineWrapper->targetExists(index, newName)) {
-                const QString messageTemplate = QString("%1 already exists, overwrite?");
-                QString message = messageTemplate.arg(newName);
-// TODO: deprecated
-                if (HbMessageBox::question(message)) {
-                    doRenameOperation = false;
-                }
-            }
-            if (doRenameOperation) {
-                mEngineWrapper->rename(index, newName);
-            }
-        }
     }
     mEngineWrapper->startExecutingCommands(QString("Renaming"));
     refreshList();
+}
+
+/**
+  Rename actually selected files
+  */
+void FileBrowserView::doFileRename(HbAction *action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->primaryAction())
+    {
+        QString newName = dlg->value().toString();
+
+        if (mEngineWrapper->targetExists(mModelIndex, newName)) {
+
+            const QString messageTemplate = QString("%1 already exists, overwrite?");
+            QString message = messageTemplate.arg(newName);
+            HbMessageBox::question(message, this, SLOT(doFileRenameFileExist(HbAction *)));
+        }
+        if (mIsRenameAllowed) {
+            mEngineWrapper->rename(mModelIndex, newName);
+        }
+    }
+}
+
+/**
+  Rename actually selected files
+  */
+void FileBrowserView::doFileRenameFileExist(HbAction *action)
+{
+    HbMessageBox *dlg = qobject_cast<HbMessageBox*>(sender());
+    if (action == dlg->secondaryAction()) {
+        mIsRenameAllowed = false;
+    }
 }
 
 /**
@@ -983,6 +968,27 @@ void FileBrowserView::doFileTouch(HbAction* action)
         }
     mEngineWrapper->touch(recurse);
     refreshList();
+}
+
+void FileBrowserView::fileChecksumsMD5()
+{
+    fileChecksums(EFileChecksumsMD5);
+}
+
+void FileBrowserView::fileChecksumsMD2()
+{
+    fileChecksums(EFileChecksumsMD2);
+}
+
+void FileBrowserView::fileChecksumsSHA1()
+{
+    fileChecksums(EFileChecksumsSHA1);
+}
+
+void FileBrowserView::fileChecksums(TFileBrowserCmdFileChecksums checksumType)
+{
+    QModelIndex currentIndex = currentItemIndex();
+    mEngineWrapper->showFileCheckSums(currentIndex, checksumType);
 }
 
 /**
@@ -1050,15 +1056,14 @@ void FileBrowserView::editCopy()
 void FileBrowserView::editPaste()
 {
     bool someEntryExists(false);
-    OverwriteOptions overwriteOptions;
 
     // TODO Set entry items here
 
     someEntryExists = mEngineWrapper->isDestinationEntriesExists(mClipboardIndices, mEngineWrapper->currentPath());
     if (someEntryExists) {
-        overwriteOptions = fileOverwriteDialog();
+        fileOverwriteDialog();
     }
-    mEngineWrapper->clipboardPaste(overwriteOptions);
+    mEngineWrapper->clipboardPaste(mOverwriteOptions);
 }
 
 /**
@@ -1080,7 +1085,6 @@ void FileBrowserView::doEditCopyToFolder(HbAction *action)
     {
         QString targetDir = dlg->value().toString();
         bool someEntryExists(false);
-        OverwriteOptions overwriteOptions;
 
         // TODO Set entry items here
         QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
@@ -1088,9 +1092,9 @@ void FileBrowserView::doEditCopyToFolder(HbAction *action)
 
         someEntryExists = mEngineWrapper->isDestinationEntriesExists(currentSelection, targetDir);
         if (someEntryExists) {
-            overwriteOptions = fileOverwriteDialog();
+            fileOverwriteDialog();
         }
-        mEngineWrapper->copyToFolder(targetDir, overwriteOptions, false);
+        mEngineWrapper->copyToFolder(targetDir, mOverwriteOptions, false);
         refreshList();
     }
 }
@@ -1114,7 +1118,6 @@ void FileBrowserView::doEditMoveToFolder(HbAction *action)
     {
         QString targetDir = dlg->value().toString();
         bool someEntryExists(false);
-        OverwriteOptions overwriteOptions;
 
         // TODO Set entry items here
         QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
@@ -1122,9 +1125,9 @@ void FileBrowserView::doEditMoveToFolder(HbAction *action)
 
         someEntryExists = mEngineWrapper->isDestinationEntriesExists(currentSelection, targetDir);
         if (someEntryExists) {
-            overwriteOptions = fileOverwriteDialog();
+            fileOverwriteDialog();
         }
-        mEngineWrapper->copyToFolder(targetDir, overwriteOptions, true);
+        mEngineWrapper->copyToFolder(targetDir, mOverwriteOptions, true);
         refreshList();
     }
 }
@@ -1537,44 +1540,92 @@ void FileBrowserView::doDiskAdminNotRemovableReallyEraseMBR(HbAction* action)
 /**
   Partition the selected drive
   */
+void FileBrowserView::diskAdminPartitionDrive()
+{
+    const QString message("Are you sure? Your media driver must support this!");
+    HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveProceed(HbAction *)));
+}
+
+/**
+  Partition the selected drive if user is sure
+  */
+void FileBrowserView::diskAdminPartitionDriveProceed(HbAction *action)
+{
+    HbMessageBox *dlg = qobject_cast<HbMessageBox*>(sender());
+    if (action == dlg->primaryAction()) {
+        const QString message("Are you really sure you know what are you doing ?!?");
+        HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveReallyProceed(HbAction *)));
+    }
+}
+
+/**
+  Partition the selected drive if user is really sure
+  */
+void FileBrowserView::diskAdminPartitionDriveReallyProceed(HbAction *action)
+{
+    HbMessageBox *dlg = qobject_cast<HbMessageBox*>(sender());
+    if (action == dlg->primaryAction()) {
+        QModelIndex currentIndex = currentItemIndex();
+        mEraseMBR = false;
+        // warn if the selected drive is not detected as removable
+        if (mEngineWrapper->isDriveRemovable(currentIndex)) {
+            mProceed = true;
+        } else {
+            const QString message("Selected drive is not removable, really continue?");
+            HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveIsNotRemovable(HbAction *)));
+        }
+
+        if (mProceed) {
+            // query if erase mbr
+            mEraseMBR = false;
+
+            QString message("Erase MBR first (normally needed)?");
+            HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveEraseMbr(HbAction *)));
+
+            // TODO use HbListDialog
+            QStringList list;
+            list << "1" << "2" << "3" << "4";
+            openListDialog(list, QString("Partitions?"), this, SLOT(diskAdminPartitionDriveGetCount(HbAction*)));
+        }
+    }
+}
+
+/**
+  Store result of user query about proceeding when drive is not removable.
+  */
+void FileBrowserView::diskAdminPartitionDriveIsNotRemovable(HbAction *action)
+{
+    HbMessageBox *dlg = qobject_cast<HbMessageBox*>(sender());
+    if (action == dlg->primaryAction()) {
+        mProceed = true;
+    } else {
+        mProceed = false;
+    }
+}
+
+/**
+  Store result of user query about erase MBR
+  */
+void FileBrowserView::diskAdminPartitionDriveEraseMbr(HbAction *action)
+{
+    HbMessageBox *dlg = qobject_cast<HbMessageBox*>(sender());
+    if (action == dlg->primaryAction()) {
+        mEraseMBR = true;
+    }
+}
+
+/**
+  Partition the selected drive
+  */
 void FileBrowserView::diskAdminPartitionDriveGetCount(HbAction* action)
 {
     HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
-    if(!action && dlg->selectedItems().count()){
-        int selectionIndex = dlg->selectedItems().at(0).toInt(); 
+    if(!action && dlg && dlg->selectedItems().count()){
+        int selectionIndex = dlg->selectedItems().at(0).toInt();
         QModelIndex currentIndex = currentItemIndex();
         int amountOfPartitions = selectionIndex + 1;
         mEngineWrapper->DiskAdminPartitionDrive(currentIndex, mEraseMBR, amountOfPartitions);
         refreshList();
-    }
-}
-void FileBrowserView::diskAdminPartitionDrive()
-{
-    if (HbMessageBox::question(QString("Are you sure? Your media driver must support this!"))) {
-        if (HbMessageBox::question(QString("Are you really sure you know what are you doing ?!?"))) {
-            QModelIndex currentIndex = currentItemIndex();
-            // warn if the selected drive is not detected as removable
-            bool proceed(false);
-            if (mEngineWrapper->isDriveRemovable(currentIndex)) {
-                proceed = true;
-            } else {
-                proceed = HbMessageBox::question(QString("Selected drive is not removable, really continue?"));
-            }
-
-            if (proceed) {
-                // query if erase mbr
-                mEraseMBR = false;
-
-                if (HbMessageBox::question(QString("Erase MBR first (normally needed)?"))) {
-                    mEraseMBR = true;
-                }
-
-                // TODO use HbListDialog
-                QStringList list;
-                list << "1" << "2" << "3" << "4";
-                openListDialog(list, QString("Partitions?"), this, SLOT(diskAdminPartitionDriveGetCount(HbAction*)));
-            }
-        }
     }
 }
 
@@ -1816,7 +1867,7 @@ void FileBrowserView::selectionModeChanged()
   */
 void FileBrowserView::about()
 {
-    Notifications::about();
+    Notifications::showAboutNote();
 }
 
 // ---------------------------------------------------------------------------
@@ -1864,9 +1915,12 @@ void FileBrowserView::activated(const QModelIndex& index)
         } else {  // file item
             // mSelectedFilePath = filePath;
             FileEntry fileEntry = mEngineWrapper->getFileEntry(index);
-            QString absolutePath = fileEntry.path() + fileEntry.name();
+            mAbsoluteFilePath = fileEntry.path() + fileEntry.name();
+
             // open user-dialog to select: view as text/hex,  open w/AppArc or open w/DocH. embed
-            fileOpenDialog(absolutePath);
+            QStringList list;
+            list << QString("View as text/hex") << QString("Open w/ AppArc") << QString("Open w/ DocH. embed");
+            openListDialog(list, QString("Open file"), this, SLOT(fileOpen(HbAction *)));
         }
     }
 }

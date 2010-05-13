@@ -22,33 +22,20 @@
 #include <hbmessagebox.h>
 
 class Notifications
-    {
+{
 public:
     
-    /**
-     * shows about box
-     */
-    static void about();
+    static void showAboutNote();
     static void showMessageBox(HbMessageBox::MessageBoxType type, const QString &text, const QString &label, int timeout = HbPopup::NoTimeout);
-    static void showInformationNote(const QString &text);
+    static void showInformationNote(const QString &text, const QString &title = QString());
     static void showErrorNote(const QString &text, bool noTimeout = false);
     static void showConfirmationNote(const QString &text, bool noTimeout = false);
     static bool showConfirmationQuery(const QString &aText);
     
-//     /**
-//     * shows progressbar
-//     */
+
 //    static HbDeviceProgressDialog* showWaitDialog(const QString &text);
- 
-private:
-    
-//    /**
-//     * shows global HbGlobalCommonNote type note
-//     */
-//    static void showGlobalNote(const QString& text, HbCommonNote::NoteType type);
-    
-    };
 
-
+private:    
+};
 
 #endif // NOTIFICATIONS_H_

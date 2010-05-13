@@ -31,7 +31,11 @@ class Notifications : public HbPopup
 	Q_OBJECT 	
 	
 public:
-    
+    /**
+     * shows massage box
+     */
+	static void showMessageBox(HbMessageBox::MessageBoxType type, const QString &text, const QString &label, int timeout );
+	
     /**
      * shows about box
      */

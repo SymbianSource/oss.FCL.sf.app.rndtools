@@ -31,38 +31,48 @@
 
 #include "notifications.h"
 
+// ---------------------------------------------------------------------------
 
+void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QString &text, const QString &label, int timeout )
+{
+    HbMessageBox *messageBox = new HbMessageBox(type);
+    messageBox->setText(text);
+    if(label.length())
+        {
+        HbLabel *header = new HbLabel(label, messageBox);
+        messageBox->setHeadingWidget(header);
+        }
+    messageBox->setAttribute(Qt::WA_DeleteOnClose);
+    messageBox->setTimeout(timeout);
+    messageBox->open();
+}
 
 // ---------------------------------------------------------------------------
 
 void Notifications::about()
 {
-    HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeInformation);
-        messageBox->setText("Version 6.0.0 - April 23rd 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
-        HbLabel *header = new HbLabel("About Creator", messageBox);
-        messageBox->setHeadingWidget(header);
-        messageBox->setAttribute(Qt::WA_DeleteOnClose);
-        messageBox->setTimeout(HbPopup::NoTimeout);
-        messageBox->open();
+    showMessageBox(HbMessageBox::MessageTypeInformation,
+        "Version 6.0.0 - April 23rd 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.",
+        "About Creator", 
+        HbPopup::NoTimeout
+        );
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::error(const QString& errorMessage)
 {
-    HbMessageBox::warning(errorMessage, new HbLabel("Error"));
+    showMessageBox(HbMessageBox::MessageTypeWarning, errorMessage, QString("Error"), 3000);
 }
 
 
 // ---------------------------------------------------------------------------
-
 
 HbProgressDialog* Notifications::showProgressBar(const QString& text, int max)
 {
 	HbProgressDialog *note = new HbProgressDialog(HbProgressDialog::ProgressDialog);
     note->setText(text);
     note->setMaximum(max);
-
     note->show();
     return note;
 
@@ -70,12 +80,9 @@ HbProgressDialog* Notifications::showProgressBar(const QString& text, int max)
 
 // ---------------------------------------------------------------------------
 
-void Notifications::showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type, HbPopup::DefaultTimeout /*timeout*/)
+void Notifications::showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type, HbPopup::DefaultTimeout timeout)
 {
-	if (type == HbMessageBox::HbMessageBox::MessageTypeInformation)
-		HbMessageBox::information(text, new HbLabel("Information"));
-	else
-		HbMessageBox::information(text, new HbLabel("Information"));
+    showMessageBox(type, text, QString("Creator"), timeout);
 }
 
 // ---------------------------------------------------------------------------
@@ -115,13 +122,14 @@ bool Notifications::entriesQueryDialog(int& numberOfEntries, const QString& text
     popup->setSecondaryAction(actionCancel);
 
     // Launch popup syncronously
-    HbAction *action = 0;
-    action = popup->exec();
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    // TODO: handle dialog close & user input
+    popup->open();
 
 	// continue if ok selected and valid user input exists in line editor
-    if (action && action->text() == "Ok" && edit->text() != "") {
+    /*if (action && action->text() == "Ok" && edit->text() != "") {
 		numberOfEntries = edit->text().toInt(&err, 10);
-	}
+	}*/
 	return err;
 }
 
@@ -155,14 +163,15 @@ bool Notifications::timeQueryDialog(QDate& date, const QString& text)
     popup->setSecondaryAction(actionCancel);
 
     // Launch popup syncronously
-    HbAction *action = 0;
-    action = popup->exec();
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    // TODO: handle dialog close & user input
+    popup->open();
 
 	// continue if ok selected and valid user input exists in line editor
-    if (action && action->text() == "Ok" && edit->text() != "") {
+    /*if (action && action->text() == "Ok" && edit->text() != "") {
 		date = QDate::fromString(edit->text());
         err = true;
-	}
+	}*/
 	return err;    
 }
 
@@ -170,7 +179,8 @@ bool Notifications::timeQueryDialog(QDate& date, const QString& text)
 
 bool Notifications::yesNoQueryDialog(const QString& text)
 {
-    return HbMessageBox::question(text);
+    HbMessageBox::question(text, 0, 0);
+    return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,14 +220,15 @@ bool Notifications::directoryQueryDialog(const QString& text, QString& directory
     popup->setSecondaryAction(actionCancel);
 
     // Launch popup syncronously
-    HbAction *action = 0;
-    action = popup->exec();
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    // TODO: handle dialog close & user input
+    popup->open();
 
 	// continue if ok selected and valid user input exists in line editor
-    if (action && action->text() == "Ok" && edit->text() != "") {
+    /*if (action && action->text() == "Ok" && edit->text() != "") {
 		directory = edit->text();
 		err = true;
-	}
+	}*/
 	return err;
 }
 
