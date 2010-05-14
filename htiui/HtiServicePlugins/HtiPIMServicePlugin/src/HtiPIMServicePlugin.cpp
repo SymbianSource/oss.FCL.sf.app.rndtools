@@ -20,13 +20,12 @@
 #include "HtiPIMServicePlugin.h"
 #include "PIMHandler.h"
 #include "HtiBookmarkHandler.h"
-#include "HtiSimDirHandlerVPbk.h"
-
+#include "HtiSimDirHandler.h"
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 // CONSTANTS
-_LIT8( KErrorMissingCommand, "Command was not given - message was empty" );
+_LIT8( KErrorMissingCommand, "Missing command" );
 
 // ----------------------------------------------------------------------------
 // Create instance of concrete ECOM interface implementation
@@ -87,7 +86,7 @@ void CHtiPIMServicePlugin::ProcessMessageL( const TDesC8& aMessage,
         {
         if ( iSimDirHandler == NULL )
             {
-            iSimDirHandler = CHtiSimDirHandlerVPbk::NewL();
+            iSimDirHandler = CHtiSimDirHandler::NewL();
             iSimDirHandler->SetDispatcher( iDispatcher );
             }
         iSimDirHandler->ProcessMessageL( aMessage, aPriority );
@@ -111,18 +110,17 @@ TBool CHtiPIMServicePlugin::IsBusy()
     {
     if ( iPimHandler )
         {
-        if ( iPimHandler->IsBusy() )
-            return ETrue;
+        return iPimHandler->IsBusy();
         }
-    if ( iSimDirHandler )
-        {
-        if ( iSimDirHandler->IsBusy() )
-            return ETrue;
-        }
+
     if ( iBookmarkHandler )
         {
-        if ( iBookmarkHandler->IsBusy() )
-            return ETrue;
+        return iBookmarkHandler->IsBusy();
+        }
+    
+    if( iSimDirHandler)
+        {
+        return iSimDirHandler->IsBusy();
         }
     return EFalse;
     }

@@ -84,13 +84,25 @@ void MainView::createMenu(HbApplication& app)
 }
 
 
+void MainView::quitYesNoQuestionClosed(HbAction* action)
+    {
+    HbMessageBox *dlg = static_cast<HbMessageBox*>(sender());
+    if(action == dlg->primaryAction())
+        {
+        qApp->quit(); 
+        }
+    }
 
 void MainView::my_quit()
     {
-	HbLabel label(" Exit Screen grabber confirm");
-	if (HbMessageBox::question("Do you really want to exit the Screen Grabber application?","yes","no",&label))
-		qApp->quit();   
-    }
+	HbMessageBox::question("Do you really want to exit the Screen Grabber application?", 
+	    this, //receiver
+	    SLOT(quitYesNoQuestionClosed(HbAction *)), //member
+	    tr("Yes"), //primaryButtonText
+	    tr("No"), //secondaryButtonText
+	    new HbLabel("Exit Screen grabber confirm", this)
+        );
+	}
 
 // ---------------------------------------------------------------------------
 

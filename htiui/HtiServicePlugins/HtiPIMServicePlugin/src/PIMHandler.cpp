@@ -17,38 +17,30 @@
 
 
 // INCLUDE FILES
+#include "../../../symbian_version.hrh"
+
 #include "HtiPIMServicePlugin.h"
 #include "PIMHandler.h"
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 #include <utf.h>
 #include <calcommon.h>
 #include <calsession.h>
-#include <calenimporter.h>
 #include <calentryview.h>
 
-#include <CVPbkContactLinkArray.h>
-#include <CVPbkContactManager.h>
-#include <CVPbkContactViewDefinition.h>
-#include <CVPbkContactStoreUriArray.h>
-#include <CVPbkSortOrder.h>
-#include <CVPbkVCardEng.h>
-#include <MVPbkContactLinkArray.h>
-#include <MVPbkContactOperationBase.h>
-#include <MVPbkContactStore.h>
-#include <MVPbkContactStoreList.h>
-#include <MVPbkContactStoreObserver.h>
-#include <MVPbkContactStoreProperties.h>
-#include <MVPbkContactView.h>
-#include <MVPbkContactViewBase.h>
-#include <MVPbkViewContact.h>
-#include <TVPbkContactStoreUriPtr.h>
-#include <VPbkContactStoreUris.h>
+#include <cntdb.h> 
+#include <cntitem.h> 
+#include <cntfldst.h> 
+#include <cntvcard.h> 
+#include <cntfilt.h> 
+#include <caldataexchange.h> 
+#include <caldataformat.h> 
 
 // CONSTANTS
 _LIT8( KErrorUnrecognizedCommand, "Unrecognized command" );
+_LIT8( KErrorCalendarFileFormat, "Invalid format of calendar file name");
 _LIT8( KErrorVCardImportFailed, "vCard import failed" );
 _LIT8( KErrorVCalendarImportFailed, "vCalendar import failed" );
 _LIT8( KErrorMissingVCalendar, "Missing vCalendar object" );
@@ -57,8 +49,14 @@ _LIT8( KErrorInvalidId, "Invalid ID parameter" );
 _LIT8( KErrorItemNotFound, "Item not found" );
 _LIT8( KErrorFailedDelete, "Failed to delete item" );
 _LIT8( KErrorFailedDeleteAll, "Failed to delete all items" );
-_LIT8( KErrorIdDeleteNotSupported, "Deleting with ID not supported anymore" );
+_LIT8( KErrorFailedOpenCalendar, "Failed to open calendar file");
+//_LIT8( KErrorFailedOpenContact, "Failed to open contact database");
 
+
+
+_LIT( KDefaultAgendaFile, "" ); // A default file is opened if fileName is KNullDesC
+
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )  
 _LIT8( KErrorMissingText, "Text parameter missing" );
 _LIT8( KErrorMissingFilepath, "Filepath parameter missing" );
 _LIT8( KErrorNotepadAddMemoFailed, "Notepad add memo failed" );
@@ -70,9 +68,9 @@ _LIT( KCmdAddMemo,         "AddMemo" );
 _LIT( KCmdAddMemoFromFile, "AddMemoFromFile" );
 _LIT( KCmdDeleteAll,       "DeleteAll" );
 _LIT( KCmdDelim,           " " );
-
-_LIT( KDefaultAgendaFile, "" ); // A default file is opened if fileName is KNullDesC
-
+#else
+_LIT8( KErrorNotepadNotSupported, "Notepad not supported" );
+#endif
 
 // ----------------------------------------------------------------------------
 CPIMHandler* CPIMHandler::NewL()
@@ -87,7 +85,8 @@ CPIMHandler* CPIMHandler::NewL()
     }
 
 // ----------------------------------------------------------------------------
-CPIMHandler::CPIMHandler():iIsBusy( EFalse ), iEntryViewErr( KErrNone )
+CPIMHandler::CPIMHandler():iIsBusy( EFalse ), iEntryViewErr( KErrNone ),
+        iCalSession(NULL)
     {
     }
 
@@ -95,22 +94,8 @@ CPIMHandler::CPIMHandler():iIsBusy( EFalse ), iEntryViewErr( KErrNone )
 CPIMHandler::~CPIMHandler()
     {
     HTI_LOG_TEXT( "CPIMHandler destroy" );
-    HTI_LOG_TEXT( "Deleting iEntryView" );
-    delete iEntryView;
-    HTI_LOG_TEXT( "Deleting iCalSession" );
+    HTI_LOG_TEXT( "Deleting iCalSession");
     delete iCalSession;
-    if ( iContactView )
-        {
-        HTI_LOG_TEXT( "Deleting iContactView" );
-        iContactView->RemoveObserver( *this );
-        delete iContactView;
-        }
-    HTI_LOG_TEXT( "Deleting iVCardEngine" );
-    delete iVCardEngine;
-    HTI_LOG_TEXT( "Deleting iContactManager" );
-    delete iContactManager;
-    HTI_LOG_TEXT( "Deleting iBuffer" );
-    delete iBuffer;
     HTI_LOG_TEXT( "Deleting iWaiter" );
     delete iWaiter;
     }
@@ -120,7 +105,6 @@ void CPIMHandler::ConstructL()
     {
     HTI_LOG_TEXT( "CPIMHandler::ConstructL" );
     iWaiter = new ( ELeave ) CActiveSchedulerWait;
-
     }
 
 // ----------------------------------------------------------------------------
@@ -141,8 +125,8 @@ void CPIMHandler::ProcessMessageL( const TDesC8& aMessage,
     // Zero legth of aMessage tested already in CHtiPIMServicePlugin.
     // Other sanity checks must be done here.
 
-    iCommand = aMessage.Ptr()[0];
-    switch ( iCommand )
+    TUint8 command = aMessage.Ptr()[0];
+    switch ( command )
         {
         case CHtiPIMServicePlugin::EImportVCard:
             {
@@ -166,6 +150,17 @@ void CPIMHandler::ProcessMessageL( const TDesC8& aMessage,
             {
             TRAP( err, HandleCalendarDeleteFuncL(
                     aMessage.Right( aMessage.Length() - 1 ) ) );
+            break;
+            }
+        case CHtiPIMServicePlugin::EOpenCalendarFile:
+            {
+            TRAP( err, HandleOpenCalendarFileL(
+                    aMessage.Right( aMessage.Length() - 1 )));
+            break;
+            }
+        case CHtiPIMServicePlugin::EListCalendarFiles:
+            {
+            TRAP( err, HandleListCalendarFilesL());
             break;
             }
         case CHtiPIMServicePlugin::ENotepadAddMemo:
@@ -207,46 +202,144 @@ TBool CPIMHandler::IsBusy()
     }
 
 // ----------------------------------------------------------------------------
+void CPIMHandler::HandleOpenCalendarFileL( const TDesC8& aData )
+    {
+    HTI_LOG_FUNC_IN( "CPIMHandler::HandleOpenCalendarFileL" );
+    
+    // check the format, the correct format is DriveLetter:FileName
+    if (aData.Length() != 0)
+        {
+        if(aData.Length() < 3 || aData[1] != ':'||
+                !(aData[0] >= 'a' && aData[0] <= 'z' || aData[0] >= 'A' && aData[0] <= 'Z'))
+            {
+            SendErrorMessageL( KErrArgument, KErrorCalendarFileFormat );
+            return;
+            }
+        }
+    
+    delete iCalSession;
+    iCalSession = NULL;
+    
+    // Open iCalSession
+    HTI_LOG_TEXT("Open calendar session");
+    iCalSession = CCalSession::NewL();
+    TBuf<KMaxFileName + 2> calFile;
+    calFile.Copy(aData);
+    TRAPD(err, iCalSession->OpenL(calFile));
+    if(err == KErrNone)
+        {
+        HTI_LOG_TEXT("Calendar session open");
+        SendOkMsgL( KNullDesC8 );
+        }
+    else
+        {
+        HTI_LOG_TEXT("Failed to open calendar file");
+        SendErrorMessageL( err, KErrorFailedOpenCalendar );
+        delete iCalSession;
+        iCalSession = NULL;
+        }
+    HTI_LOG_FUNC_OUT( "CPIMHandler::HandleOpenCalendarFileL: Done" );
+    }
+
+// ----------------------------------------------------------------------------
+void CPIMHandler::HandleListCalendarFilesL()
+    {
+    HTI_LOG_FUNC_IN( "CPIMHandler::HandleListCalendarFiles" );
+    
+    CCalSession* calSession = CCalSession::NewL();
+    CleanupStack::PushL(calSession);
+    HTI_LOG_TEXT("List all calendar files");
+    CDesCArray* calFiles = calSession->ListCalFilesL();
+    
+    if(calFiles == NULL) //No calendar files
+        {
+        TBuf8<2> reply;
+        reply.AppendFill(0, 2);
+        SendOkMsgL(reply);
+        CleanupStack::PopAndDestroy(); // calSession
+        return;
+        }
+    
+    CleanupStack::PushL(calFiles);
+    TInt count = calFiles->Count();
+    
+    // files count + file count * (file name length + max file name + driver letter + ':')
+    TInt bufSize = 2 + count * (2 + KMaxFileName + 1 + 1);
+    CBufFlat* calListBuf = CBufFlat::NewL( bufSize );
+    CleanupStack::PushL(calListBuf);
+    
+    HBufC8* calArray = HBufC8::NewLC( bufSize );
+    TPtr8 calArrayPtr = calArray->Des();
+    
+    calArrayPtr.Append((TUint8*)(&count), 2);
+    TInt pos = 0;
+    calListBuf->ExpandL(pos, 2);
+    calListBuf->Write(pos, *calArray, 2);
+    calArrayPtr.Zero();
+    pos += 2;
+    
+    for(int i = 0; i < count; ++i)
+        {
+        TInt len = calFiles->MdcaPoint(i).Length();
+        calArrayPtr.Append((TUint8*)(&len), 2);
+        calArrayPtr.Append(calFiles->MdcaPoint(i));
+        calListBuf->ExpandL(pos, calArray->Length());
+        calListBuf->Write(pos,*calArray, calArray->Length());
+        pos += calArray->Length();
+        calArrayPtr.Zero();
+        }
+    SendOkMsgL( calListBuf->Ptr( 0 ) );
+    CleanupStack::PopAndDestroy(4); //calArray, calListBuf, calFiles, calSession;    
+    HTI_LOG_FUNC_OUT( "CPIMHandler::HandleListCalendarFiles: Done" );
+    }
+
+// ----------------------------------------------------------------------------
 void CPIMHandler::HandleVCardImportFuncL( const TDesC8& aData )
     {
     HTI_LOG_FUNC_IN( "CPIMHandler::HandleVCardImportFuncL" );
-
     if ( aData.Length() == 0 )
         {
         SendErrorMessageL( KErrArgument, KErrorMissingVCard );
         return;
         }
-
-    if ( iBuffer ) // delete if exists (just to be sure)
+    
+    CContactDatabase* contactDatabase = CContactDatabase::OpenL();
+    HTI_LOG_TEXT( "CPIMHandler: Contact database open" );
+    CleanupStack::PushL(contactDatabase);
+    
+    CBufFlat* buffer = CBufFlat::NewL(aData.Length());
+    CleanupStack::PushL(buffer);
+    buffer->ExpandL(0, aData.Length());
+    buffer->Ptr(0).Copy(aData.Right(aData.Length()));
+    RBufReadStream readStream;
+    readStream.Open(*buffer, 0);
+    CleanupClosePushL<RBufReadStream>( readStream );
+    
+    // Imports vCard
+    TBool success = EFalse;
+    TUid format = TUid::Uid(KUidVCardConvDefaultImpl);
+    CArrayPtr<CContactItem>* contacts = NULL;
+    TRAPD(err,contacts = contactDatabase->ImportContactsL(format, readStream, success, 
+            CContactDatabase::EImportSingleContact | CContactDatabase::ETTFormat));
+    CleanupStack::PushL(contacts);
+    if(err != KErrNone || success == EFalse || contacts == NULL || contacts->Count() == 0)
         {
-        delete iBuffer;
-        iBuffer = NULL;
+        HTI_LOG_TEXT("Failed to import vCard");
+        SendErrorMessageL( err, KErrorVCardImportFailed );
         }
-    iBuffer = CBufFlat::NewL( aData.Length() );
-    iBuffer->ExpandL( 0, aData.Length() );
-
-    HTI_LOG_FORMAT( "Data length = %d", aData.Length() );
-    HTI_LOG_FORMAT( "Buffer length = %d", iBuffer->Ptr( 0 ).MaxLength() );
-    iBuffer->Ptr( 0 ).Copy( aData );
-
-    if ( iContactManager == NULL )
+    else
         {
-        CVPbkContactStoreUriArray* uriArray = CVPbkContactStoreUriArray::NewLC();
-        uriArray->AppendL( TVPbkContactStoreUriPtr(
-            VPbkContactStoreUris::DefaultCntDbUri() ) );
-        iContactManager = CVPbkContactManager::NewL( *uriArray );
-        CleanupStack::PopAndDestroy( uriArray );
+        // Returns the imported contact id 
+        TInt32 entryId = contacts->At(0)->Id();
+        TBuf8<4> idBuf;
+        idBuf.Append( ( TUint8* ) &entryId, 4 );
+        HTI_LOG_TEXT("vCard imported");
+        SendOkMsgL( idBuf );
         }
-
-    if ( iVCardEngine == NULL )
-        {
-        iVCardEngine = CVPbkVCardEng::NewL( *iContactManager );
-        }
-
-    MVPbkContactStoreList& stores = iContactManager->ContactStoresL();
-    iContactStore = &stores.At( 0 );
-    iContactStore->OpenL( *this );
-
+    
+    contacts->ResetAndDestroy();
+    
+    CleanupStack::PopAndDestroy(4); // contacts, readStream, buffer, contactDatabase
     HTI_LOG_FUNC_OUT( "CPIMHandler::HandleVCardImportFuncL: Done" );
     }
 
@@ -262,27 +355,23 @@ void CPIMHandler::HandleVCalendarImportFuncL( const TDesC8& aData )
         return;
         }
 
-    if ( iBuffer ) // delete if exists (just to be sure)
-        {
-        delete iBuffer;
-        iBuffer = NULL;
-        }
-    iBuffer = CBufFlat::NewL( aData.Length() );
-    iBuffer->ExpandL( 0, aData.Length() );
-    iBuffer->Ptr( 0 ).Copy( aData );
+    CBufFlat* buffer = CBufFlat::NewL( aData.Length() );
+    CleanupStack::PushL(buffer);
+    buffer->ExpandL( 0, aData.Length() );
+    buffer->Ptr( 0 ).Copy( aData );
     RBufReadStream readStream;
-    readStream.Open( *iBuffer, 0 );
+    readStream.Open( *buffer, 0 );
     CleanupClosePushL( readStream );
 
-    if ( iCalSession == NULL )
+    if(iCalSession == NULL)
         {
-        HTI_LOG_TEXT( "CPIMHandler: Creating Calendar session" );
+        HTI_LOG_TEXT( "CPIMHandler: Open default calendar file" );
         iCalSession = CCalSession::NewL();
         iCalSession->OpenL( KDefaultAgendaFile );
         HTI_LOG_TEXT( "CPIMHandler: Calendar session open" );
         }
 
-    CCalenImporter* importer = CCalenImporter::NewL( *iCalSession );
+    CCalDataExchange* importer = CCalDataExchange::NewL(*iCalSession);
     CleanupStack::PushL( importer );
     HTI_LOG_TEXT( "CPIMHandler: Calendar importer created" );
 
@@ -291,59 +380,48 @@ void CPIMHandler::HandleVCalendarImportFuncL( const TDesC8& aData )
 
     TInt err = KErrNone;
     TInt size = 0;
-    importer->SetImportMode( ECalenImportModeExtended );
-    // First try to import as iCalendar
-    TRAP( err, importer->ImportICalendarL( readStream, entryArray ) );
-    HTI_LOG_FORMAT( "ImportICalendarL return value %d", err );
+    // Import as VCalendar
+    TRAP( err, importer->ImportL( KUidVCalendar, readStream, entryArray ) );
+    HTI_LOG_FORMAT( "ImportL return value %d", err );
     size = entryArray.Count();
-    HTI_LOG_FORMAT( "Import ICalendarL imported %d entries", size );
-    // If import didn't succeed, try as vCalendar
-    if ( err != KErrNone || size == 0 )
-        {
-        readStream.Close();
-        readStream.Open( *iBuffer, 0 ); // reset read stream
-        entryArray.ResetAndDestroy(); // avoid double imports
-        TRAP( err, importer->ImportVCalendarL( readStream, entryArray ) );
-        HTI_LOG_FORMAT( "ImportVCalendarL return value %d", err );
-        size = entryArray.Count();
-        HTI_LOG_FORMAT( "Import VCalendarL imported %d entries", size );
-        }
+    HTI_LOG_FORMAT( "Import VCalendarL imported %d entries", size );
     TCalLocalUid uniqueId = 0;
     TInt success = 0;
     if ( size > 0 )
         {
-        iEntryView = CCalEntryView::NewL( *iCalSession, *this );
+        CCalEntryView* entryView = CCalEntryView::NewL( *iCalSession, *this );
         iWaiter->Start();
+        CleanupStack::PushL(entryView);
         if ( iEntryViewErr == KErrNone )
             {
-            TRAP( err, iEntryView->StoreL( entryArray, success ) );
+            TRAP( err, entryView->StoreL( entryArray, success ) );
             HTI_LOG_FORMAT( "StoreL return value %d", err );
             HTI_LOG_FORMAT( "Successfully stored %d entries", success );
             uniqueId = entryArray[0]->LocalUidL();
             }
-        delete iEntryView;
-        iEntryView = NULL;
+        CleanupStack::PopAndDestroy();
         }
     entryArray.ResetAndDestroy();
     CleanupStack::PopAndDestroy(); // entryArray
 
     if ( err == KErrNone && success > 0 )
         {
+        HTI_LOG_TEXT("vCalendar imported");
         TBuf8<8> uniqueIdStr;
         uniqueIdStr.Copy( ( TUint8* ) ( &uniqueId ), sizeof( uniqueId ) );
         SendOkMsgL( uniqueIdStr );
         }
     else
         {
-        if ( err == KErrNone ) err = KErrGeneral;
+        HTI_LOG_TEXT("Failed to import vCalendar");
+        if ( err == KErrNone ) 
+            {
+            err = KErrGeneral;
+            }
         SendErrorMessageL( err, KErrorVCalendarImportFailed );
         }
 
-    CleanupStack::PopAndDestroy( 2 ); // readStream, importer
-    delete iCalSession;
-    iCalSession = NULL;
-    delete iBuffer;
-    iBuffer = NULL;
+    CleanupStack::PopAndDestroy( 3 ); // buffer, readStream, importer
     HTI_LOG_FUNC_OUT( "CPIMHandler::HandleVCalendarImportFuncL: Done" );
     }
 
@@ -351,7 +429,6 @@ void CPIMHandler::HandleVCalendarImportFuncL( const TDesC8& aData )
 void CPIMHandler::HandleContactDeleteFuncL( const TDesC8& aData )
     {
     HTI_LOG_FUNC_IN( "CPIMHandler::HandleContactDeleteFuncL" );
-
     TInt dataLength = aData.Length();
     if ( dataLength != 0 && dataLength != 4 )
         {
@@ -359,30 +436,50 @@ void CPIMHandler::HandleContactDeleteFuncL( const TDesC8& aData )
         SendErrorMessageL( KErrArgument, KErrorInvalidId );
         return;
         }
-
-    if ( dataLength == 4 )
+    CContactDatabase* contactDatabase = CContactDatabase::OpenL();
+    HTI_LOG_TEXT( "CPIMHandler: Contact database open" );
+    CleanupStack::PushL(contactDatabase);
+    
+    if(dataLength == 0)   // delete all contacts
         {
-        SendErrorMessageL( KErrNotSupported, KErrorIdDeleteNotSupported );
-        return;
+        //const CContactIdArray* array = iContactDatabase->SortedItemsL();
+        CCntFilter *filter = CCntFilter::NewLC();
+        filter->SetContactFilterTypeCard(ETrue);
+        filter->SetContactFilterTypeGroup(EFalse);
+        contactDatabase->FilterDatabaseL(*filter);
+        TRAPD(err, contactDatabase->DeleteContactsL(*filter->iIds));
+        CleanupStack::PopAndDestroy();
+        if(err == KErrNone)
+            {
+            HTI_LOG_TEXT("All contacts deleted");
+            SendOkMsgL( KNullDesC8 );
+            }
+        else
+            {
+            HTI_LOG_TEXT("Failed to delete all contacts");
+            SendErrorMessageL( err, KErrorFailedDeleteAll );
+            }
         }
-
-    if ( iContactManager == NULL )
+    else  // delete one contact by id
         {
-        CVPbkContactStoreUriArray* uriArray = CVPbkContactStoreUriArray::NewLC();
-        uriArray->AppendL( TVPbkContactStoreUriPtr(
-            VPbkContactStoreUris::DefaultCntDbUri() ) );
-        iContactManager = CVPbkContactManager::NewL( *uriArray );
-        CleanupStack::PopAndDestroy( uriArray );
+        TUint id = aData[0] + ( aData[1] << 8 )
+                + ( aData[2] << 16 )
+                + ( aData[3] << 24 );
+        TRAPD(err, contactDatabase->DeleteContactL(id));
+        
+        if(err == KErrNone)
+            {
+            HTI_LOG_TEXT("Contact deleted");
+            SendOkMsgL( KNullDesC8 );
+            }
+        else
+            {
+            HTI_LOG_TEXT("Failed to delete contact");
+            SendErrorMessageL( err, KErrorFailedDelete );
+            }
         }
-
-    if ( iContactStore == NULL )
-        {
-        MVPbkContactStoreList& stores = iContactManager->ContactStoresL();
-        iContactStore = &stores.At( 0 );
-        }
-
-    iContactStore->OpenL( *this );
-
+    
+    CleanupStack::PopAndDestroy();
     HTI_LOG_FUNC_OUT( "CPIMHandler::HandleContactDeleteFuncL" );
     }
 
@@ -399,42 +496,26 @@ void CPIMHandler::HandleCalendarDeleteFuncL( const TDesC8& aData )
         return;
         }
 
-    if ( iBuffer ) // delete if exists (just to be sure)
-        {
-        delete iBuffer;
-        iBuffer = NULL;
-        }
-    if ( aData.Length() > 0 )
-        {
-        iBuffer = CBufFlat::NewL( aData.Length() );
-        iBuffer->ExpandL( 0, aData.Length() );
-        iBuffer->Ptr( 0 ).Copy( aData );
-        }
 
-    if ( iCalSession == NULL )
+    if(iCalSession == NULL)
         {
-        HTI_LOG_TEXT( "CPIMHandler: Creating Calendar session" );
+        HTI_LOG_TEXT( "CPIMHandler: Open default calendar file" );
         iCalSession = CCalSession::NewL();
         iCalSession->OpenL( KDefaultAgendaFile );
         HTI_LOG_TEXT( "CPIMHandler: Calendar session open" );
         }
 
     HTI_LOG_TEXT( "CPIMHandler: Creating entry view" );
-    iEntryView = CCalEntryView::NewL( *iCalSession, *this );
+    CCalEntryView* entryView = CCalEntryView::NewL( *iCalSession, *this );
     iWaiter->Start();
+    CleanupStack::PushL(entryView);
     if ( iEntryViewErr != KErrNone )
         {
-        delete iEntryView;
-        iEntryView = NULL;
-        delete iCalSession;
-        iCalSession = NULL;
-        delete iBuffer;
-        iBuffer = NULL;
         User::Leave( iEntryViewErr );
         }
 
-    // If iBuffer is NULL, no ID given, delete all calendar entries
-    if ( iBuffer == NULL )
+    // If dataLength is 0, no ID given, delete all calendar entries
+    if ( dataLength == 0 )
         {
         HTI_LOG_TEXT( "CPIMHandler: Deleting all calendar entries" );
         TCalTime minTime;
@@ -442,15 +523,17 @@ void CPIMHandler::HandleCalendarDeleteFuncL( const TDesC8& aData )
         minTime.SetTimeUtcL( TCalTime::MinTime() );
         maxTime.SetTimeUtcL( TCalTime::MaxTime() );
         CalCommon::TCalTimeRange timeRange( minTime, maxTime );
-        TRAPD( err, iEntryView->DeleteL( timeRange,
+        TRAPD( err, entryView->DeleteL( timeRange,
                 CalCommon::EIncludeAll, *this ) );
         iWaiter->Start();
         if ( err == KErrNone && iEntryViewErr == KErrNone )
             {
+            HTI_LOG_TEXT("All calendar entries deleted");
             SendOkMsgL( KNullDesC8 );
             }
         else
             {
+            HTI_LOG_TEXT("Failed to delete all calendar entries");
             SendErrorMessageL( KErrGeneral, KErrorFailedDeleteAll );
             }
         }
@@ -458,13 +541,12 @@ void CPIMHandler::HandleCalendarDeleteFuncL( const TDesC8& aData )
     // If id given, delete only calendar entry having that id
     else
         {
-        TPtr8 data = iBuffer->Ptr( 0 );
-        TCalLocalUid id = data[0] + ( data[1] << 8 )
-                             + ( data[2] << 16 )
-                             + ( data[3] << 24 );
+        TCalLocalUid id = aData[0] + ( aData[1] << 8 )
+                             + ( aData[2] << 16 )
+                             + ( aData[3] << 24 );
         HTI_LOG_FORMAT( "CPIMHandler: Deleting one calendar entry %d", id );
         CCalEntry* entryToDelete = NULL;
-        TRAPD( err, entryToDelete = iEntryView->FetchL( id ) );
+        TRAPD( err, entryToDelete = entryView->FetchL( id ) );
 
         if ( err || entryToDelete == NULL )
             {
@@ -474,57 +556,25 @@ void CPIMHandler::HandleCalendarDeleteFuncL( const TDesC8& aData )
         else
             {
             CleanupStack::PushL( entryToDelete );
-            TRAP( err, iEntryView->DeleteL( *entryToDelete ) );
+            TRAP( err, entryView->DeleteL( *entryToDelete ) );
             if ( err == KErrNone )
                 {
+                HTI_LOG_TEXT("calendar entrie deleted");
                 SendOkMsgL( KNullDesC8 );
                 }
             else
                 {
-                HTI_LOG_TEXT( "CPIMHandler: Error deleting calendar entry" )
+                HTI_LOG_TEXT( "Failed to delete calendar entry" )
                 SendErrorMessageL( KErrGeneral, KErrorFailedDelete );
                 }
             CleanupStack::PopAndDestroy( entryToDelete );
             }
         }
-    delete iEntryView;
-    iEntryView = NULL;
-    delete iCalSession;
-    iCalSession = NULL;
-    delete iBuffer;
-    iBuffer = NULL;
+    CleanupStack::PopAndDestroy(); //entryView;
     HTI_LOG_FUNC_OUT( "CPIMHandler::HandleVCalendarDeleteFuncL" );
     }
 
-// ----------------------------------------------------------------------------
-void CPIMHandler::SendOkMsgL( const TDesC8& aData )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::SendOkMsgL: Starting" );
-
-    User::LeaveIfNull( iDispatcher );
-
-    HBufC8* temp = HBufC8::NewL( aData.Length() + 1 );
-    TPtr8 response = temp->Des();
-    response.Append( ( TChar ) CHtiPIMServicePlugin::EResultOk );
-    response.Append( aData );
-    User::LeaveIfError( iDispatcher->DispatchOutgoingMessage(
-        temp, KPIMServiceUid ) );
-    iIsBusy = EFalse;
-    HTI_LOG_FUNC_OUT( "CPIMHandler::SendOkMsgL: Done" );
-    }
-
-// ----------------------------------------------------------------------------
-void CPIMHandler::SendErrorMessageL( TInt aError, const TDesC8& aDescription )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::SendErrorMessageL: Starting" );
-    User::LeaveIfNull( iDispatcher );
-    User::LeaveIfError( iDispatcher->DispatchOutgoingErrorMessage(
-        aError, aDescription, KPIMServiceUid ) );
-    iIsBusy = EFalse;
-    HTI_LOG_FUNC_OUT( "CPIMHandler::SendErrorMessageL: Done" );
-    }
-
-// ----------------------------------------------------------------------------
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )  
 TInt CallNpdHlp( const TDesC& aCmd )
     {
     HTI_LOG_FUNC_IN( "CallNpdHlp" );
@@ -555,24 +605,13 @@ TInt CallNpdHlp( const TDesC& aCmd )
     HTI_LOG_FUNC_OUT( "CallNpdHlp" );
     return KErrNone;
     }
-
-// ----------------------------------------------------------------------------
-void CPIMHandler::SendNotepadOkMsgL( CHtiPIMServicePlugin::TCommand aCommand )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::SendNotepadOkMsgL" );
-    TBuf8<1> msg;
-    msg.Append( aCommand );
-    User::LeaveIfError( iDispatcher->DispatchOutgoingMessage(
-                        msg.AllocL(), KPIMServiceUid ) );
-    iIsBusy = EFalse;
-    HTI_LOG_FUNC_OUT( "CPIMHandler::SendNotepadOkMsgL" );
-    }
+#endif
 
 // ----------------------------------------------------------------------------
 void CPIMHandler::HandleNotepadAddMemoFuncL( const TDesC8& aData )
     {
     HTI_LOG_FUNC_IN( "CPIMHandler::HandleNotepadAddMemoFuncL" );
-
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 ) 
     if ( aData.Length() < 1 )
         {
         SendErrorMessageL( KErrArgument, KErrorMissingText );
@@ -601,7 +640,9 @@ void CPIMHandler::HandleNotepadAddMemoFuncL( const TDesC8& aData )
         }
 
     CleanupStack::PopAndDestroy( 2 ); // text, cmd
-
+#else
+    SendErrorMessageL(KErrNotSupported, KErrorNotepadNotSupported);
+#endif   
     HTI_LOG_FUNC_OUT( "CPIMHandler::HandleNotepadAddMemoFuncL" );
     }
 
@@ -609,7 +650,7 @@ void CPIMHandler::HandleNotepadAddMemoFuncL( const TDesC8& aData )
 void CPIMHandler::HandleNotepadAddMemoFromFileFuncL( const TDesC8& aData )
     {
     HTI_LOG_FUNC_IN( "CPIMHandler::HandleNotepadAddMemoFromFileFuncL" );
-
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 ) 
     if ( aData.Length() < 1 )
         {
         SendErrorMessageL( KErrArgument, KErrorMissingFilepath );
@@ -638,7 +679,9 @@ void CPIMHandler::HandleNotepadAddMemoFromFileFuncL( const TDesC8& aData )
         }
 
     CleanupStack::PopAndDestroy( 2 ); // filename, cmd
-
+#else
+    SendErrorMessageL(KErrNotSupported, KErrorNotepadNotSupported);
+#endif 
     HTI_LOG_FUNC_OUT( "CPIMHandler::HandleNotepadAddMemoFromFileFuncL" );
     }
 
@@ -646,7 +689,7 @@ void CPIMHandler::HandleNotepadAddMemoFromFileFuncL( const TDesC8& aData )
 void CPIMHandler::HandleNotepadDeleteAllFuncL()
     {
     HTI_LOG_FUNC_IN( "CPIMHandler::HandleNotepadDeleteAllFuncL" );
-
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 ) 
     TInt err = CallNpdHlp( KCmdDeleteAll() );
     if ( err )
         {
@@ -656,350 +699,51 @@ void CPIMHandler::HandleNotepadDeleteAllFuncL()
         {
         SendNotepadOkMsgL( CHtiPIMServicePlugin::ENotepadDeleteAll );
         }
-
+#else
+    SendErrorMessageL(KErrNotSupported, KErrorNotepadNotSupported);
+#endif 
     HTI_LOG_FUNC_OUT( "CPIMHandler::HandleNotepadDeleteAllFuncL" );
     }
 
 // ----------------------------------------------------------------------------
-// CPIMHandler::CreateContactDeleteViewL
-// Creates a contact view containing the contacts to be deleted.
-// ----------------------------------------------------------------------------
-void CPIMHandler::CreateContactDeleteViewL()
+void CPIMHandler::SendNotepadOkMsgL( CHtiPIMServicePlugin::TCommand aCommand )
     {
-    HTI_LOG_FUNC_IN( "CPIMHandler::CreateContactDeleteViewL" );
-
-    if ( iContactView )
-        {
-        iContactView->RemoveObserver( *this );
-        delete iContactView;
-        iContactView = NULL;
-        }
-
-    CVPbkContactViewDefinition* viewDef = CVPbkContactViewDefinition::NewL();
-    CleanupStack::PushL( viewDef );
-    viewDef->SetType( EVPbkContactsView );
-    viewDef->SetSharing( EVPbkLocalView );
-    viewDef->SetSortPolicy( EVPbkSortedContactView );
-    CVPbkSortOrder* sortOrder = CVPbkSortOrder::NewL(
-            iContactStore->StoreProperties().SupportedFields() );
-    CleanupStack::PushL( sortOrder );
-    iContactView = iContactStore->CreateViewLC( *viewDef, *this, *sortOrder );
-    CleanupStack::Pop(); // view;
-    CleanupStack::PopAndDestroy( 2 ); // sortOrder, viewDef
-
-    HTI_LOG_FUNC_OUT( "CPIMHandler::CreateContactDeleteViewL" );
+    HTI_LOG_FUNC_IN( "CPIMHandler::SendNotepadOkMsgL" );
+    TBuf8<1> msg;
+    msg.Append( aCommand );
+    User::LeaveIfError( iDispatcher->DispatchOutgoingMessage(
+                        msg.AllocL(), KPIMServiceUid ) );
+    iIsBusy = EFalse;
+    HTI_LOG_FUNC_OUT( "CPIMHandler::SendNotepadOkMsgL" );
     }
 
 // ----------------------------------------------------------------------------
-// CPIMHandler::DeleteContactsInViewL
-// Deletes the contacts that are currently in iContactView.
-// ----------------------------------------------------------------------------
-void CPIMHandler::DeleteContactsInViewL()
+void CPIMHandler::SendOkMsgL( const TDesC8& aData )
     {
-    HTI_LOG_FUNC_IN( "CPIMHandler::DeleteContactsInViewL" );
+    HTI_LOG_FUNC_IN( "CPIMHandler::SendOkMsgL: Starting" );
 
-    TInt cntCount( iContactView->ContactCountL() );
-    HTI_LOG_FORMAT( "Contact count in view = %d", cntCount );
-    if ( cntCount > 0 )
-        {
-        CVPbkContactLinkArray* contactLinks = CVPbkContactLinkArray::NewLC();
-        for ( TInt i = 0; i < cntCount; ++i )
-            {
-            MVPbkContactLink* link =
-                iContactView->ContactAtL( i ).CreateLinkLC();
-            contactLinks->AppendL( link );
-            CleanupStack::Pop(); // link
-            }
-        // Following DeleteContactsL will result in calls to StepComplete
-        // and finally OperationComplete (StepFailed if error occurs)
-        iOp = iContactManager->DeleteContactsL( *contactLinks, *this );
-        CleanupStack::PopAndDestroy(); // contactLinks
-        }
-    else
-        {
-        // Nothing to delete
-        iContactStore->Close( *this );
-        SendOkMsgL( KNullDesC8 );
-        }
+    User::LeaveIfNull( iDispatcher );
 
-    // We don't need the view anymore
-    HTI_LOG_TEXT( "Deleting the contact view" );
-    iContactView->RemoveObserver( *this );
-    delete iContactView;
-    iContactView = NULL;
-
-    HTI_LOG_FUNC_OUT( "CPIMHandler::DeleteContactsInViewL" );
+    HBufC8* temp = HBufC8::NewL( aData.Length() + 1 );
+    TPtr8 response = temp->Des();
+    response.Append( ( TChar ) CHtiPIMServicePlugin::EResultOk );
+    response.Append( aData );
+    User::LeaveIfError( iDispatcher->DispatchOutgoingMessage(
+        temp, KPIMServiceUid ) );
+    iIsBusy = EFalse;
+    HTI_LOG_FUNC_OUT( "CPIMHandler::SendOkMsgL: Done" );
     }
 
 // ----------------------------------------------------------------------------
-// CPIMHandler::StoreReady
-// Called when a contact store is ready to use.
-// From MVPbkContactStoreObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::StoreReady( MVPbkContactStore& aContactStore )
+void CPIMHandler::SendErrorMessageL( TInt aError, const TDesC8& aDescription )
     {
-    HTI_LOG_FUNC_IN( "CPIMHandler::StoreReady" );
-    if ( iIsBusy && iContactStore == &aContactStore )
-        {
-        if ( iCommand == CHtiPIMServicePlugin::EImportVCard )
-            {
-            iReadStream.Open( *iBuffer, 0 );
-            HTI_LOG_TEXT( "Starting vCard import" );
-            TRAPD( err, iOp = iVCardEngine->ImportVCardL(
-                    *iContactStore, iReadStream, *this ) );
-            HTI_LOG_FORMAT( "ImpoortVCardL returned %d", err );
-            if ( err != KErrNone )
-                {
-                delete iOp;
-                iOp = NULL;
-                iReadStream.Close();
-                delete iBuffer;
-                iBuffer = NULL;
-                iContactStore->Close( *this );
-                TRAP_IGNORE( SendErrorMessageL( err, KErrorVCardImportFailed ) );
-                }
-            }
-        else if ( iCommand == CHtiPIMServicePlugin::EDeleteContact )
-            {
-            TRAPD( err, CreateContactDeleteViewL() );
-            if ( err != KErrNone )
-                {
-                iContactStore->Close( *this );
-                TRAP_IGNORE( SendErrorMessageL( err, KErrorFailedDelete ) );
-                }
-            }
-        }
-    HTI_LOG_FUNC_OUT( "CPIMHandler::StoreReady" );
+    HTI_LOG_FUNC_IN( "CPIMHandler::SendErrorMessageL: Starting" );
+    User::LeaveIfNull( iDispatcher );
+    User::LeaveIfError( iDispatcher->DispatchOutgoingErrorMessage(
+        aError, aDescription, KPIMServiceUid ) );
+    iIsBusy = EFalse;
+    HTI_LOG_FUNC_OUT( "CPIMHandler::SendErrorMessageL: Done" );
     }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::StoreUnavailable
-// Called when a contact store becomes unavailable.
-// From MVPbkContactStoreObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::StoreUnavailable( MVPbkContactStore& aContactStore,
-        TInt aReason )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::StoreUnavailable" );
-
-    if ( iIsBusy && iContactStore == &aContactStore )
-        {
-        delete iBuffer;
-        iBuffer = NULL;
-        TRAP_IGNORE( SendErrorMessageL( aReason, KErrorVCardImportFailed ) );
-        }
-
-    HTI_LOG_FUNC_OUT( "CPIMHandler::StoreUnavailable" );
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::HandleStoreEventL
-// Called when changes occur in the contact store.
-// From MVPbkContactStoreObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::HandleStoreEventL( MVPbkContactStore& /*aContactStore*/,
-                        TVPbkContactStoreEvent /*aStoreEvent*/ )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::HandleStoreEventL" );
-    HTI_LOG_FUNC_OUT( "CPIMHandler::HandleStoreEventL" );
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::ContactsSaved
-// Called when the contact has been successfully commited or copied.
-// From MVPbkContactCopyObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::ContactsSaved( MVPbkContactOperationBase& aOperation,
-        MVPbkContactLinkArray* aResults )
-{
-    HTI_LOG_FUNC_IN( "CPIMHandler::ContactsSaved" );
-
-    if ( iIsBusy && iOp == &aOperation )
-        {
-        TInt count = aResults->Count();
-        HTI_LOG_FORMAT( "%d contact(s) added", count );
-        delete aResults;
-        delete iOp;
-        iOp = NULL;
-        iReadStream.Close();
-        delete iBuffer;
-        iBuffer = NULL;
-        iContactStore->Close( *this );
-        TInt entryId = 0; // We can't get the ID, just send zero
-        TBuf8<4> idBuf;
-        idBuf.Append( ( TUint8* ) &entryId, 4 );
-        TRAP_IGNORE( SendOkMsgL( idBuf ) );
-        }
-
-    HTI_LOG_FUNC_OUT( "CPIMHandler::ContactsSaved" );
-}
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::ContactsSavingFailed
-// Called when there was en error while saving contact(s).
-// From MVPbkContactCopyObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::ContactsSavingFailed(
-        MVPbkContactOperationBase& aOperation, TInt aError )
-{
-    HTI_LOG_FUNC_IN( "CPIMHandler::ContactsSavingFailed" );
-
-    if ( iIsBusy && iOp == &aOperation )
-        {
-        delete iOp;
-        iOp = NULL;
-        iReadStream.Close();
-        delete iBuffer;
-        iBuffer = NULL;
-        iContactStore->Close( *this );
-        TRAP_IGNORE( SendErrorMessageL( aError, KErrorVCardImportFailed ) );
-        }
-
-    HTI_LOG_FUNC_OUT( "CPIMHandler::ContactsSavingFailed" );
-}
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::ContactViewReady
-// Called when a view is ready for use.
-// From MVPbkContactViewObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::ContactViewReady( MVPbkContactViewBase& aView )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::ContactViewReady" );
-
-    if ( iContactView == &aView && iIsBusy &&
-            iCommand == CHtiPIMServicePlugin::EDeleteContact )
-        {
-        TRAPD( err, DeleteContactsInViewL() );
-        if ( err != KErrNone )
-            {
-            TRAP_IGNORE( SendErrorMessageL( err, KErrorFailedDelete ) );
-            }
-        }
-
-    HTI_LOG_FUNC_OUT( "CPIMHandler::ContactViewReady" );
-    }
-
-// ----------------------------------------------------------------------------
-// CHtiSimDirHandlerVPbk::ContactViewUnavailable
-// Called when a view is unavailable for a while.
-// From MVPbkContactViewObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::ContactViewUnavailable( MVPbkContactViewBase& /*aView*/ )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::ContactViewUnavailable" );
-    HTI_LOG_FUNC_OUT( "CPIMHandler::ContactViewUnavailable" );
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::ContactAddedToView
-// Called when a contact has been added to the view.
-// From MVPbkContactViewObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::ContactAddedToView( MVPbkContactViewBase& /*aView*/,
-        TInt /*aIndex*/, const MVPbkContactLink& /*aContactLink*/ )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::ContactAddedToView" );
-    HTI_LOG_FUNC_OUT( "CPIMHandler::ContactAddedToView" );
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::ContactRemovedFromView
-// Called when a contact has been removed from a view.
-// From MVPbkContactViewObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::ContactRemovedFromView( MVPbkContactViewBase& /*aView*/,
-        TInt /*aIndex*/, const MVPbkContactLink& /*aContactLink*/ )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::ContactRemovedFromView" );
-    HTI_LOG_FUNC_OUT( "CPIMHandler::ContactRemovedFromView" );
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::ContactViewError
-// Called when an error occurs in the view.
-// From MVPbkContactViewObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::ContactViewError( MVPbkContactViewBase& aView,
-        TInt aError, TBool aErrorNotified )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::ContactViewError" );
-    HTI_LOG_FORMAT( "CPIMHandler::ContactViewError: %d", aError );
-    HTI_LOG_FORMAT( "ErrorNotified = %d", aErrorNotified );
-    if ( iContactView == &aView )
-        {
-        iContactView->RemoveObserver( *this );
-        delete iContactView;
-        iContactView = NULL;
-        if ( iIsBusy && iCommand == CHtiPIMServicePlugin::EDeleteContact )
-            {
-            SendErrorMessageL( aError, KErrorFailedDelete );
-            }
-        iContactStore->Close( *this );
-        }
-    aErrorNotified = aErrorNotified;  // avoid compiler warning
-    HTI_LOG_FUNC_OUT( "CPIMHandler::ContactViewError" );
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::StepComplete
-// Called when one step of the batch operation is complete.
-// From MVPbkBatchOperationObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::StepComplete( MVPbkContactOperationBase& /*aOperation*/,
-                           TInt /*aStepSize*/ )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::StepComplete" );
-    HTI_LOG_FUNC_OUT( "CPIMHandler::StepComplete" );
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::StepFailed
-// Called when one step of the batch operation fails.
-// From MVPbkBatchOperationObserver
-// ----------------------------------------------------------------------------
-TBool CPIMHandler::StepFailed( MVPbkContactOperationBase& aOperation,
-                                         TInt /*aStepSize*/, TInt aError )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::StepFailed" );
-    HTI_LOG_FORMAT( "Error %d", aError );
-    if ( iOp == &aOperation )
-        {
-        // We are returning EFalse (= do not continue) we can delete
-        // the operation. OperationComplete() won't be called.
-        delete iOp;
-        iOp = NULL;
-        iContactStore->Close( *this );
-        TRAP_IGNORE( SendErrorMessageL( aError, KErrorFailedDelete ) );
-        }
-    HTI_LOG_FUNC_OUT( "CPIMHandler::StepFailed" );
-    return EFalse; // do not continue
-    }
-
-// ----------------------------------------------------------------------------
-// CPIMHandler::OperationComplete
-// Called when operation is completed.
-// From MVPbkBatchOperationObserver
-// ----------------------------------------------------------------------------
-void CPIMHandler::OperationComplete(
-            MVPbkContactOperationBase& aOperation )
-    {
-    HTI_LOG_FUNC_IN( "CPIMHandler::OperationComplete" );
-    // Operation is complete -> delete it
-    if ( iOp == &aOperation )
-        {
-        delete iOp;
-        iOp = NULL;
-        iContactStore->Close( *this );
-        if ( iIsBusy && iCommand == CHtiPIMServicePlugin::EDeleteContact )
-            {
-            // Delete operation has completed
-            TRAP_IGNORE( SendOkMsgL( KNullDesC8 ) );
-            }
-        }
-    HTI_LOG_FUNC_OUT( "CPIMHandler::OperationComplete" );
-    }
-
 
 // ----------------------------------------------------------------------------
 // CPIMHandler::Progress

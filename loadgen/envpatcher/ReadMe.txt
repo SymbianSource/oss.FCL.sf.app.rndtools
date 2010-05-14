@@ -1,7 +1,7 @@
-Environment Patcher v1.0.1
-==========================
+Environment Patcher
+===================
 
-Updated: 12th November 2009
+Updated: 9th January 2009
 
 
 Introduction:
@@ -12,8 +12,7 @@ OEM releases.
 
 This tool can perform the following tasks:
 - Adds support for forward slashes in paths in bld.inf/.mmp files in S60 3.0 
-- Removes an unncessary warning about DEPENDS and SMPSAFE resource keywords in
-  an .mmp file
+- Removes an unncessary warning about DEPENDS resource keyword in an .mmp file
 - Creates a missing epoc32\include\platform_paths.hrh file for supporting
   platform macros introduced since S60 3.2 OEM and Symbian Foundation releases
 - Modifies epoc32\include\platform_paths.hrh for missing macros   
@@ -37,10 +36,12 @@ Requirements:
 
 
 
-Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
-All rights reserved.
+Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). All rights
+reserved.
 
-This component and the accompanying materials are made available
-under the terms of "Eclipse Public License v1.0"
-which accompanies this distribution, and is available
-at the URL "http://www.eclipse.org/legal/epl-v10.html".
+This material, including documentation and any related computer programs, is
+protected by copyright controlled by Nokia. All rights are reserved. Copying,
+including reproducing, storing, adapting or translating, any or all of this
+material requires the prior written consent of Nokia. This material also
+contains confidential information which may not be disclosed to others without
+the prior written consent of Nokia.

@@ -35,7 +35,7 @@ _LIT( KParamDeepRfs,   "rfsdeep" );
 
 // LOCAL FUNCTION PROTOTYPES
 LOCAL_C TInt StartL();
-LOCAL_C TInt Reboot();
+LOCAL_C TInt Reboot(RStarterSession::TResetReason aReason);
 LOCAL_C TInt RestoreFactorySettings( TBool aIsDeepRfs );
 
 
@@ -54,12 +54,15 @@ LOCAL_C TInt StartL()
 
     if ( cmdLen == 0 )
         {
-        error = Reboot();
+        error = Reboot(RStarterSession::EUnknownReset);
         }
 
     else
         {
         TLex parser( *cmdLine );
+        TInt input;
+        TInt ret = parser.Val(input);
+        
         parser.SkipCharacters();
         if ( parser.MarkedToken().CompareF( KParamNormalRfs ) == 0 )
             {
@@ -71,7 +74,14 @@ LOCAL_C TInt StartL()
             }
         else
             {
-            error = KErrArgument;  // Unknown argument
+            if(ret != KErrNone )
+                {
+                error = KErrArgument;  // Unknown argument
+                }
+            else
+                {
+                error = Reboot((RStarterSession::TResetReason)input);
+                }
             }
         }
 
@@ -79,13 +89,13 @@ LOCAL_C TInt StartL()
     return error;
     }
 
-LOCAL_C TInt Reboot()
+LOCAL_C TInt Reboot(RStarterSession::TResetReason aReason)
     {
     RStarterSession session;
     TInt error = session.Connect();
     if ( error == KErrNone )
         {
-        session.Reset( RStarterSession::EUnknownReset );
+        session.Reset( aReason );
         session.Close();
         }
     return error;

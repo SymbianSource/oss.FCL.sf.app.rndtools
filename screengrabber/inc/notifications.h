@@ -56,13 +56,6 @@ public:
      * to shows progressbar
      */
     static HbDeviceProgressDialog* showProgressBar(int max);
- 
-private:
-    
-    /**
-     * shows global HbGlobalCommonNote type note
-     */
-    static void showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type);
     
     };
 

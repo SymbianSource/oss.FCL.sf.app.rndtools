@@ -27,28 +27,27 @@
 
 void Notifications::imageCaptured()
 {
-    showGlobalNote("Screen shot saved to Media Gallery", HbMessageBox::MessageTypeInformation);
+    HbDeviceMessageBox::information("Screen shot saved to Media Gallery");
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::about()
 {
-
-  HbMessageBox dlg;
-    
-	dlg.setText("Version 5.0.0 - March 10th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
-    HbLabel header("About Screen Grabber");
-    dlg.setHeadingWidget(&header);
-	dlg.setTimeout(HbPopup::NoTimeout);
-    dlg.exec();
+    HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeInformation);
+    messageBox->setText("Version 5.0.0 - March 10th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
+    HbLabel *header = new HbLabel("About Screen Grabber", messageBox);
+    messageBox->setHeadingWidget(header);
+    messageBox->setAttribute(Qt::WA_DeleteOnClose);
+    messageBox->setTimeout(HbPopup::NoTimeout);
+    messageBox->open();
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::error(const QString& errorMessage)
 {
-    showGlobalNote(errorMessage, HbMessageBox::MessageTypeWarning);
+    HbDeviceMessageBox::warning(errorMessage);
 
 }
 
@@ -60,7 +59,7 @@ void Notifications::sequantialImagesCaptured(int amount){
     text.setNum(amount, 10);
     text.append(" screen shots saved to Media Gallery");
     
-    showGlobalNote(text, HbMessageBox::MessageTypeInformation);
+    HbDeviceMessageBox::information(text);
  
 }
 
@@ -68,7 +67,7 @@ void Notifications::sequantialImagesCaptured(int amount){
 
 void Notifications::videoCaptured()
 {
-    showGlobalNote("Video saved to Media Gallery", HbMessageBox::MessageTypeInformation);
+    HbDeviceMessageBox::information("Video saved to Media Gallery");
 
 }
 
@@ -81,17 +80,6 @@ HbDeviceProgressDialog* Notifications::showProgressBar(int max)
     note->setMaximum(max);
     note->show();
     return note;
-}
-
-// ---------------------------------------------------------------------------
-
-void Notifications::showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type)
-{
-    // Code below launches a global note
-
-	HbDeviceMessageBox note(text, type);
-	note.information(text);
-
 }
 
 // ---------------------------------------------------------------------------

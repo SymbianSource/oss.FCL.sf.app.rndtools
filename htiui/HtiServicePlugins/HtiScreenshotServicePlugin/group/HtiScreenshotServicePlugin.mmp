@@ -42,9 +42,9 @@ TARGET          HtiScreenshotServicePlugin.rsc
 END
 
 #if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
-LIBRARY         avkon.lib
+LIBRARY         alfclient.lib
 #endif
-
+LIBRARY         avkon.lib
 LIBRARY         bitgdi.lib
 LIBRARY         ecom.lib
 LIBRARY         efsrv.lib

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="qgn_indi_tb_filebrowser_folder_parent.svg" >../icons/qgn_indi_tb_filebrowser_folder_parent.svg</file>
+        <file alias="qgn_indi_tb_filebrowser_find.svg" >../icons/qgn_indi_tb_filebrowser_find.svg</file>
+    </qresource>
+</RCC>

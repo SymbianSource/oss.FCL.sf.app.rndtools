@@ -584,9 +584,48 @@ void CHtiMailboxHandler::HandleCreateMailboxL( const TDesC8& aData )
 void CHtiMailboxHandler::HandleDeleteMailboxL( const TDesC8& aData )
     {
     HTI_LOG_FUNC_IN( "CHtiMailboxHandler::HandleDeleteMailboxL" );
-    // Deprecated
-    aData.Size();
-    User::Leave( KErrNotSupported );
+
+    // Delete by name - name should be unique
+    TInt nameLength = aData[0];
+    if ( nameLength > KEmailAccountNameSize || nameLength == 0 ||
+         aData.Length() != ( nameLength + 1 ) )
+        {
+        User::Leave( KErrArgument );
+        }
+
+    TBuf<KEmailAccountNameSize> accountName;
+    accountName.Copy( aData.Mid( 1, nameLength ) );
+    HTI_LOG_FORMAT( "Searching account with name: %S", &accountName );
+
+    TSmtpAccount smtpAcc;
+    User::LeaveIfError( FindSmtpAccount( accountName, smtpAcc ) );
+    HTI_LOG_FORMAT( "Found SMTP: %d", smtpAcc.iSmtpAccountId );
+    TMsvId relatedAcc = smtpAcc.iRelatedService;
+
+    CEmailAccounts* accounts = CEmailAccounts::NewLC();
+
+    // Delete the SMTP account
+    accounts->DeleteSmtpAccountL( smtpAcc );
+
+    // Search for related POP & IMAP acconts and delete if found
+    TInt result = KErrNone;
+    TPopAccount popAcc;
+    TRAP( result, accounts->GetPopAccountL( relatedAcc, popAcc ) );
+    if ( result == KErrNone )
+        {
+        HTI_LOG_FORMAT( "Found related POP: %d", popAcc.iPopAccountId );
+        accounts->DeletePopAccountL( popAcc );
+        }
+
+    TImapAccount imapAcc;
+    TRAP( result, accounts->GetImapAccountL( relatedAcc, imapAcc ) );
+    if ( result == KErrNone )
+        {
+        HTI_LOG_FORMAT( "Found related IMAP: %d", imapAcc.iImapAccountId );
+        accounts->DeleteImapAccountL( imapAcc );
+        }
+
+    CleanupStack::PopAndDestroy( 1 ); // accounts
     HTI_LOG_FUNC_OUT( "CHtiMailboxHandler::HandleDeleteMailboxL" );
     }
 

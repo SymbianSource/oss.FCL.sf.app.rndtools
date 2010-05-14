@@ -20,7 +20,7 @@
 TARGET          HtiDeviceRebootUI.exe
 TARGETTYPE      EXE
 
-UID             0x200212D6
+UID             0x1000008d 0x200212D6
 
 VENDORID        0x101FB657
 

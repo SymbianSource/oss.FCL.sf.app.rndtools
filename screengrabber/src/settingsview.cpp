@@ -60,8 +60,6 @@ SettingsView::SettingsView(HbView &mainView, HbMainWindow &mainWindow, EngineWra
     // DataFormItem for mode selection
     mModeItem = mModel->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Capture mode"), 0);
-    //setting the text property of check box.
-    mModeItem->setData(HbDataFormModelItem::KeyRole, QString("mode"));
     mModeItem->setContentWidgetData(QString("items"), CAPTUREMODES);
     
     // Create setting model
@@ -74,13 +72,11 @@ SettingsView::SettingsView(HbView &mainView, HbMainWindow &mainWindow, EngineWra
     setWidget(mSettingForm);//takes ownership
     
     // Get view item of mode selection item
-    HbDataFormViewItem *viewItemVideoPage = mSettingForm->dataFormViewItem(mModel->indexFromItem(mModeItem));
+    HbDataFormViewItem *viewItemVideoPage = static_cast<HbDataFormViewItem*>(mSettingForm->itemByIndex(mModel->indexFromItem(mModeItem)));
 
     loadSettings();
     
     // Connect signals from item modifications and close with this form's slots
-   
-//    connect(viewItemVideoPage, SIGNAL(itemModified(QPersistentModelIndex, QVariant)), this, SLOT(updateShownItems()));
     connect(actionSaveSettings, SIGNAL(triggered()), this, SLOT(saveAndClose()));
     connect(actionCancel, SIGNAL(triggered()), this, SLOT(close()));
 	
@@ -144,29 +140,21 @@ void SettingsView::createSingleCaptureComponents(HbDataFormModel *model, HbDataF
     // DataFormItem for hotkey selection
     mImageHotKeyItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Capture hotkey"), mGroupImageCapture);
-    //setting the text property of check box.
-    mImageHotKeyItem->setData(HbDataFormModelItem::KeyRole, QString("image_hotkey"));
     mImageHotKeyItem->setContentWidgetData(QString("items"), KEYS);
 
     // DataFormItem for image format selection
     mImageFormatItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Image format"), mGroupImageCapture);
-    //setting the text property of check box.
-    mImageFormatItem->setData(HbDataFormModelItem::KeyRole, QString("image_format"));
     mImageFormatItem->setContentWidgetData(QString("items"), IMAGEFORMATS);
     
     // DataFormItem for memory in use selection
     mImageMemoryInUseItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Memory in use"), mGroupImageCapture);
-    //setting the text property of check box.
-    mImageMemoryInUseItem->setData(HbDataFormModelItem::KeyRole, QString("image_memory"));
     mImageMemoryInUseItem->setContentWidgetData(QString("items"), MEMORYMODES);
     
     // DataFormItem for file name
     mImageFileNameItem = model->appendDataFormItem(
             HbDataFormModelItem::TextItem, QString("File name"), mGroupImageCapture);
-    //setting the text property of check box.
-    mImageFileNameItem->setData(HbDataFormModelItem::KeyRole, QString("image_name"));
     mImageFileNameItem->setContentWidgetData(QString("text"), QString("Shot"));
     
 }
@@ -183,36 +171,26 @@ void SettingsView::createSequentialCaptureComponents(HbDataFormModel *model, HbD
     // DataFormItem for hotkey selection
     mSequantialHotKeyItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Capture hotkey"), mGroupSeguantialCapture);
-    //setting the text property of check box.
-    mSequantialHotKeyItem->setData(HbDataFormModelItem::KeyRole, QString("seguential_hotkey"));
     mSequantialHotKeyItem->setContentWidgetData(QString("items"), KEYS);
     
     // DataFormItem for image format selection
     mSequantialFormatItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Image format"), mGroupSeguantialCapture);
-    //setting the text property of check box.
-    mSequantialFormatItem->setData(HbDataFormModelItem::KeyRole, QString("seguential_format"));
     mSequantialFormatItem->setContentWidgetData(QString("items"), IMAGEFORMATS);
     
     // DataFormItem for delay between images selection
     mSequantialDelayItem = model->appendDataFormItem(
             HbDataFormModelItem::TextItem, QString("Delay between two images(ms)"), mGroupSeguantialCapture);
-    //setting the text property of check box.
-    mSequantialDelayItem->setData(HbDataFormModelItem::KeyRole, QString("seguential_name"));
     mSequantialDelayItem->setContentWidgetData(QString("text"), QString("Shot"));
     
     // DataFormItem for memory selection
     mSequantialMemoryInUseItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Memory in use"), mGroupSeguantialCapture);
-    //setting the text property of check box.
-    mSequantialMemoryInUseItem->setData(HbDataFormModelItem::KeyRole, QString("seguential_memory"));
     mSequantialMemoryInUseItem->setContentWidgetData(QString("items"), MEMORYMODES);
     
     // DataFormItem for file name
     mSequantialFileNameItem = model->appendDataFormItem(
             HbDataFormModelItem::TextItem, QString("File name"), mGroupSeguantialCapture);
-    //setting the text property of check box.
-    mSequantialFileNameItem->setData(HbDataFormModelItem::KeyRole, QString("seguential_name"));
     mSequantialFileNameItem->setContentWidgetData(QString("text"), QString("Shot"));
     
 }
@@ -228,29 +206,21 @@ void SettingsView::createVideoCaptureComponents(HbDataFormModel *model, HbDataFo
     // DataFormItem for hotkey selection
     mVideoHotKeyItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Start/Stop hotkey"), mGroupVideoCapture);
-    //setting the text property of check box.
-    mVideoHotKeyItem->setData(HbDataFormModelItem::KeyRole, QString("video_hotkey"));
     mVideoHotKeyItem->setContentWidgetData(QString("items"), KEYS);
     
     // DataFormItem for video format selection
     mVideoFormatItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Video format"), mGroupVideoCapture);
-    //setting the text property of check box.
-    mVideoFormatItem->setData(HbDataFormModelItem::KeyRole, QString("video_format"));
     mVideoFormatItem->setContentWidgetData(QString("items"), VIDEOFORMATS);
     
     // DataFormItem for memory selection
     mVideoMemoryInUseItem = model->appendDataFormItem(
             HbDataFormModelItem::RadioButtonListItem, QString("Memory in use"), mGroupVideoCapture);
-    //setting the text property of check box.mGroupVideoCapture
-    mVideoMemoryInUseItem->setData(HbDataFormModelItem::KeyRole, QString("video_memory"));
     mVideoMemoryInUseItem->setContentWidgetData(QString("items"), MEMORYMODES);
     
     // DataFormItem for file name
     mVideoFileNameItem = model->appendDataFormItem(
             HbDataFormModelItem::TextItem, QString("File name"), mGroupVideoCapture);
-    //setting the text property of check box.
-    mVideoFileNameItem->setData(HbDataFormModelItem::KeyRole, QString("video_name"));
     mVideoFileNameItem->setContentWidgetData(QString("text"), QString("Video"));
     
 }
@@ -269,8 +239,6 @@ void SettingsView::saveAndClose()
     mMainWindow.setCurrentView(&mMainView);
 	
 }
-
-
 
 // ---------------------------------------------------------------------------
 
@@ -301,47 +269,6 @@ void SettingsView::readFormItems()
    
 }
 
-
-// ---------------------------------------------------------------------------
-/*
-void SettingsView::updateShownItems()
-{ 
-
-    if (mMainWindow.currentView() == this) {
-        // Get view items of each group
-        HbDataFormViewItem *viewItemImageGroup = mSettingForm->dataFormViewItem(mModel->indexFromItem(mGroupImageCapture));
-        HbDataFormViewItem *viewItemSequantialGroup = mSettingForm->dataFormViewItem(mModel->indexFromItem(mGroupSeguantialCapture));
-        HbDataFormViewItem *viewItemVideoGroup = mSettingForm->dataFormViewItem(mModel->indexFromItem(mGroupVideoCapture));
-
-    
-        // Set certain group expanded according to selected mode. 
-        // TODO this does not work correctly with WK38(selectedItem is for some reason always 1)
-    
-        int selectedItem = mModeItem->contentWidgetData("selected").toInt();
-        
-        if (selectedItem == SINGLE){
-            viewItemImageGroup->setExpanded(true);
-            viewItemSequantialGroup->setExpanded(false);
-            viewItemVideoGroup->setExpanded(false);
-    
-        }
-        else if (selectedItem == SEQUENTIAL){
-            viewItemImageGroup->setExpanded(false);
-            viewItemSequantialGroup->setExpanded(true);
-            viewItemVideoGroup->setExpanded(false);    
-        }
-        
-        else if (selectedItem == VIDEO){
-            viewItemImageGroup->setExpanded(false);
-            viewItemSequantialGroup->setExpanded(false);
-            viewItemVideoGroup->setExpanded(true);
-        }
-        
-        
-    }
-    
-}
-*/
 // ---------------------------------------------------------------------------
 
 void SettingsView::close()

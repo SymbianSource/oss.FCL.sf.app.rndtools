@@ -1,7 +1,7 @@
 ===============================================================================
 
-RELEASE NOTES - FILEBROWSER v4.5.2
-RELEASED 10th December 2009
+RELEASE NOTES - FILEBROWSER v5.0.0
+RELEASED 23th April 2010
 
 SUPPORTS S60 3.0+
 
@@ -37,10 +37,9 @@ Main Features:
 
 ===============================================================================
 
-What's New in v4.5.2
+What's New in v5.0.0
 ====================
-- Fix: UI layout problems fixed
-- Fix: Filebrowser crashes with too long filenames
+- Orbit UI
 
 ===============================================================================
 
@@ -109,6 +108,11 @@ N/A
 
 Version History:
 ================
+
+Version 4.5.2 - 10th December 2009
+-----------------------------
+- Fix: UI layout problems fixed
+- Fix: Filebrowser crashes with too long filenames
 
 Version 4.5.1 - 15th May 2009
 -----------------------------

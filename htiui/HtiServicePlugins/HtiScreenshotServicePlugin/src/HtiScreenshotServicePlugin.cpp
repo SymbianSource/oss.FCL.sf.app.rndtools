@@ -28,12 +28,12 @@
 #include <ezcompressor.h>
 #include <hal.h>
 
-#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
-
 #include <AknLayoutConfig.h>
 #include <apgtask.h> 
 #include <AknCapServerDefs.h>
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+#include <alf/alfdrawer.h>
 #endif
 
 // CONSTANTS
@@ -1717,7 +1717,7 @@ void CHtiScreenshotServicePlugin::ProcessMessageL(const TDesC8& aMessage,
 void CHtiScreenshotServicePlugin::HandleRotateScreen(const TDesC8& aData)
     {
     HTI_LOG_FUNC_IN( "CHtiScreenshotServicePlugin::HandleRotateScreen" );
-#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )               
+             
     TInt orientation = aData[0];
     if (orientation > 1 || orientation < 0)
         {
@@ -1810,10 +1810,7 @@ void CHtiScreenshotServicePlugin::HandleRotateScreen(const TDesC8& aData)
     CleanupStack::PopAndDestroy(layoutConfigPtr);
     CleanupStack::PopAndDestroy(screenDevice);
     ws.Close();
-#else
-    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
-            KErrDescrScreenNotSupported, KScreenshotServiceUid);
-#endif               
+             
     HTI_LOG_FUNC_OUT( "CHtiScreenshotServicePlugin::HandleRotateScreen" );
     }
 // ----------------------------------------------------------------------------
@@ -1833,15 +1830,25 @@ void CHtiScreenshotServicePlugin::CreateBitmapL( TRect& aRegion,
     iScreen = new( ELeave ) CFbsBitmap;
     User::LeaveIfError( iScreen->Create( imageSize, displayMode ) );
 
+	TInt err = KErrNone;
+	TRect region;
     if ( aRegion.IsEmpty() )
         {
-        iScreenDevice->CopyScreenToBitmap( iScreen );
+        err = iScreenDevice->CopyScreenToBitmap( iScreen );
+		region = imageSize;
         }
     else
         {
-        iScreenDevice->CopyScreenToBitmap( iScreen, aRegion );
+        err = iScreenDevice->CopyScreenToBitmap( iScreen, aRegion );
+		region = aRegion;
         }
-
+    if (err == KErrNoMemory)
+	    {
+		HTI_LOG_TEXT( "screenshot in camera mode" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+		err = CAlfDrawer::FallbackCopyScreenToBitmap(*iScreenDevice, iScreen, region);
+#endif
+		}
 
     if ( iDeltaCapture )
         {

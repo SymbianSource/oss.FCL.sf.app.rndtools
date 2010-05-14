@@ -32,8 +32,8 @@ SOURCEPATH      ../src
 SOURCE          proxy.cpp
 SOURCE          HtiPIMServicePlugin.cpp
 SOURCE          PIMHandler.cpp
-SOURCE          HtiBookmarkHandler.cpp
-SOURCE          HtiSimDirHandlerVPbk.cpp
+SOURCE          HtiBookmarkHandler.cpp 
+SOURCE          HtiSimDirHandler.cpp
 
 USERINCLUDE     ../inc
 APP_LAYER_SYSTEMINCLUDE
@@ -44,7 +44,6 @@ END
 
 LIBRARY         cmmanager.lib
 LIBRARY         apgrfx.lib
-LIBRARY         calenimp.lib
 LIBRARY         calinterimapi.lib
 LIBRARY         charconv.lib
 LIBRARY         ecom.lib
@@ -52,10 +51,10 @@ LIBRARY         estor.lib
 LIBRARY         euser.lib
 LIBRARY         favouritesengine.lib
 LIBRARY         ws32.lib
-LIBRARY         vpbkeng.lib
-LIBRARY         vpbkvcardeng.lib
 LIBRARY         flogger.lib
-
+LIBRARY         cntmodel.lib
+LIBRARY			etelmm.lib
+LIBRARY			etel.lib 
 SMPSAFE
 
 // End of file

@@ -49,7 +49,7 @@ TInt CPULoadNOPThread(TAny* aParam)
     CActiveScheduler* pS = new CActiveScheduler;
     CActiveScheduler::Install(pS);
 
-    CIdle* idle = CIdle::NewL(CActive::EPriorityStandard);
+    CIdle* idle = CIdle::NewL(CActive::EPriorityLow);
     TCallBack cb(CPULoadCount, aParam);
     idle->Start(cb);
 
@@ -296,7 +296,7 @@ void CPerfMonEngine::ActivateCPUMonitoringL()
     // create a thread for CPU load monitoring
     User::LeaveIfError(iCPULoadThread.Create(_L("PerfMonCPULoad"),
             CPULoadNOPThread, 0x1000, 0x1000, 0x100000, &iCPULoadCounter));
-    iCPULoadThread.SetPriority(EPriorityLess);
+    iCPULoadThread.SetPriority(EPriorityAbsoluteVeryLow);
     iCPULoadThread.Resume();
 
     iCurrentCPUMode = ECPUModeNOPs; // NOPs taken succesfully in use
@@ -747,8 +747,7 @@ void CPerfMonEngine::LoadSettingsL()
                 iSettings.iMaxSamples);
         LoadDFSValueL(settingsStore, KPMSettingPriority, iSettings.iPriority);
         
-        // TODO: enable next line when NOPs will be working
-        //LoadDFSValueL(settingsStore, KPMSettingCPUMode, iSettings.iCPUMode);
+        LoadDFSValueL(settingsStore, KPMSettingCPUMode, iSettings.iCPUMode);
         
         LoadDFSValueL(settingsStore, KPMSettingKeepBackLightOn,
                 iSettings.iKeepBacklightOn);

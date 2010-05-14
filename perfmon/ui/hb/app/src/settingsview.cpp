@@ -23,10 +23,8 @@
 #include <HbDataFormModel>
 #include <HbDataFormModelItem>
 #include <HbDataFormViewItem>
-#include <HbValidator>
 #include <HbLineEdit>
 #include <HbPushButton>
-#include <HbListDialog>
 
 #include "enginewrapper.h"
 
@@ -115,9 +113,6 @@ void SettingsView::createModel(HbDataFormModel &model)
             HbDataFormModelItem::RadioButtonListItem, tr("CPU sampling mode"), generalPage);
     mCpuSamplingItem->setContentWidgetData("items", CPU_SAMPLING);
     
-    // TODO: remove next line when NOPs will be working
-    mCpuSamplingItem->setContentWidgetData("enabled", false);
-            
     mKeepBacklightItem = model.appendDataFormItem(
             HbDataFormModelItem::CheckBoxItem, tr("Backlight"), generalPage);
     mKeepBacklightItem->setContentWidgetData("text", tr("Keep backlight on"));
@@ -218,9 +213,8 @@ void SettingsView::save(PerfMonSettings& settings)
 void SettingsView::dataItemDisplayed(const QModelIndex &index)
 {
     HbDataFormModelItem* modelItem = mModel->itemFromIndex(index);
-    HbDataFormViewItem *viewItem = mSettingsForm->dataFormViewItem(index);
+    HbDataFormViewItem *viewItem = static_cast<HbDataFormViewItem*>(mSettingsForm->itemByIndex(index));
     HbWidget *dataContentWidget = viewItem->dataItemContentWidget();
-    HbWidget *contentWidget = viewItem->contentWidget();
 
     // set input method hint for edits
     // TODO: remove once setContentWidgetData works with inputMethodHints

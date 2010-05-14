@@ -35,7 +35,7 @@ PerfMonDataPopupDialog::PerfMonDataPopupDialog(const QVariantMap &parameters) :
     setTimeout(0);
     setModal(false);
     setDismissPolicy(HbPopup::NoDismiss);
-    setBackgroundItem(HbStyle::P_None);
+    setBackgroundItem(0);
     setContentWidget(mWidget);
 
     setDeviceDialogParameters(parameters);

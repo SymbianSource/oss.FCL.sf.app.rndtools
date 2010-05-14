@@ -35,7 +35,7 @@
 #include <swi/sisregistrysession.h>
 #include <swi/sisregistrypackage.h>
 #include <javaregistryincludes.h>
-#include <WidgetRegistryClient.h>
+#include <widgetregistryclient.h>
 
 using namespace Java;
 

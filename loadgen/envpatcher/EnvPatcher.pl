@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+# Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
 # All rights reserved.
 # This component and the accompanying materials are made available
 # under the terms of "Eclipse Public License v1.0"
@@ -10,8 +10,8 @@
 # Nokia Corporation - initial contribution.
 #
 # Contributors:
-# 
-# Description:
+#
+# Description: 
 # Environment Patcher - Patches older S60 SDKs for supporting
 # tricks in newer platforms
 #
@@ -49,7 +49,6 @@ my $prepfilepmpath = $e32toolsdir."/prepfile.pm";
 
 # variables for hacked content
 my $dependshack = "\t\t\tif (/^DEPENDS\$/o) {\r\n\t\t\t\tnext LINE;  # Ignore DEPENDS keyword, not needed by ABLD\r\n\t\t\t}\r\n";
-my $smpsafehack = "\t\tif (/^SMPSAFE\$/o) {\r\n\t\t\tnext LINE;  # Ignore SMPSAFE keyword, not needed by older environments\r\n\t\t}\r\n";
 my $forwardslashhack = "\t\t# EnvPatcher forwardslash hack begins\r\n\t\t\$_=~s{/}{\\\\}g;   # convert all forward slashes to backslashes\r\n\t\t# EnvPatcher forwardslash hack ends\r\n\r\n";
 my $coreibyexportsupport = "\r\n// Following definition is used for exporting tools and stubs IBY files to\r\n// Core image.\r\n#define CORE_IBY_EXPORT_PATH(path,exported)  /epoc32/rom/include/##exported\r\n";
 
@@ -149,7 +148,7 @@ if (-e $mmppmpath)
     # check if DEPENDS keyword already exists in the file
     if (string_exists_in_file($mmppmpath, "DEPENDS"))
     {
-        print "The SDK can already handle DEPENDS keyword in a MMP file.\n";        
+        print "The SDK has already been patched with DEPENDS keyword hack.\n";        
     }
     else
     {
@@ -182,51 +181,6 @@ if (-e $mmppmpath)
             write_file_from_array($mmppmpath, @filecontent);
         
             print "Mmp.pm patched with DEPENDS keyword hack.\n";
-        }
-        else
-        {
-            print "ERROR: Unable to find correct place from $mmppmpath for patching!\n";
-            print "Your SDK environment probably is not supported by this script!\n";
-            exit(2);    
-        }
-    }
-
-    # check if SMPSAFE keyword already exists in the file
-    if (string_exists_in_file($mmppmpath, "SMPSAFE"))
-    {
-        print "The SDK can already handle SMPSAFE keyword in a MMP file.\n";        
-    }
-    else
-    {
-        # read content of the mmp.pm file
-        my @filecontent = read_file_to_array($mmppmpath);
-        
-        my $match_found = 0;
-        my $i = 0;
-        my $match_found_pos = 0;
-        
-        # loop through the array to find the correct place
-        foreach (@filecontent)
-        {
-            if ($_ =~ /Unrecognised Keyword/)
-            {
-                $match_found = 1;
-                $match_found_pos = $i;
-                last;
-            } 
-
-            $i++;
-        }
-        
-        if ($match_found)
-        {
-            # insert the patched content to the file
-            splice(@filecontent, $match_found_pos, 0, $smpsafehack);
-            
-            # write the modified array to the file
-            write_file_from_array($mmppmpath, @filecontent);
-        
-            print "Mmp.pm patched with SMPSAFE keyword hack.\n";
         }
         else
         {

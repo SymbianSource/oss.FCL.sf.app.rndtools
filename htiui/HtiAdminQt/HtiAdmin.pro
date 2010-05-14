@@ -19,7 +19,7 @@ TARGET = HtiAdmin
 DEPENDPATH += .
 INCLUDEPATH += .
 INCLUDEPATH += . /epoc32/include/mw/hb/hbcore /epoc32/include/mw/hb/hbwidgets /epoc32/include/mw/hb/hbtools
-LIBS += -lhbcore -lhbwidgets -lhbtools
+LIBS += -lhbcore -lhbwidgets
 
 HEADERS += mainview.h 
 SOURCES += main.cpp mainview.cpp 

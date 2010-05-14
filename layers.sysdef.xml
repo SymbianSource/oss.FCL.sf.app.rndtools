@@ -15,6 +15,24 @@
 			<module name="perfmon">
 				<unit unitID="tools.perfmonqt" mrp="" bldFile="&layer_real_source_path;/perfmon" name="perfmon" proFile="perfmon.pro" />
 			</module>
+			<module name="htiui">
+				<unit unitID="tools.htiuiqt" mrp="" bldFile="&layer_real_source_path;/htiui" name="htiui" proFile="htiui.pro" />
+			</module>
+			<module name="creator">
+				<unit unitID="tools.creatorqt" mrp="" bldFile="&layer_real_source_path;/creator" name="creator" proFile="creator.pro" />
+			</module>
+			<module name="filebrowser">
+				<unit unitID="tools.filebrowserqt" mrp="" bldFile="&layer_real_source_path;/filebrowser" name="filebrowser" proFile="filebrowser.pro" />
+			</module>
+			<module name="launcher">
+				<unit unitID="tools.launcherqt" mrp="" bldFile="&layer_real_source_path;/launcher" name="launcher" proFile="launcher.pro" />
+			</module>
+			<module name="loadgen">
+				<unit unitID="tools.loadgenqt" mrp="" bldFile="&layer_real_source_path;/loadgen" name="loadgen" proFile="loadgen.pro" />
+			</module>
+			<module name="memspyui">
+				<unit unitID="tools.memspyuiqt" mrp="" bldFile="&layer_real_source_path;/memspyui" name="memspyui" proFile="memspyui.pro" />
+			</module>			
     </layer>
   </systemModel>
 </SystemDefinition>

@@ -20,7 +20,8 @@ TARGET = PerfMon
 DEPENDPATH += .
 INCLUDEPATH += inc
 
-CONFIG += hb
+load(hb.prf)
+symbian:CONFIG -= symbian_i18n
 
 HEADERS += inc/application.h \
     inc/mainwindow.h \

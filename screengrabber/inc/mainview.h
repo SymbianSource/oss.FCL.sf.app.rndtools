@@ -94,6 +94,8 @@ public slots:
 
     void my_quit();
     
+    void quitYesNoQuestionClosed(HbAction*);
+    
 
 public:
     

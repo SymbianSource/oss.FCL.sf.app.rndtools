@@ -127,10 +127,11 @@ void MainView::toggleLogging()
 
 void MainView::showAbout()
 {
-    HbMessageBox dlg;
-    dlg.setText("Version 1.1.0 - 15th March 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
-    HbLabel header("About PerfMon");
-    dlg.setHeadingWidget(&header);
-    dlg.setTimeout(HbPopup::NoTimeout);
-    dlg.exec();
+    HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeInformation);
+    messageBox->setText("Version 1.1.0 - 15th March 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
+    HbLabel *header = new HbLabel("About PerfMon", messageBox);
+    messageBox->setHeadingWidget(header);
+    messageBox->setAttribute(Qt::WA_DeleteOnClose);
+    messageBox->setTimeout(HbPopup::NoTimeout);
+    messageBox->open();
 }

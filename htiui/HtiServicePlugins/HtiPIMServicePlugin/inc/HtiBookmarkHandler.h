@@ -21,9 +21,9 @@
 
 // INCLUDES
 #include <e32std.h>
-#include <FavouritesLimits.h>
-#include <FavouritesSession.h>
-#include <HTIServicePluginInterface.h>
+#include <favouriteslimits.h>
+#include <favouritessession.h>
+#include <HtiServicePluginInterface.h>
 
 // CONSTANTS
 const TInt KApMaxConnNameLength = 30;

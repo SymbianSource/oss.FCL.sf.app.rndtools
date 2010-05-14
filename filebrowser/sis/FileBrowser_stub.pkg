@@ -29,7 +29,7 @@
 
 ; normal stuff:
 ""-"z:\sys\bin\FileBrowser.exe"
-""-"z:\Resource\Apps\FileBrowser_aif.mif"
+""-"z:\Resource\Apps\FileBrowser.mif"
 ""-"z:\Resource\Apps\FileBrowser.rsc"
 ""-"z:\private\10003a3f\import\apps\FileBrowser_reg.rsc"
 ""-"z:\private\102828D6\backup_registration.xml"
