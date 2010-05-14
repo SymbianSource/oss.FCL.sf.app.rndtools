@@ -21,7 +21,7 @@
 #include "creator_wepsecuritysettings.h"
 #include <commdb.h>
 //#include <featmgr.h>
-#include <wlancdbcols.h>
+#include <WlanCdbCols.h>
 
 //#include <commsdattypesv1_1.h>
 //#include <cmmanagertablefields.h>

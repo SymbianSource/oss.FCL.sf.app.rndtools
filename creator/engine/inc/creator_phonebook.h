@@ -22,7 +22,6 @@
 #ifndef __CREATORPHONEBOOK_H__
 #define __CREATORPHONEBOOK_H__
 
-#include "engine.h"
 #include "creator_phonebookbase.h"
 #include "creator_randomdatafield.h"
 
@@ -90,7 +89,6 @@ private:
     void ConstructL(CCreatorEngine* aEngine); // from MCreatorModuleBase
 
 public:  
-    virtual TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries);
     TInt CreateContactEntryL(CCreatorModuleBaseParameters *aParameters);    
     TInt CreateGroupEntryL(CCreatorModuleBaseParameters *aParameters);
     TInt CreateSubscribedContactEntryL(CCreatorModuleBaseParameters *aParameters); 
@@ -104,7 +102,7 @@ public:
 private:
     
     void InitializeContactParamsL(/*CCreatorModuleBaseParameters* aParameters*/);
-    TBool IsContactGroupL(/*const MVPbkContactLink& aLink*/);																								//modify
+    TBool IsContactGroupL( QContactLocalId& aLink );
     void StoreLinksForDeleteL( RArray<TUint32>& aLinks, TUid aStoreUid );														//modify
     void DeleteContactsL( QList<QContactLocalId>& contacts /*MVPbkContactLinkArray* aContacts, TBool aGroup*/ );																//modify
     void DeleteItemsCreatedWithCreatorL( TUid aStoreUid );
@@ -123,7 +121,6 @@ private:
     static QString iPhoneNumberFields[];
     static TInt iUrlFields[];
     static TInt iEmailFields[];
-    TBool iAddAllFields;
     //QList<QContactLocalId> 
     RArray<TUint32> iContactLinkArray;//CVPbkContactLinkArray* iContactLinkArray;	//modify
     RArray<TUint32>  iContactsToDelete;	//CVPbkContactLinkArray* iContactsToDelete;	//modify
@@ -151,7 +148,7 @@ private:
     };
 
 /**
- * Virtual phonebook parameters
+ * phonebook parameters
  */
     
 
@@ -182,5 +179,17 @@ private:
     };
 
 
+class CCreatorContactField : public CBase//, public MCreatorRandomDataField
+    {
+public:    
+    static CCreatorContactField* NewL();
+    QContactDetail CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand = KErrNotFound );
+    QContactDetail CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TPtrC aData );
+    void AddFieldToParam( CPhonebookParameters* aParam, QContactDetail aDetail);
+    ~CCreatorContactField();
+private:
+    CCreatorContactField();
+    void ConstructL();
+    };
 
 #endif // __CREATORPHONEBOOK_H__

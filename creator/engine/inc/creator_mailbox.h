@@ -28,11 +28,11 @@
 
 #include <e32base.h>
 #include <SenduiMtmUids.h>
-#include <SMTPSET.h>
+#include <smtpset.h>
 #include <imapset.h>
-#include <POP3SET.h>
+#include <pop3set.h>
 #include <mtmuibas.h>
-#include <IAPPrefs.h>
+#include <iapprefs.h>
 #include <cemailaccounts.h>
 
 class CCreatorEngine;
@@ -46,7 +46,7 @@ enum TMailboxType
     EMailboxIMAP4
     };
 
-class CCreatorMailboxes : public CBase, public MCreatorModuleBase, public MMsvSessionObserver
+class CCreatorMailboxes : public CCreatorModuleBase, public MMsvSessionObserver
     {
 public: 
     static CCreatorMailboxes* NewL(CCreatorEngine* aEngine);
@@ -81,7 +81,8 @@ private:
 
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    
     TInt CreateMailboxEntryL(CMailboxesParameters *aParameters);
     void DeleteAllL();
     void DeleteAllCreatedByCreatorL();

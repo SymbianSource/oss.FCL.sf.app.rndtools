@@ -128,18 +128,24 @@ public:
 //     */
 //    virtual void HideProgressBar() = 0;
 //
-//    /**
-//     * Shows wait dialog with text
-//     * @param aText A text to be shown at top of the wait bar.
-//     * @return None.
-//     */
-//    virtual void ShowWaitDialog(const TDesC& aText) = 0;
-//
-//    /**
-//     * Hides wait dialog
-//     * @return None.
-//     */
-//    virtual void HideWaitDialog() = 0;
+    /**
+     * Shows wait dialog with text
+     * @param aText A text to be shown at top of the wait bar.
+     * @return None.
+     */
+    virtual void ShowWaitDialog(const TDesC& aText) = 0;
+
+    /**
+     * Cancel wait dialog
+     * @return None.
+     */
+    virtual void CancelWaitDialog() = 0;
+
+    /**
+     * Processes all pending events to allow wait/progresa dialog to update itself
+     * @return None.
+     */
+    virtual void ProcessEvents() = 0;
 
     /**
      * Shows confirmation dialog

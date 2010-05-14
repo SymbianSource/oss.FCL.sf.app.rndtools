@@ -80,7 +80,8 @@ CCreatorNotepad::~CCreatorNotepad()
     {
     LOGSTRING("Creator: CCreatorNotepad::~CCreatorNotepad");
     
-    delete iNotepadApi;
+    // TODO DELETE!!!
+    //delete iNotepadApi;
     
     if (iParameters)
         delete iParameters;
@@ -88,19 +89,21 @@ CCreatorNotepad::~CCreatorNotepad()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorNotepad::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorNotepad::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorNotepad::AskDataFromUserL");
 
+    CCreatorModuleBase::AskDataFromUserL(aCommand);
+        
     if ( aCommand == ECmdDeleteNotes )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Notes?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Notes?"), this, ECreatorModuleDelete );
         }
     
     // By Creator not supported because 
     // note id is not available via Notepad API
 
-    return iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?"));
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog( &iEntriesToBeCreated, _L("How many entries to create?"), EFalse,  this, ECreatorModuleStart );
     }
 
 

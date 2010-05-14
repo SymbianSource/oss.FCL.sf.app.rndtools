@@ -18,13 +18,14 @@
 
 
 #include <aknlists.h> 
-#include <aknsskininstance.h>
+#include <AknsSkinInstance.h>
 #include <data_caging_path_literals.hrh>
 
 #include "engine.h"
 #include "enginewrapper.h"
 #include "creator_traces.h"
 #include "creator_factory.h"
+#include "creator_scriptentry.h"
 
 
 
@@ -68,24 +69,65 @@ CCommandParser::~CCommandParser()
 	{
     LOGSTRING("Creator: CCommandParser::~CCommandParser");
 
-    if (iSearchArray)
+    if (iSearchArray){
         delete iSearchArray;
+        iSearchArray = NULL;
+    }
 
     if (iReadBuf)
         delete iReadBuf;
 	}
 
+// ---------------------------------------------------------------------------
+
+void CCommandParser::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
+    {
+    User::LeaveIfNull(iSearchArray);
+    
+    if( aUserData == EGetingScript && aPositiveAction && iSearchArray->Count() )
+        {
+        iObserver->FileChosenL( ETrue, iSearchArray->MdcaPoint(iSelectedItem) );
+        }
+    else if( aUserData == EGetingRandomDataFile && aPositiveAction && iSearchArray->Count() )
+        {
+        TFileName fileName;
+        if (iSelectedItem == (iSearchArray->Count() - 1))
+                {
+                // "default" (resource file) selected
+                fileName.Copy(KNullDesC);
+                }
+            else
+                {
+                // xml file selected
+                fileName.Copy(iSearchArray->MdcaPoint(iSelectedItem));
+                }
+        iObserver->FileChosenL( ETrue, fileName );
+        }
+    else
+        {
+        iObserver->FileChosenL( EFalse );
+        }
+    delete iSearchArray;
+    iSearchArray = NULL;
+    iObserver = NULL;
+    }
 
 // ---------------------------------------------------------------------------
 //#if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
 void CCommandParser::OpenScriptL() {}
-TBool CCommandParser::OpenScriptL(RFile& aScriptFile)
+TBool CCommandParser::OpenScriptL(MCommandParserObserver* aObserver)
     {    
     LOGSTRING("Creator: CCommandParser::OpenScriptL");
+    
+    User::LeaveIfNull( aObserver );
+    iObserver = aObserver;
+    iSelectedItem = 0;
+    
     TBool ret = EFalse;
 
     // init the search array
-    iSearchArray = new(ELeave) CDesCArrayFlat(500);
+    delete iSearchArray;
+    iSearchArray = new(ELeave) CDesCArrayFlat(20);
 
     // wait dialog
 	// TODO
@@ -154,70 +196,18 @@ TBool CCommandParser::OpenScriptL(RFile& aScriptFile)
                 fileNameArray->AppendL(filename.Name());
                 }
             }
-        CleanupStack::Pop(fileNameArray);
 
-
-		// create a popup list
-		int index = 0;
-		TBool result = iEngine->GetEngineWrapper()->PopupListDialog(_L("Select script"), fileNameArray, index);
-        //CAknSinglePopupMenuStyleListBox* listBox = new(ELeave) CAknSinglePopupMenuStyleListBox;
-        //CleanupStack::PushL(listBox);
-		
-        //CAknPopupList* popupList = CAknPopupList::NewL( listBox, R_AVKON_SOFTKEYS_SELECT_CANCEL, AknPopupLayouts::EMenuWindow );
-        //CleanupStack::PushL(popupList);
-        //popupList->SetTitleL(_L("Select script"));
-        //listBox->ConstructL( popupList, EAknListBoxSelectionList|EAknListBoxLoopScrolling );
-        //listBox->CreateScrollBarFrameL( ETrue );
-        //listBox->ScrollBarFrame()->SetScrollBarVisibilityL( CEikScrollBarFrame::EOff, CEikScrollBarFrame::EAuto);
-        //listBox->Model()->SetItemTextArray( fileNameArray );
-        //listBox->Model()->SetOwnershipType( ELbmOwnsItemArray );  // !!!
-        //listBox->HandleItemAdditionL();
-
-
-        // define MMC icon 
-        //MAknsSkinInstance* skin = AknsUtils::SkinInstance();
-        //_LIT( KFLDMemoryCardUiBitmapFile, "z:aknmemorycardui.mbm" );
-        //CAknIconArray* iconArray = new( ELeave ) CAknIconArray( 1 );
-        //listBox->ItemDrawer()->ColumnData()->SetIconArray( iconArray );
-
-        //TParse* fp = new(ELeave) TParse();
-        //fp->Set(KFLDMemoryCardUiBitmapFile, &KDC_APP_BITMAP_DIR, NULL);
-        //TFileName resourceFileName( fp->FullName() );
-        //delete fp;
-
-        //CGulIcon* icon = AknsUtils::CreateGulIconL( skin, KAknsIIDQgnIndiMmcAdd,
-        //    resourceFileName,
-        //    EMbmAknmemorycarduiQgn_indi_mmc_add,
-        //    EMbmAknmemorycarduiQgn_indi_mmc_add_mask );
-        //CleanupStack::PushL( icon );
-        //iconArray->AppendL( icon );
-        //CleanupStack::Pop( icon );
-
-        // execute dialog
-        //TBool result; // = popupList->ExecuteLD();
-        //CleanupStack::Pop();  // popupList
-
-        if ( result ) 
-            {
-            // open the file for reading
-            //RFile file;
-			TRAPD(err, aScriptFile.Open(CEikonEnv::Static()->FsSession(), iSearchArray->MdcaPoint(index), EFileRead));
-            if( err != KErrNone)
-                {
-                aScriptFile.Close();
-                User::Leave(err);
-                }
-            ret = ETrue;
-            }
-        //CleanupStack::PopAndDestroy();  //listBox
+        ret = iEngine->GetEngineWrapper()->PopupListDialog(_L("Select script"), fileNameArray, &iSelectedItem, this, EGetingScript);
+		CleanupStack::PopAndDestroy(fileNameArray);
         }
     else  // no scripts found from the search paths
         {
         iEngine->GetEngineWrapper()->ShowNote(_L("No scripts found"));
+        delete iSearchArray;
+        iSearchArray = NULL;
         }
 
-    delete iSearchArray;
-    iSearchArray = NULL;
+    
     return ret;
     }
 /*
@@ -476,72 +466,16 @@ TBool CCommandParser::GetRandomDataFilenameL(TDes& aFilename)
         // add "default" (resource file) to list
         fileNameArray->AppendL(_L("Default"));
 
-        CleanupStack::Pop(fileNameArray);
-
-        // create a popup list
-		int index = 0;
-		TBool result = iEngine->GetEngineWrapper()->PopupListDialog(_L("Select random data file"), fileNameArray, index);
-        /*
-		CAknSinglePopupMenuStyleListBox* listBox = new(ELeave) CAknSinglePopupMenuStyleListBox;
-        CleanupStack::PushL(listBox);
-        CAknPopupList* popupList = CAknPopupList::NewL( listBox, R_AVKON_SOFTKEYS_SELECT_CANCEL, AknPopupLayouts::EMenuWindow );
-        CleanupStack::PushL(popupList);
-        popupList->SetTitleL(_L("Select random data file"));
-        listBox->ConstructL( popupList, EAknListBoxSelectionList|EAknListBoxLoopScrolling );
-        listBox->CreateScrollBarFrameL( ETrue );
-        listBox->ScrollBarFrame()->SetScrollBarVisibilityL( CEikScrollBarFrame::EOff, CEikScrollBarFrame::EAuto);
-        listBox->Model()->SetItemTextArray( fileNameArray );
-        listBox->Model()->SetOwnershipType( ELbmOwnsItemArray );  // !!!
-        listBox->HandleItemAdditionL();
-
-
-        // define MMC icon 
-        MAknsSkinInstance* skin = AknsUtils::SkinInstance();
-        _LIT( KFLDMemoryCardUiBitmapFile, "z:aknmemorycardui.mbm" );
-        CAknIconArray* iconArray = new( ELeave ) CAknIconArray( 1 );
-        listBox->ItemDrawer()->ColumnData()->SetIconArray( iconArray );
-
-        TParse* fp = new(ELeave) TParse();
-        fp->Set(KFLDMemoryCardUiBitmapFile, &KDC_APP_BITMAP_DIR, NULL);
-        TFileName resourceFileName( fp->FullName() );
-        delete fp;
-
-        CGulIcon* icon = AknsUtils::CreateGulIconL( skin, KAknsIIDQgnIndiMmcAdd,
-            resourceFileName,
-            EMbmAknmemorycarduiQgn_indi_mmc_add,
-            EMbmAknmemorycarduiQgn_indi_mmc_add_mask );
-        CleanupStack::PushL( icon );
-        iconArray->AppendL( icon );
-        CleanupStack::Pop( icon );
-
-
-        // execute dialog
-        TBool result = popupList->ExecuteLD();
-        CleanupStack::Pop();  // popupList
-		*/
-        if ( result ) 
-            {
-            if (index == (fileNameArray->Count() - 1))
-            	{
-            	// "default" (resource file) selected
-            	aFilename.Copy(KNullDesC);
-            	}
-            else
-            	{
-            	// xml file selected
-            	aFilename.Copy(iSearchArray->MdcaPoint(index));
-            	}
-            ret = ETrue;
-            }
-        // CleanupStack::PopAndDestroy();  //listBox
+		ret = iEngine->GetEngineWrapper()->PopupListDialog(_L("Select random data file"), fileNameArray, &iSelectedItem, this);
+        CleanupStack::PopAndDestroy(fileNameArray);
         }
     else  // no random data files found from the search paths
         {
         iEngine->GetEngineWrapper()->ShowNote(_L("No random data files found"));
+        delete iSearchArray;
+        iSearchArray = NULL;
         }
 
-    delete iSearchArray;
-    iSearchArray = NULL;
     return ret;
     }
 

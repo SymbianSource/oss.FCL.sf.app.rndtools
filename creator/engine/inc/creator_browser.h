@@ -26,9 +26,9 @@
 #include "creator_modulebase.h"
 
 #include <e32base.h>
-#include <favouritesitem.h>
-#include <favouritesdb.h>
-#include <favouritesfile.h>
+#include <FavouritesItem.h>
+#include <FavouritesDb.h>
+#include <FavouritesFile.h>
 
 
 
@@ -36,7 +36,7 @@ class CCreatorEngine;
 class CBrowserParameters;
 
 
-class CCreatorBrowser : public CBase, public MCreatorModuleBase
+class CCreatorBrowser : public CCreatorModuleBase
     {
 public: 
     static CCreatorBrowser* NewL(CCreatorEngine* aEngine);
@@ -48,7 +48,8 @@ private:
     void ConstructL(CCreatorEngine* aEngine); // from MCreatorModuleBase
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+
     TInt CreateBookmarkEntryL(CBrowserParameters *aParameters);    
     TInt CreateBookmarkFolderEntryL(CBrowserParameters *aParameters);
     TInt CreateSavedDeckEntryL(CBrowserParameters *aParameters); 

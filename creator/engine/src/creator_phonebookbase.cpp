@@ -20,94 +20,122 @@
 #include "creator_phonebookbase.h"
 #include "creator_traces.h"
 
-TBool CCreatorPhonebookBase::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+void CCreatorPhonebookBase::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
     {
-    LOGSTRING("Creator: CCreatorPhonebook::AskDataFromUserL");
+    LOGSTRING("Creator: CCreatorPhonebookBase::QueryDialogClosedL");
     
-    if( aCommand == ECmdDeleteContacts )
+    if(aPositiveAction == EFalse && aUserData!=ECreatorPhonebookGetContactFields )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contacts?") );
+        iEngine->ShutDownEnginesL();
+        return;
         }
-    if( aCommand == ECmdDeleteCreatorContacts )
+    
+    TBool finished(EFalse);
+    TBool retval(ETrue);
+    switch(aUserData)
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contacts created with Creator?") ); 
-        }
-    if( aCommand == ECmdDeleteContactGroups )
-        {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contact groups?") );
-        }
-    if( aCommand == ECmdDeleteCreatorContactGroups )
-        {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contact groups created with Creator?") ); 
-        }    
-    // display queries
-    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?"))) // ask number of entries to create
-        {
-        if (aCommand == ECmdCreatePhoneBookEntryContacts)
-            {
-            TInt index = 0;
-
-            //CAknListQueryDialog* dlg1 = new(ELeave) CAknListQueryDialog(&index);
-            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Fields in contact"), R_CONTACT_CREATION_TYPE_QUERY, index))
+        case ECreatorPhonebookDelete:
+            finished = ETrue;
+            iEntriesToBeCreated = 1;
+            break;
+        case ECreatorPhonebookStart:
+            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Fields in contact"), R_CONTACT_CREATION_TYPE_QUERY, 
+                &iDummy, this, iCommand == ECmdCreatePhoneBookEntryContacts ? ECreatorPhonebookGetContactFields : ECreatorPhonebookGetGroupFields
+                );
+            break;
+        case ECreatorPhonebookGetContactFields:
+            if(!iDefaultFieldsSelected)
                 {
-                if (index == 0) //first item
+                if(iDummy==0)// first item, use default fields
+                        
                     {
                     iDefaultFieldsSelected = ETrue;
-                    return ETrue;    
-                    }
-                else  // detailed mode selected
-                    {
-                    iDefaultFieldsSelected = EFalse;
-                    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(iNumberOfPhoneNumberFields, _L("Amount of phone number fields in one contact?"), ETrue))
-                        {
-                        if (iEngine->GetEngineWrapper()->EntriesQueryDialog(iNumberOfURLFields, _L("Amount of URL fields in one contact?"), ETrue))
-                            {
-                            if (iEngine->GetEngineWrapper()->EntriesQueryDialog(iNumberOfEmailAddressFields, _L("Amount of email fields in one contact?"), ETrue))
-                                {                                
-                                return ETrue;
-                                }
-                            else
-                                return EFalse;
-                            }
-                            else
-                                return EFalse;
-                        }
-                    else
-                        return EFalse;
-                    }
-                }
-            else
-                return EFalse;
-            }
-        else if (aCommand == ECmdCreatePhoneBookEntryGroups)
-            {
-            TInt index = 0;
-            //CAknListQueryDialog* dlg1 = new(ELeave) CAknListQueryDialog(&index);
-            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Fields in contact"), R_GROUP_CREATION_TYPE_QUERY, index))
-                {
-                if (index == 0) //first item
-                    {
-                    iContactsInGroup = KCreateRandomAmountOfGroups;
-                    return ETrue;
+                    retval = iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Add all the other fields to contacts?"), this, ECreatorPhonebookGetContactFields);
                     }
                 else
                     {
-                    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(iContactsInGroup, _L("Amount of contacts in one group?"), ETrue))
-                        {
-                        return ETrue;
-                        }
-                    else
-                        return EFalse;
+                    retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iNumberOfPhoneNumberFields, _L("Amount of phone number fields in one contact?"), 
+                        ETrue, this, ECreatorPhonebookGetPhoneNumbersCount 
+                        );
                     }
                 }
             else
-                return EFalse;
-            }
-        else 
-            return ETrue; 
+                {
+                iAddAllFields = aPositiveAction;
+                finished = ETrue;
+                }
+            break;
+        case ECreatorPhonebookGetPhoneNumbersCount:
+            retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iNumberOfURLFields, _L("Amount of URL fields in one contact?"), 
+                ETrue, this, ECreatorPhonebookGetUrlsCount 
+                );
+            break;
+        case ECreatorPhonebookGetUrlsCount:
+            retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iNumberOfEmailAddressFields, _L("Amount of email fields in one contact?"), 
+                ETrue, this, ECreatorPhonebookGetEmailsCount
+                );
+            break;
+        case ECreatorPhonebookGetEmailsCount:
+            // finaly we have all informations from user, start engine
+            finished = ETrue;
+            break;
+        case ECreatorPhonebookGetGroupFields:
+            iContactsInGroup = KCreateRandomAmountOfGroups;
+            if(iDummy==0)// first item, use default fields
+                {
+                finished = ETrue;
+                }
+            else
+                {
+                retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iContactsInGroup, _L("Amount of contacts in one group?"), 
+                    ETrue, this, ECreatorPhonebookGetContactsInGroup);
+                }
+            break;
+        case ECreatorPhonebookGetContactsInGroup:
+            // finaly we have all informations from user, start engine
+            finished = ETrue;
+            break;
+        default:
+            //some error
+            retval = EFalse;
+            break;
         }
-    else
-        return EFalse;
+    if( retval == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        }
+    else if( finished )
+        {
+        // add this command to command array
+        iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
+        // started exucuting commands
+        iEngine->ExecuteFirstCommandL( KSavingText );
+        }
+    }
+    
+TBool CCreatorPhonebookBase::AskDataFromUserL(TInt aCommand)
+    {
+    LOGSTRING("Creator: CCreatorPhonebookBase::AskDataFromUserL");
+    iCommand = aCommand;
+    
+    if( aCommand == ECmdDeleteContacts )
+        {
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contacts?"), this, ECreatorPhonebookDelete );
+        }
+    if( aCommand == ECmdDeleteCreatorContacts )
+        {
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contacts created with Creator?"), this, ECreatorPhonebookDelete ); 
+        }
+    if( aCommand == ECmdDeleteContactGroups )
+        {
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contact groups?"), this, ECreatorPhonebookDelete );
+        }
+    if( aCommand == ECmdDeleteCreatorContactGroups )
+        {
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all contact groups created with Creator?"), this, ECreatorPhonebookDelete ); 
+        }    
+    // display queries
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog( &iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorPhonebookStart); // ask number of entries to create
     }
 
 

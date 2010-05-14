@@ -18,16 +18,18 @@
 #ifndef SEARCHVIEW_H
 #define SEARCHVIEW_H
 
-#include <hbview.h>
-#include <hbmainwindow.h>
+#include <HbView>
+#include <HbMainWindow>
 
-#include <qdatetime.h>
+#include <QDateTime>
 
 class QDir;
-class EngineWrapper;
 class QStringList;
+
+class EngineWrapper;
 class HbDataForm;
 class HbDataFormModelItem;
+class HbProgressDialog;
 
 /**
   * Settings class that is used for 
@@ -51,8 +53,8 @@ public:
 class SearchResults
 {
 public:
-    int         mNumberOfFoundFiles;
-    QStringList* mFoundFilesList;
+    int mNumberOfFoundFiles;
+    QStringList *mFoundFilesList;
 };
 
 class SearchView : public HbView
@@ -60,24 +62,27 @@ class SearchView : public HbView
     Q_OBJECT
 
 public:
-    SearchView(HbView &mainView, HbMainWindow &mainWindow, EngineWrapper &engineWrapper);
+    explicit SearchView(EngineWrapper &engineWrapper);
     ~SearchView();
     void open(const QString &path);
 
+signals:
+    void finished(bool ok);
 
 private slots:
-    void backButtonClicked();
-    void startFileSearch();
+    void accept();
+    void reject();
+
+private:
+    void initDataForm();
+    void createToolbar();
     void loadAttributes();
     void readFormItems();
-    
-private:
+
+    void startFileSearch();
     void fileSearchResults();
 
-    /* Main Window of folderbrowser */
-    HbMainWindow &mMainWindow;
-    /* Main View of folderbrowser*/
-    HbView &mMainView;
+private:
     /* EngineWrapper */
     EngineWrapper &mEngineWrapper;  
 
@@ -97,6 +102,8 @@ private:
     HbDataFormModelItem *mMaxDate;
 
     QString mPath;
+
+    HbProgressDialog *mProgressDialog;
 };
 
 #endif // SEARCHVIEW_H

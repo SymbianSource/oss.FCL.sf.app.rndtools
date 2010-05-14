@@ -28,11 +28,11 @@
 
 #include <e32base.h>
 #include <commdb.h>
-#include <apselect.h>
-#include <apdatahandler.h>
-#include <apaccesspointitem.h>
-#include <aputils.h>
-#include <apengineconsts.h>
+#include <ApSelect.h>
+#include <ApDataHandler.h>
+#include <ApAccessPointItem.h>
+#include <ApUtils.h>
+#include <ApEngineConsts.h>
 #include <msvapi.h>
 #include <mtclreg.h>
 #include <mmsclient.h>
@@ -57,8 +57,8 @@ private:
     void HandleSessionEventL(TMsvSessionEvent aEvent, TAny* aArg1, TAny* aArg2, TAny* aArg3); // from MMsvSessionObserver
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
-
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    
     TInt CreateConnectionSettingsEntryL(CCreatorModuleBaseParameters *aParameters);    
     TUint32 AccessPointNameToIdL(const TDesC& aAPName, TBool aAnyIfNotFound = EFalse );
     

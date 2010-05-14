@@ -18,6 +18,7 @@
 
 #include "engine.h"
 #include "enginewrapper.h"
+#include "creator_contactsetcache.h"
 
 #include "creator_phonebook.h" 
 #include "creator_traces.h"
@@ -49,6 +50,11 @@ DetailFieldInfo CreatorPbkMiscTextFields[] = {
         { (QContactAddress::DefinitionName).operator QString(), (QContactDetail::ContextHome).operator QString(), (QContactAddress::FieldRegion).operator QString(), (TInt) CCreatorEngine::EState},
         { (QContactAddress::DefinitionName).operator QString(), (QContactDetail::ContextHome).operator QString(), (QContactAddress::FieldPostcode).operator QString(), (TInt) CCreatorEngine::EPostcode},
         { (QContactAddress::DefinitionName).operator QString(), (QContactDetail::ContextHome).operator QString(), (QContactAddress::FieldCountry).operator QString(), (TInt) CCreatorEngine::ECountry},
+        { (QContactAddress::DefinitionName).operator QString(), "", (QContactAddress::FieldStreet).operator QString(), (TInt) CCreatorEngine::EAddress},
+        { (QContactAddress::DefinitionName).operator QString(), "", (QContactAddress::FieldLocality).operator QString(), (TInt) CCreatorEngine::ECity},
+        { (QContactAddress::DefinitionName).operator QString(), "", (QContactAddress::FieldRegion).operator QString(), (TInt) CCreatorEngine::EState},
+        { (QContactAddress::DefinitionName).operator QString(), "", (QContactAddress::FieldPostcode).operator QString(), (TInt) CCreatorEngine::EPostcode},
+        { (QContactAddress::DefinitionName).operator QString(), "", (QContactAddress::FieldCountry).operator QString(), (TInt) CCreatorEngine::ECountry},
         { (QContactAddress::DefinitionName).operator QString(), (QContactDetail::ContextWork).operator QString(), (QContactAddress::FieldStreet).operator QString(), (TInt) CCreatorEngine::EAddress},
         { (QContactAddress::DefinitionName).operator QString(), (QContactDetail::ContextWork).operator QString(), (QContactAddress::FieldLocality).operator QString(), (TInt) CCreatorEngine::ECity},
         { (QContactAddress::DefinitionName).operator QString(), (QContactDetail::ContextWork).operator QString(), (QContactAddress::FieldRegion).operator QString(), (TInt) CCreatorEngine::EState},
@@ -64,48 +70,17 @@ DetailFieldInfo CreatorPbkMiscTextFields[] = {
         { (QContactName::DefinitionName).operator QString(), (QContactDetail::ContextHome).operator QString(),  (QContactName::FieldCustomLabel).operator QString(), (TInt) CCreatorEngine::EFirstName}
         };
                   
-/*TInt CreatorVPbkBinaryFields[] = {
-        R_VPBK_FIELD_TYPE_CALLEROBJIMG//,
-        //R_VPBK_FIELD_TYPE_THUMBNAILPATH
-        };*/
 
-/*QString CreatorPbkDateTimeFields[] = {
-        QContactAnniversary::DefinitionName//R_VPBK_FIELD_TYPE_ANNIVERSARY
-        };*/
-
-//----------------------------------------------------------------------------
-
-/*
 typedef struct{
 QString iFieldContext;
 QString iFieldString;
 }PhoneNumInfo;
 PhoneNumInfo CreatorPhoneNumberFields[] =
     {
-    { QContactPhoneNumber::ContextHome, QContactPhoneNumber::SubTypeLandline},
-    { QContactPhoneNumber::ContextWork, QContactPhoneNumber::SubTypeLandline},                        
-    { QContactPhoneNumber::ContextHome, QContactPhoneNumber::SubTypeMobile},
-    { QContactPhoneNumber::ContextWork, QContactPhoneNumber::SubTypeMobile},
-    { QContactPhoneNumber::ContextHome, QContactPhoneNumber::SubTypeFacsimile},
-    { QContactPhoneNumber::ContextWork, QContactPhoneNumber::SubTypeFacsimile},
-    { QContactPhoneNumber::ContextWork, QContactPhoneNumber::SubTypePager },           
-    { QContactPhoneNumber::ContextHome, QContactPhoneNumber::SubTypeVideo },
-    { QContactPhoneNumber::ContextWork, QContactPhoneNumber::SubTypeVideo },
-    { QContactPhoneNumber::ContextHome, QContactPhoneNumber::SubTypeVoice },
-    { QContactPhoneNumber::ContextWork, QContactPhoneNumber::SubTypeVoice },
-    { QContactPhoneNumber::ContextWork, QContactPhoneNumber::SubTypeAssistant },
-    { QContactPhoneNumber::ContextHome, QContactPhoneNumber::SubTypeCar }
-    };
-
-*/
-typedef struct{
-QString iFieldContext;
-QString iFieldString;
-}PhoneNumInfo;
-PhoneNumInfo CreatorPhoneNumberFields[] =
-    {
+    { "", "Landline"},
     { "Home", "Landline"},
     { "Work", "Landline"},                        
+    { "","Mobile"},
     { "Home","Mobile"},
     { "Work", "Mobile"},
     { "Home", "Facsimile"},
@@ -118,25 +93,6 @@ PhoneNumInfo CreatorPhoneNumberFields[] =
     };
 
 
-/*QString CCreatorPhonebook::iPhoneNumberFields[] =
-    {
-    {QContactPhoneNumber::SubTypeLandline},
-    {QContactPhoneNumber::SubTypeMobile},
-    {QContactPhoneNumber::SubTypeFacsimile},
-    {QContactPhoneNumber::SubTypePager},           
-    {QContactPhoneNumber::SubTypeVideo},
-    {QContactPhoneNumber::SubTypeVoice} ,
-    {QContactPhoneNumber::SubTypeAssistant},
-    {QContactPhoneNumber::SubTypeCar} 
-    };
-*/
-/*
-QStringList CreatorPbkContextFields =
-    {
-    QContactDetail::ContextHome,
-    QContactDetail::ContextWork
-    };
-*/
 QString CreatorPbkEmailFields[] =
     {
     //R_VPBK_FIELD_TYPE_EMAILGEN,
@@ -240,38 +196,33 @@ CCreatorPhonebook::~CCreatorPhonebook()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorPhonebook::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
-    {
-    LOGSTRING("Creator: CCreatorPhonebook::AskDataFromUserL");
-
-    TBool ret = CCreatorPhonebookBase::AskDataFromUserL(aCommand, aNumberOfEntries);
-   
-    if(ret && aCommand == ECmdCreatePhoneBookEntryContacts && !iDefaultFieldsSelected)    
-        {
-        iAddAllFields = iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Add all the other fields to contacts?"));
-        }
-    return ret;
-    }
-
-
-//----------------------------------------------------------------------------
-
 TInt CCreatorPhonebook::CreateContactEntryL(CCreatorModuleBaseParameters *aParameters)
     {
-	TInt err=0;	
-
-	InitializeContactParamsL();
+	TInt err = KErrNone;
+	delete iParameters;
+	    iParameters = 0;
+	CPhonebookParameters* parameters = 0;
+	//InitializeContactParamsL();
+	
+	if( aParameters == 0 )
+	    {
+	    InitializeContactParamsL();
+	    parameters = iParameters;
+	    }
+	else
+	    {
+	    parameters = (CPhonebookParameters*) aParameters;
+	    }
+	    
 	bool success = false;
 	// create a new contact item
-	//iStore = new QContact();
-	
 	QContact iStore;
 	
-	int numberOfFields = iParameters->iContactFields.count();
+	int numberOfFields = parameters->iContactFields.count();
 	QString phone;
 	for(int i=0; i< numberOfFields; i++ )
 		{
-		QContactDetail* cntdet = new QContactDetail(iParameters->iContactFields.at(i));
+		QContactDetail* cntdet = new QContactDetail(parameters->iContactFields.at(i));
 		success = iStore.saveDetail( cntdet );
 		delete cntdet;		
 		}
@@ -279,7 +230,31 @@ TInt CCreatorPhonebook::CreateContactEntryL(CCreatorModuleBaseParameters *aParam
 	iContactMngr->saveContact( &iStore );
 	
 	iContactsToDelete.Append( (TUint32)iStore.localId() );
-	//delete iStore;
+	
+	// If this contact has a link id in script (i.e. belongs to a contact-set), we must cache the contact id:
+	    if( parameters->ScriptLinkId() > 0 )
+	        {                
+	        RPointerArray<CCreatorContactSet>& contactsets = ContactLinkCache::Instance()->ContactSets();
+	        TBool setFound(EFalse);
+	        for(TInt i = 0; i < contactsets.Count(); ++i )
+	            {
+	            if( contactsets[i]->LinkId() == parameters->ScriptLinkId() )
+	                {
+	                if( iStore.localId() )
+	                    {
+	                    contactsets[i]->AppendL( iStore.localId() );
+	                    iContactLinkArray.AppendL( (TUint32)iStore.localId() );
+	                    }
+	                setFound = ETrue;
+	                break;
+	                }
+	            }
+	        if( !setFound )
+	            {
+	            LOGSTRING2("Error: Contact set id %d not found.", parameters->ScriptLinkId());
+	            }
+	        }
+	    
     return err;
     }
 
@@ -319,12 +294,7 @@ void CCreatorPhonebook::DeleteAllGroupsL()
 			}
     	}
     DeleteContactsL( groups );
-/*  
-    User::LeaveIfNull( iStore );
-    MVPbkContactLinkArray* groups = iStore->ContactGroupsLC();
-    DeleteContactsL( groups, ETrue );
-    CleanupStack::PopAndDestroy(); // cannot use groups as parameter
-    */
+
     }
 
 //----------------------------------------------------------------------------
@@ -339,7 +309,7 @@ void CCreatorPhonebook::DeleteContactsL( QList<QContactLocalId>& aContacts /*MVP
     {
 	//QList<QContactLocalId> contacts = iContactMngr->contactIds();
     QMap<int, QContactManager::Error> errorMap;
-	iContactMngr->removeContacts( &aContacts, &errorMap );
+	iContactMngr->removeContacts( aContacts, &errorMap );
     }
 
 //----------------------------------------------------------------------------
@@ -379,7 +349,7 @@ void CCreatorPhonebook::DeleteItemsCreatedWithCreatorL( TUid aStoreUid )
     }
 
 //----------------------------------------------------------------------------
-void CCreatorPhonebook::DoDeleteItemsCreatedWithCreatorL( TUid aStoreUid, CDictionaryFileStore* aStore )
+void CCreatorPhonebook::DoDeleteItemsCreatedWithCreatorL( TUid /*aStoreUid*/, CDictionaryFileStore* /*aStore*/ )
     {
     
     }
@@ -399,7 +369,10 @@ QContactDetail CCreatorPhonebook::CreateContactDetail(QString aDetail, QString a
 	if( aDetail == QContactPhoneNumber::DefinitionName)
 		{
 		QContactPhoneNumber phoneNumber;// = contactDetail;
-		phoneNumber.setContexts(aFieldContext);
+		if(!aFieldContext.isEmpty())
+		   	{
+			phoneNumber.setContexts(aFieldContext);
+			}
 		phoneNumber.setSubTypes(aFieldString);
 		contentData.Set(iEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
 		QString number = QString::fromUtf16(contentData.Ptr(),contentData.Length());
@@ -491,12 +464,9 @@ QContactDetail CCreatorPhonebook::CreateContactDetail(QString aDetail, QString a
 			}
 		if(aFieldString == QContactOrganization::FieldDepartment)
 			{
-			//if(contactCompany.department().isEmpty())
-				//{
 				QStringList depList = contactCompany.department();
 				depList.append(company);
 				contactCompany.setDepartment(depList);
-				//}
 			}
 		if(aFieldString == QContactOrganization::FieldAssistantName)
 			{
@@ -636,7 +606,6 @@ QContactDetail CCreatorPhonebook::CreateContactDetail(QString aDetail, QString a
 			QDate date;
 			TTime datetime = iEngine->RandomDate( CCreatorEngine::EDateFuture );
 			date.setDate( datetime.DateTime().Year(),(int) (datetime.DateTime().Month()+1), datetime.DateTime().Day() );
-			//contactAnniversary.setEvent(QContactAnniversary::);
 			contactAnniversary.setOriginalDate( date );
 			return contactAnniversary;
 			}
@@ -711,41 +680,6 @@ void CCreatorPhonebook::StoreLinksForDeleteL( RArray<TUint32>& aLinks, TUid aSto
 //----------------------------------------------------------------------------
        
 //----------------------------------------------------------------------------
-/*TInt CCreatorPhonebook::iPhoneNumberFields[] =
-    {
-    R_VPBK_FIELD_TYPE_LANDPHONEGEN,
-    R_VPBK_FIELD_TYPE_LANDPHONEHOME,
-    R_VPBK_FIELD_TYPE_LANDPHONEWORK,                        
-    R_VPBK_FIELD_TYPE_MOBILEPHONEGEN,
-    R_VPBK_FIELD_TYPE_MOBILEPHONEHOME,
-    R_VPBK_FIELD_TYPE_MOBILEPHONEWORK,
-    R_VPBK_FIELD_TYPE_FAXNUMBERGEN,
-    R_VPBK_FIELD_TYPE_FAXNUMBERHOME,
-    R_VPBK_FIELD_TYPE_FAXNUMBERWORK,
-    R_VPBK_FIELD_TYPE_PAGERNUMBER,           
-    R_VPBK_FIELD_TYPE_VIDEONUMBERGEN,
-    R_VPBK_FIELD_TYPE_VIDEONUMBERHOME,
-    R_VPBK_FIELD_TYPE_VIDEONUMBERWORK,
-    R_VPBK_FIELD_TYPE_VOIPGEN,
-    R_VPBK_FIELD_TYPE_VOIPHOME,
-    R_VPBK_FIELD_TYPE_VOIPWORK,
-    R_VPBK_FIELD_TYPE_ASSTPHONE,
-    R_VPBK_FIELD_TYPE_CARPHONE
-    };*/
-
-/*TInt CCreatorPhonebook::iUrlFields[] =
-    {
-    R_VPBK_FIELD_TYPE_URLGEN,
-    R_VPBK_FIELD_TYPE_URLHOME,
-    R_VPBK_FIELD_TYPE_URLWORK
-    };*/
-
-/*TInt CCreatorPhonebook::iEmailFields[] =
-    {
-    R_VPBK_FIELD_TYPE_EMAILGEN,
-    R_VPBK_FIELD_TYPE_EMAILHOME,
-    R_VPBK_FIELD_TYPE_EMAILWORK
-    };*/
 
 void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters* aParameters*/)
     {
@@ -773,74 +707,40 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
 		TInt textFieldCount = sizeof(CreatorPbkMiscTextFields) / sizeof(DetailFieldInfo);
 		for( TInt tfIndex = 0; tfIndex < textFieldCount; ++tfIndex )
                     { 
-    				QContactDetail field = CreateContactDetail( CreatorPbkMiscTextFields[tfIndex].iDetail, CreatorPbkMiscTextFields[tfIndex].iFieldContext, CreatorPbkMiscTextFields[tfIndex].iFieldString, CreatorPbkMiscTextFields[tfIndex].iRandomType );
-    				bool replace = false;
-                    for(int i = 0 ; i< iParameters->iContactFields.count() ; i++)
-                    	{
-						if( !field.isEmpty() && field.definitionName() == iParameters->iContactFields.at(i).definitionName() )
-							{
-							QString context = field.value(QContactDetail::FieldContext);
-							bool isContextEmpty = context.isEmpty();
-							if(  isContextEmpty ||  ( field.value(QContactDetail::FieldContext) == iParameters->iContactFields.at(i).value(QContactDetail::FieldContext)) )
-								{
-								//replace
-								iParameters->iContactFields.replace(i,field);
-								replace = true;
-								}
-							}
-                    	}
-						if(!replace)
-							{
-							if(!field.isEmpty())
-								{
-								iParameters->iContactFields.append(field);
-								}
-							}
+//    				QContactDetail field = CreateContactDetail( CreatorPbkMiscTextFields[tfIndex].iDetail, CreatorPbkMiscTextFields[tfIndex].iFieldContext, CreatorPbkMiscTextFields[tfIndex].iFieldString, CreatorPbkMiscTextFields[tfIndex].iRandomType );
+    				
+    				CCreatorContactField* field = CCreatorContactField::NewL();
+	                CleanupStack::PushL( field );
+	                QContactDetail cntDetail = field->CreateContactDetail(iEngine,iParameters,CreatorPbkMiscTextFields[tfIndex].iDetail, CreatorPbkMiscTextFields[tfIndex].iFieldContext, CreatorPbkMiscTextFields[tfIndex].iFieldString, CreatorPbkMiscTextFields[tfIndex].iRandomType );
+  	                if(!cntDetail.isEmpty())
+  	                	{
+  						field->AddFieldToParam( iParameters, cntDetail ); //it will do "param->iContactFields.AppendL(field);"
+  	                	}
+  	                CleanupStack::Pop( field );
                     }
 		// Add binary fields:
-		QContactDetail field = CreateContactDetail(QContactAvatar::DefinitionName,"","",0);
-		iParameters->iContactFields.append(field);
+		TPtrC emptyData;
+		CCreatorContactField* fieldPicture = CCreatorContactField::NewL();
+		CleanupStack::PushL( fieldPicture );
+		QContactDetail cntDetail = fieldPicture->CreateContactDetail(iEngine,iParameters,QContactAvatar::DefinitionName,"","",emptyData );
+		if(!cntDetail.isEmpty())
+		  	{
+		fieldPicture->AddFieldToParam( iParameters, cntDetail ); //it will do "param->iContactFields.AppendL(field);"
+		  	}
+		CleanupStack::Pop( fieldPicture );
 		
 		// Add date-time fields:
-		QContactDetail fieldAnniv = CreateContactDetail(QContactAnniversary::DefinitionName,"","",0);
-		iParameters->iContactFields.append(fieldAnniv);
-    //***************************************************************************
-    // Add text fields:
- /*           TInt textFieldCount = sizeof(CreatorVPbkMiscTextFields) / sizeof(FieldInfo);
-            for( TInt tfIndex = 0; tfIndex < textFieldCount; ++tfIndex )
-                { 
-				//QContactDetail field;
-                CCreatorContactField* field = CCreatorContactField::NewL(CreatorVPbkMiscTextFields[tfIndex].iFieldCode, KNullDesC);
-                CleanupStack::PushL(field);
-                field->SetRandomParametersL(CCreatorContactField::ERandomLengthDefault);
-                iParameters->iContactFields.AppendL(field);
-                CleanupStack::Pop(field);
-                }
-                
-            // Add binary fields:
-            TInt binFieldCount = sizeof(CreatorVPbkBinaryFields) / sizeof(TInt);
-            for( TInt bfIndex = 0; bfIndex < binFieldCount; ++bfIndex )
-                {                
-                CCreatorContactField* field = CCreatorContactField::NewL(CreatorVPbkBinaryFields[bfIndex], KNullDesC8);
-                CleanupStack::PushL(field);
-                field->SetRandomParametersL(CCreatorContactField::ERandomLengthDefault);
-                iParameters->iContactFields.AppendL(field);
-                CleanupStack::Pop(field);
-                }
-                
-            // Add date-time fields:
-            TInt dtFieldCount = sizeof(CreatorVPbkDateTimeFields) / sizeof(TInt);
-            for( TInt dtIndex = 0; dtIndex < dtFieldCount; ++dtIndex )
-                {
-                AddFieldToParamsL(CreatorVPbkDateTimeFields[dtIndex], iEngine->RandomDate(CCreatorEngine::EDateFuture));
-                }
+		CCreatorContactField* fieldAnniv = CCreatorContactField::NewL();
+		CleanupStack::PushL( fieldAnniv );
+		QContactDetail cntDetAnniv = fieldAnniv->CreateContactDetail(iEngine,iParameters,QContactAnniversary::DefinitionName,"","",emptyData );
+		if(!cntDetAnniv .isEmpty())
+		  	{
+			fieldAnniv->AddFieldToParam( iParameters, cntDetAnniv ); //it will do "param->iContactFields.AppendL(field);"
+			}
+		CleanupStack::Pop( fieldAnniv );
 
-            AddFieldToParamsL(R_VPBK_FIELD_TYPE_CALLEROBJIMG, KNullDesC8);        
-            AddFieldToParamsL(R_VPBK_FIELD_TYPE_THUMBNAILPIC, KNullDesC8);        
-            AddFieldToParamsL(R_VPBK_FIELD_TYPE_CALLEROBJTEXT, firstname);*/
     //***************************************************************************
     
-		//iParameters->iContactFields.append( name );
         }
     else
         {    
@@ -862,8 +762,10 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
 		QContactPhoneNumber phoneNum;
 		TPtrC phoneNumber = iEngine->RandomString(CCreatorEngine::EPhoneNumber);
 		QString phone = QString::fromUtf16( phoneNumber.Ptr(), phoneNumber.Length() );
-		
-		phoneNum.setContexts(CreatorPhoneNumberFields[inc].iFieldContext);
+		if(!CreatorPhoneNumberFields[inc].iFieldContext.isEmpty())
+			{
+			phoneNum.setContexts(CreatorPhoneNumberFields[inc].iFieldContext);
+			}
 		phoneNum.setSubTypes(CreatorPhoneNumberFields[inc].iFieldString);
 		
 
@@ -877,29 +779,29 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
     
     // URLs:
     for( int i=0; i<iNumberOfURLFields; i++ )
-          	{
-			QContactUrl contactUrl;
-			HBufC16* url = iEngine->CreateHTTPUrlLC();
-			QString urlAddress = QString::fromUtf16(url->Ptr(), url->Length() );
-			contactUrl.setUrl( urlAddress );
-			iParameters->iContactFields.append( contactUrl );
-			CleanupStack::PopAndDestroy(url);
-          	}
+        {
+    	CCreatorContactField* fieldUrl = CCreatorContactField::NewL();
+    	CleanupStack::PushL( fieldUrl );
+    	QContactDetail cntDetUrl = fieldUrl->CreateContactDetail(iEngine,iParameters,QContactUrl::DefinitionName,"","",KErrNotFound );
+    	if(!cntDetUrl.isEmpty())
+    	  	{
+			fieldUrl->AddFieldToParam( iParameters, cntDetUrl ); //it will do "param->iContactFields.AppendL(field);"
+    	  	}
+    	CleanupStack::Pop( fieldUrl );
+
+        }
 
     // EMail addresses:
     for( int i=0; i<iNumberOfEmailAddressFields; i++ )
         	{
-			QContactEmailAddress emailAddr;
-			HBufC16* addr= iEngine->CreateEmailAddressLC();;
-			/*TPtrC comp = iEngine->RandomString(CCreatorEngine::ECompany);
-			QString company = QString::fromUtf16( comp.Ptr(), comp.Length() );
-    		QString address = firstname+"@"+company+".com";*/
-			//CreatorPbkEmailFields
-			QString address = QString::fromUtf16(addr->Ptr(), addr->Length() );
-    		emailAddr.setEmailAddress( address );
-    		emailAddr.setContexts(CreatorPbkEmailFields[i%2]);
-    		iParameters->iContactFields.append( emailAddr );
-    		CleanupStack::PopAndDestroy(addr);
+			CCreatorContactField* fieldEmail = CCreatorContactField::NewL();
+        	CleanupStack::PushL( fieldEmail );
+        	QContactDetail cntDetEmail = fieldEmail->CreateContactDetail(iEngine,iParameters,QContactEmailAddress::DefinitionName,"","",KErrNotFound );
+        	if(!cntDetEmail.isEmpty())
+        	  	{
+				fieldEmail->AddFieldToParam( iParameters, cntDetEmail ); //it will do "param->iContactFields.AppendL(field);"
+        	  	}
+        	CleanupStack::Pop( fieldEmail );
         	}
     
     }
@@ -907,8 +809,13 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
 
 
 // Checks if the link is a group or not
-TBool CCreatorPhonebook::IsContactGroupL()
+TBool CCreatorPhonebook::IsContactGroupL( QContactLocalId& aLink )
 	{
+    QContact group = iContactMngr->contact( aLink );
+    if( group.type() == QContactType::TypeGroup )
+        {
+        return ETrue;
+        }
 	return EFalse;
 	}
 
@@ -938,7 +845,7 @@ TInt CCreatorPhonebook::CreateGroupEntryL(CCreatorModuleBaseParameters *aParamet
 	    QContact newGroup;
 	    newGroup.setType(QContactType::TypeGroup);
         QContactName newGroupName;
-        newGroupName.setCustomLabel( iParameters->iGroupName );
+        newGroupName.setCustomLabel( parameters->iGroupName );
         newGroup.saveDetail(&newGroupName);
         iContactMngr->saveContact(&newGroup);
         QContactLocalId newGroupId = newGroup.localId();
@@ -958,10 +865,10 @@ TInt CCreatorPhonebook::CreateGroupEntryL(CCreatorModuleBaseParameters *aParamet
 	    if( parameters->iLinkIds.Count() > 0 )
 	        {
 	        for( TInt i = 0; i < parameters->iLinkIds.Count(); ++i )
-	            {/*
+	            {
 	            const CCreatorContactSet& set = ContactLinkCache::Instance()->ContactSet(parameters->iLinkIds[i].iLinkId);
 	          
-	            const RPointerArray<MVPbkContactLink>& links = set.ContactLinks();
+	            const RArray<QContactLocalId> links = set.ContactLinks();//ContactLinkCache::Instance()->ContactSets();//set.ContactLinks();
 	            TInt numberOfExplicitLinks = links.Count(); // Number of defined contacts in contact-set
 	            TInt numberOfExistingContacts = set.NumberOfExistingContacts(); // Number of existing contacts in contact-set
 	            TInt maxAmount = numberOfExplicitLinks + numberOfExistingContacts;
@@ -973,23 +880,28 @@ TInt CCreatorPhonebook::CreateGroupEntryL(CCreatorModuleBaseParameters *aParamet
 	            
 	            for( TInt j = 0; j < links.Count() && addedMembers < maxAmount; ++j )
 	                {
-	                MVPbkContactLink* link = links[j]; 
-	                if( link && IsContactGroupL(*link) == EFalse )
+	                QContactLocalId link = links[j];
+	                QContact contactLink = iContactMngr->contact( link );
+	                if( link && IsContactGroupL( link ) == EFalse )
 	                    {
-	                    TRAPD(err, newGroup->AddContactL(*link));
-	                    if( err != KErrAlreadyExists )
-	                    	{
-	                    	// Ignore "allready exists" -error
-	                    	User::LeaveIfError(err);
-	                    	++addedMembers;
-	                    	}                    
+                        //QList<QContactRelationship> relationships = contactLink.relationships(QContactRelationship::HasMember);
+	                    if(/*!relationships.count() && */contactLink.type() == QContactType::TypeContact ) //just for contacts that are not in relationship - not in group yet
+	                        {
+	                        QContactRelationship* contactRel = new QContactRelationship();
+	                        contactRel->setRelationshipType(QContactRelationship::HasMember);
+	                        contactRel->setFirst(newGroup.id());
+	                        contactRel->setSecond( contactLink.id() );
+	                        iContactMngr->saveRelationship( contactRel );
+	                        delete contactRel;
+	                        ++addedMembers;
+	                        }         
 	                    }
 	                }
 	            if( addedMembers < maxAmount )
 	            	{
 	            	// Add existing contacts, withing the limits set by maxAmount:
 	            	amountOfContactsToBeAdded += maxAmount - addedMembers;
-	            	}*/
+	            	}
 	            }
 	        }
 	    if( amountOfContactsToBeAdded > 0 )
@@ -1049,6 +961,383 @@ TInt CCreatorPhonebook::CreateSubscribedContactEntryL(CCreatorModuleBaseParamete
 
 //----------------------------------------------------------------------------
 
+CCreatorContactField::CCreatorContactField()
+    {
+    }
+CCreatorContactField::~CCreatorContactField()
+    {
+    }
+
+CCreatorContactField* CCreatorContactField::NewL()
+    {
+    CCreatorContactField* self = new (ELeave) CCreatorContactField();
+    CleanupStack::PushL(self);
+    self->ConstructL();
+    CleanupStack::Pop();
+    return self;
+    }
+void CCreatorContactField::ConstructL()
+    {
+    //pImpl = CCreatorContactTextField::NewL(aFieldType, aData); 
+    }
+QContactDetail CCreatorContactField::CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand )
+    {
+	QContactDetail emptyDet;
+    TPtrC contentData;
+    HBufC16* tempData = 0;
+    if(aRand == KErrNotFound)
+    	{
+		TInt textFieldCount = sizeof(CreatorPbkMiscTextFields) / sizeof(DetailFieldInfo);
+		for( TInt tfIndex = 0; tfIndex < textFieldCount; ++tfIndex )
+			{
+			if( CreatorPbkMiscTextFields[tfIndex].iDetail == aDetail && CreatorPbkMiscTextFields[tfIndex].iFieldContext == aFieldContext && CreatorPbkMiscTextFields[tfIndex].iFieldString == aFieldString)
+				{
+				aRand = CreatorPbkMiscTextFields[tfIndex].iRandomType;
+				}
+			}
+    	}
+    
+    if( aRand != KErrNotFound ) 
+    	{
+		contentData.Set(aEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
+    	}
+    else
+    	{
+		if( aDetail == QContactPhoneNumber::DefinitionName )
+			{
+			contentData.Set(aEngine->RandomString(CCreatorEngine::EPhoneNumber));
+			}
+		else if( aDetail == QContactEmailAddress::DefinitionName )
+			{
+			tempData = aEngine->CreateEmailAddressLC();
+			contentData.Set( tempData->Des() );
+			}
+		else if( aDetail == QContactUrl::DefinitionName )
+			{
+			tempData = aEngine->CreateHTTPUrlLC(); 
+			contentData.Set( tempData->Des() );
+			}
+		else
+			{
+			return emptyDet;
+			}
+    	}
+    emptyDet = CreateContactDetail( aEngine, aParameters, aDetail, aFieldContext, aFieldString, contentData );
+    if( tempData )
+    	{
+		CleanupStack::PopAndDestroy( tempData );
+    	}
+    return emptyDet;
+    }
+
+QContactDetail CCreatorContactField::CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TPtrC aData )
+    {
+    QContactDetail contactDetail;
+        
+        if( aDetail == QContactPhoneNumber::DefinitionName)
+            {
+            QContactPhoneNumber phoneNumber;// = contactDetail;
+            if(!aFieldContext.isEmpty())
+            	{
+				phoneNumber.setContexts(aFieldContext);
+            	}
+            phoneNumber.setSubTypes(aFieldString);
+            QString number = QString::fromUtf16(aData.Ptr(),aData.Length());
+            phoneNumber.setNumber(number);
+            return phoneNumber;
+            }
+        else if( aDetail == QContactName::DefinitionName )          //--Contact NAME-----------------------------
+            {
+            QContactName contactName;
+            for(int i = 0 ; i < aParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
+                {
+                if(aParameters->iContactFields.at(i).definitionName() == QContactName::DefinitionName )
+                    {
+                    contactName = aParameters->iContactFields.at(i);
+                    }
+                }
+            QString name = QString::fromUtf16(aData.Ptr(),aData.Length());
+            if(aFieldString == QContactName::FieldFirstName)
+                {
+                if(contactName.firstName().isEmpty())
+                    {
+                    contactName.setFirstName( name );
+                    }
+                }
+            else if(aFieldString == QContactName::FieldLastName)
+                {
+                if(contactName.lastName().isEmpty())
+                    {
+                    contactName.setLastName( name );
+                    }
+                }
+            else if(aFieldString == QContactName::FieldMiddleName)
+                {
+                if(contactName.middleName().isEmpty())
+                    {
+                    contactName.setMiddleName( name );
+                    }
+                }
+            else if(aFieldString == QContactName::FieldPrefix)
+                {
+                if(contactName.prefix().isEmpty())
+                    {
+                    contactName.setPrefix( name );
+                    }
+                }
+            else if(aFieldString == QContactName::FieldSuffix)
+                {
+                if(contactName.suffix().isEmpty())
+                    {
+                    contactName.setSuffix( name );
+                    }
+                }
+            else        //QContactName::FieldCustomLabel:
+                {
+                if(contactName.customLabel().isEmpty())
+                    {
+                    contactName.setCustomLabel( name );
+                    }
+                }
+            return contactName;
+            }
+        else if( aDetail == QContactOrganization::DefinitionName )          //--Contact Company-----------------------------
+            {
+            QContactOrganization contactCompany;
+            
+            for(int i = 0 ; i < aParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
+                {
+                if(aParameters->iContactFields.at(i).definitionName() == QContactOrganization::DefinitionName )
+                    {
+                    contactCompany = aParameters->iContactFields.at(i);
+                    }
+                }
+            
+            QString company = QString::fromUtf16(aData.Ptr(),aData.Length());
+            if(aFieldString == QContactOrganization::FieldName)
+                {
+                if(contactCompany.name().isEmpty())
+                    {
+                    contactCompany.setName( company );
+                    }
+                }
+            if(aFieldString == QContactOrganization::FieldTitle)
+                {
+                if(contactCompany.title().isEmpty())
+                    {
+                    contactCompany.setTitle( company );
+                    }
+                }
+            if(aFieldString == QContactOrganization::FieldDepartment)
+                {
+                QStringList depList = contactCompany.department();
+                depList.append(company);
+                contactCompany.setDepartment(depList);
+                }
+            if(aFieldString == QContactOrganization::FieldAssistantName)
+                {
+                if(contactCompany.assistantName().isEmpty())
+                    {
+                    contactCompany.setAssistantName( company );
+                    }
+                }
+            return contactCompany;
+            }
+        else if( aDetail == QContactAddress::DefinitionName )           //--Contact Address-----------------------------
+                {
+                QContactAddress contactAddress;
+                
+                for(int i = 0 ; i < aParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
+                    {
+                    if(aParameters->iContactFields.at(i).definitionName() == QContactAddress::DefinitionName && aParameters->iContactFields.at(i).value(QContactDetail::FieldContext) == aFieldContext )
+                        {
+                        contactAddress = aParameters->iContactFields.at(i);
+                        }
+                    }
+                if( !aFieldContext.isEmpty() )
+                    {
+					contactAddress.setContexts( aFieldContext );
+                    }
+                QString address = QString::fromUtf16(aData.Ptr(),aData.Length());
+                if(aFieldString == QContactAddress::FieldStreet )
+                    {
+                    if( contactAddress.street().isEmpty() )
+                        {
+                        contactAddress.setStreet( address );
+                        }
+                    }
+                else if(aFieldString == QContactAddress::FieldLocality )
+                    {
+                    if( contactAddress.locality().isEmpty() )
+                        {
+                        contactAddress.setLocality( address );
+                        }
+                    }
+                else if(aFieldString == QContactAddress::FieldRegion )
+                    {
+                    if( contactAddress.region().isEmpty() )
+                        {
+                        contactAddress.setRegion( address );
+                        }
+                    }
+                else if(aFieldString == QContactAddress::FieldPostcode )
+                    {
+                    if( contactAddress.postcode().isEmpty() )
+                        {
+                        contactAddress.setPostcode( address );
+                        }
+                    }
+                else if(aFieldString == QContactAddress::FieldCountry )
+                    {
+                    if( contactAddress.country().isEmpty() )
+                        {
+                        contactAddress.setCountry( address );
+                        }
+                    }
+                else 
+                    {
+                    return contactDetail;
+                    }
+                return contactAddress;
+                }
+        else if( aDetail == QContactNote::DefinitionName )          //--Contact Note-----------------------------
+                    {
+                    QContactNote contactNote;
+                    QString note = QString::fromUtf16(aData.Ptr(),aData.Length());
+                    contactNote.setNote(note);
+                    return contactNote;
+                    }
+        else if( aDetail == QContactFamily::DefinitionName )            //--Contact Family-----------------------------
+                    {
+                    QContactFamily contactFamily;
+                    
+                    for(int i = 0 ; i < aParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
+                        {
+                        if(aParameters->iContactFields.at(i).definitionName() == QContactFamily::DefinitionName && aParameters->iContactFields.at(i).value(QContactDetail::FieldContext) == aFieldContext )
+                            {
+                            contactFamily = aParameters->iContactFields.at(i);
+                            }
+                        }
+                   
+                    QString familyData = QString::fromUtf16(aData.Ptr(),aData.Length());
+                    if(aFieldString == QContactFamily::FieldSpouse )
+                        {
+                        if( contactFamily.spouse().isEmpty() )
+                            {
+                            contactFamily.setSpouse( familyData );
+                            }
+                        }
+                    if(aFieldString == QContactFamily::FieldChildren )
+                        {
+                            QStringList children = contactFamily.children();
+                            children.append( familyData );
+                            contactFamily.setChildren( children );
+                        }
+                    
+                    return contactFamily;
+                    }
+        
+        if( aDetail == QContactAvatar::DefinitionName)                      //--Contact Picture-----------------------------
+                {
+                RFs& fs = CCoeEnv::Static()->FsSession();
+                QContactAvatar contactAvatar;
+                TBuf<KMaxFileName> srcPath;
+                aEngine->RandomPictureFileL(srcPath);
+                TBuf<KMaxFileName> destPath(KTempPath);
+                            
+                if(!BaflUtils::FolderExists( fs, destPath ))
+                    {
+                    BaflUtils::EnsurePathExistsL( fs, destPath );
+                    }
+                
+                TInt err=BaflUtils::CopyFile( fs, srcPath, destPath );
+
+                TParse temp;
+                temp.Set( srcPath,NULL,NULL );
+                destPath.Append(temp.NameAndExt());
+                
+                QString avatarFile = QString::fromUtf16( destPath.Ptr(),destPath.Length() );
+                
+                QPixmap avatarPix(avatarFile);
+
+                contactAvatar.setAvatar(avatarFile);
+                contactAvatar.setPixmap(avatarPix);
+
+                return contactAvatar;
+                }
+        if( aDetail == QContactAnniversary::DefinitionName) //--Anniversary------------------------------
+                {
+                QContactAnniversary contactAnniversary;
+                QDate date;
+                TTime datetime = aEngine->RandomDate( CCreatorEngine::EDateFuture );
+                date.setDate( datetime.DateTime().Year(),(int) (datetime.DateTime().Month()+1), datetime.DateTime().Day() );
+                contactAnniversary.setOriginalDate( date );
+                return contactAnniversary;
+                }
+        if( aDetail == QContactEmailAddress::DefinitionName) //--Email------------------------------------
+            {
+            QContactEmailAddress email;
+            QString emailAddr = QString::fromUtf16(aData.Ptr(),aData.Length());
+            if( !aFieldContext.isEmpty() )
+            	{
+				email.setContexts( aFieldContext );
+            	}
+            email.setEmailAddress( emailAddr );
+            return email;
+            }
+        if( aDetail == QContactUrl::DefinitionName )    //--Url-------------------------------------------
+            {
+            QContactUrl url;
+            QString urlStr = QString::fromUtf16(aData.Ptr(),aData.Length());
+            if( !aFieldContext.isEmpty() )
+                {
+				url.setContexts( aFieldContext );
+                }
+            url.setUrl(urlStr);
+            return url;
+            }
+        if( aDetail == QContactBirthday::DefinitionName )   //--Birthday-----------------------------------
+            {
+            QContactBirthday birthday;
+            QDate date;
+            TTime datetime = aEngine->RandomDate( CCreatorEngine::EDatePast );
+            date.setDate( datetime.DateTime().Year(),(int) (datetime.DateTime().Month()+1), datetime.DateTime().Day() );
+            birthday.setDate( date );
+            return birthday;
+            }
+                
+        return contactDetail;
+    }
+
+void CCreatorContactField::AddFieldToParam( CPhonebookParameters* aParam, QContactDetail aDetail)
+    {
+     bool replace = false;
+     for(int i = 0 ; i< aParam->iContactFields.count() ; i++) //go through
+          {
+           if( !aDetail.isEmpty() && aDetail.definitionName() == aParam->iContactFields.at(i).definitionName() 
+        		   && aDetail.definitionName() != QContactPhoneNumber::DefinitionName 
+        		   && aDetail.definitionName() != QContactEmailAddress::DefinitionName
+        		   && aDetail.definitionName() != QContactUrl::DefinitionName )
+               {
+               QString context = aDetail.value(QContactDetail::FieldContext);
+               bool isContextEmpty = context.isEmpty();
+               if( isContextEmpty ||  ( aDetail.value(QContactDetail::FieldContext) == aParam->iContactFields.at(i).value(QContactDetail::FieldContext)) )
+                   {
+                   //replace
+                   aParam->iContactFields.replace(i,aDetail);
+                   replace = true;
+                   }
+               }
+          }
+          if(!replace)
+             {
+             if(!aDetail.isEmpty())
+                {
+                aParam->iContactFields.append(aDetail);
+                }
+             }
+      
+    }
 //----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------

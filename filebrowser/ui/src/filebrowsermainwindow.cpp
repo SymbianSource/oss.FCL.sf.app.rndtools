@@ -24,13 +24,15 @@
 #include "filebrowserview.h"
 #include "settingsview.h"
 #include "editorview.h"
+#include "searchview.h"
 
-FileBrowserMainWindow::FileBrowserMainWindow(QWidget *parent) :
-        HbMainWindow( parent )
-        ,mEngineWrapper(0)
-        ,mFileBrowserView(0)
-        ,mSettingsView(0)
-        ,mEditorView(0)
+FileBrowserMainWindow::FileBrowserMainWindow(QWidget *parent)
+    : HbMainWindow(parent),
+    mEngineWrapper(0),
+    mFileBrowserView(0),
+    mSettingsView(0),
+    mEditorView(0),
+    mSearchView(0)
 {
 }
 
@@ -65,14 +67,22 @@ void FileBrowserMainWindow::init()
     connect(mEditorView, SIGNAL(finished(bool)), this, SLOT(openFileBrowserView()));
     addView(mEditorView);
 
+    // Create Search view
+    mSearchView = new SearchView(*mEngineWrapper);
+    connect(mFileBrowserView, SIGNAL(aboutToShowSearchView(QString)), this, SLOT(openSearchView(QString)));
+    connect(mSearchView, SIGNAL(finished(bool)), this, SLOT(openFileBrowserView()));
+    addView(mSearchView);
+
     // Show ApplicationView at startup
     setCurrentView(mFileBrowserView);
+
     // Show HbMainWindow
     show();
 }
 
 void FileBrowserMainWindow::openFileBrowserView()
 {
+    mFileBrowserView->refreshList();
     setCurrentView(mFileBrowserView);
 }
 
@@ -85,4 +95,10 @@ void FileBrowserMainWindow::openEditorView(const QString &fileName, bool flagRea
 {
     mEditorView->open(fileName, flagReadOnly);
     setCurrentView(mEditorView);
+}
+
+void FileBrowserMainWindow::openSearchView(const QString &path)
+{
+    mSearchView->open(path);
+    setCurrentView(mSearchView);
 }

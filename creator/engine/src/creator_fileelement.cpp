@@ -18,8 +18,8 @@
 
 
 #include "creator_fileelement.h"
-#include <drmpermission.h>
-#include <drmconstraint.h>
+#include <DrmPermission.h>
+#include <DrmConstraint.h>
 #include "creator_traces.h"
 #include "creator_file.h"
 

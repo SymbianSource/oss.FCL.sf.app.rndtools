@@ -16,8 +16,8 @@
 */
 
 
-#include <EIKENV.H>
-#include <S32FILE.H> 
+#include <eikenv.h>
+#include <s32file.h> 
 #include <coemain.h>
 
 #include <datacreator.rsg>
@@ -29,13 +29,26 @@
 
 #include <cntdb.h>//For Math
 
+#include "creator_scriptentry.h"
+#include "creator_modulebase.h"
+#include "creator_browser.h"
+#include "creator_calendar.h"
+#include "creator_phonebookbase.h"
+#include "creator_note.h"
+#include "creator_log.h"
+#include "creator_connectionmethodbase.h"
+#include "creator_mailbox.h"
+//#include "creator_imps.h"
+#include "creator_message.h"
+#include "creator_landmark.h"
+
 
 #include "creator_traces.h"
 #include "creator_factory.h"
 #include "creator_scriptparser.h"
 #include "creator_file.h"
 #include "creator_cmdscriptrun.h"
-
+#include "creator_contactsetcache.h"
 
 #include <apparc.h>
 #include <eikappui.h>
@@ -45,7 +58,7 @@
 _LIT(KEDriveError, "Not available");
 _LIT(KTempPathDrive, "d");
 _LIT(KTempPath, ":\\Creator\\");
-_LIT(KSavingText, "Saving");
+//_LIT(KSavingText, "Saving");
 _LIT(KDeletingText, "Deleting");
 const TInt KRegisterDrive = EDriveC;
 _LIT(KRegisterFileName, "creator_created_items.dat");
@@ -141,7 +154,9 @@ CCreatorEngine::~CCreatorEngine()
     delete iBitmapData;
 	
     delete iCmdScriptRun;
-    iCmdScriptRun = NULL;	
+    iCmdScriptRun = NULL;
+    
+    delete iCommandParser;
     }
 
 void CCreatorEngine::CopyFileL(const TFileName& aSourceFile, const TFileName& aTargetFile, TBool aOverwrite )
@@ -718,6 +733,7 @@ void CCreatorEngine::StartEnginesL()
     TRAP(err, iFiles = CCreatorFiles::NewL(this));
     TRAP(err, iMessages = CCreatorMessages::NewL(this));
     TRAP(err, iLandmarks = CCreatorLandmarks::NewL(this));
+    ContactLinkCache::InitializeL();
 /*
     #ifdef __PRESENCE
       TRAP(err, iIMPS = CCreatorIMPS::NewL(this));
@@ -766,6 +782,7 @@ void CCreatorEngine::ShutDownEnginesL()
     delete iLandmarks;
     iLandmarks = NULL;
 
+    ContactLinkCache::DestroyL();
     // now delete the command array
     delete iCommandArray;
     iCommandArray = NULL;
@@ -773,6 +790,13 @@ void CCreatorEngine::ShutDownEnginesL()
 	// delete parameter array
 	iParameterArray.ResetAndDestroy();
 	iParameterArray.Close();
+	
+	if(iCommandParser)
+	    {
+        delete iCommandParser;
+	    iCommandParser = NULL;
+	    }
+    
     
 	// clear temp drive
 	CFileMan* fileMan = CFileMan::NewL( iEnv->FsSession() );
@@ -791,53 +815,51 @@ void CCreatorEngine::DoCancel()
     }
 
 // ---------------------------------------------------------------------------
-
-void CCreatorEngine::RunScriptL()
+void CCreatorEngine::QueryDialogClosedL( TBool /*aPositiveAction*/, TInt /*aUserData*/ )
     {
-    LOGSTRING("Creator: CCreatorEngine::RunScriptL");
+    
+    }
 
-    // startup modules (also inits the command array):
-    StartEnginesL();
-
-    // use the command parser module to init the command array from a script file
-    CCommandParser* commandParser = CCommandParser::NewLC(this);
-    RFile scriptFile;
-    TBool ret = commandParser->OpenScriptL(scriptFile);
-    CleanupClosePushL(scriptFile);
-    if( ret )
+void CCreatorEngine::FileChosenL( TBool aSuccess, const TDesC& aFileName )
+    {
+    if( aSuccess )
         {
+        // open the file for reading
+        RFile scriptFile;
+        User::LeaveIfError( scriptFile.Open( iEnv->FsSession(), aFileName, EFileRead ) );
+        CleanupClosePushL(scriptFile);
+    
+        
         // wait dialog
-		/* TODO
+        /* TODO
         CAknGlobalNote* waitDialog = CAknGlobalNote::NewLC();
         waitDialog->SetSoftkeys( R_AVKON_SOFTKEYS_CANCEL );
         TInt dialogId = waitDialog->ShowNoteL( EAknGlobalWaitNote, _L("Parsing") );
         */
         TInt parseErr( KErrNone );
-        TRAPD( parserErr,
-               CCreatorScriptParser* scriptParser = CCreatorScriptParser::NewLC(this);
-               scriptParser->ParseL(scriptFile);
-               parseErr = scriptParser->GetError();
-               CleanupStack::PopAndDestroy( scriptParser );
-             );
+        CCreatorScriptParser* scriptParser = CCreatorScriptParser::NewLC(this);
+        scriptParser->ParseL(scriptFile);
+        parseErr = scriptParser->GetError();
+        CleanupStack::PopAndDestroy( scriptParser );
+    
+        CleanupStack::PopAndDestroy( &scriptFile );
+    
         //waitDialog->CancelNoteL( dialogId );
         //CleanupStack::PopAndDestroy( waitDialog );
-        User::LeaveIfError( parserErr );
-        
+    
         if(parseErr != KErrNone)
             {
-			
             // show error note
             _LIT(KErrMsg, "Parser error: %d");
             TBuf<32> msgBuf;
             msgBuf.Format(KErrMsg, parseErr);
-            iEngineWrapper->ShowNote(msgBuf);
-            CleanupStack::PopAndDestroy(); //commandParser   
+            iEngineWrapper->ShowErrorMessage(msgBuf);
             ShutDownEnginesL();
+            delete iCommandParser;
+            iCommandParser = NULL;
             return;
             }         
         }
-    CleanupStack::PopAndDestroy( &scriptFile );
-    CleanupStack::PopAndDestroy( commandParser );   
 
     // start executing commands if commands in the command array
     if (CommandArrayCount() > 0)
@@ -848,7 +870,26 @@ void CCreatorEngine::RunScriptL()
         {
         ShutDownEnginesL();
         }
+    }
+// ---------------------------------------------------------------------------
 
+void CCreatorEngine::RunScriptL()
+    {
+    LOGSTRING("Creator: CCreatorEngine::RunScriptL");
+
+    // startup modules (also inits the command array):
+    StartEnginesL();
+
+    // use the command parser module to init the command array from a script file
+    delete iCommandParser;
+    iCommandParser = CCommandParser::NewL(this);
+    TBool ret = EFalse;
+    TRAPD(err, ret = iCommandParser->OpenScriptL( this ) );
+    if( err != KErrNone || ret == EFalse)
+        {
+        ShutDownEnginesL();
+        User::LeaveIfError(err);
+        }
     }
 
 // ---------------------------------------------------------------------------
@@ -1118,13 +1159,13 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
                 ShutDownEnginesL();
                 }
             }
-        else if ( iUsedOptionsMenuModule->AskDataFromUserL( aCommand, iEntriesToBeCreated )  )
+        else if ( iUsedOptionsMenuModule->AskDataFromUserL( aCommand )  )
             {
             // add this command to command array
-            AppendToCommandArrayL( aCommand, NULL, 1 );
+//            AppendToCommandArrayL( aCommand, NULL, 1 );
     
             // started exucuting commands
-            ExecuteFirstCommandL( KDeletingText );        
+//            ExecuteFirstCommandL( KDeletingText );        
             }
         else
             {
@@ -1134,13 +1175,13 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
         }
 
     // ask user data, if query accepted start processing...
-    else if (iUsedOptionsMenuModule->AskDataFromUserL(aCommand, iEntriesToBeCreated))
+    else if (iUsedOptionsMenuModule->AskDataFromUserL(aCommand))
         {
         // add this command to command array
-        AppendToCommandArrayL(aCommand, NULL, iEntriesToBeCreated);
+        //AppendToCommandArrayL(aCommand, NULL, iEntriesToBeCreated);
 
         // started exucuting commands
-        ExecuteFirstCommandL( KSavingText );
+        //ExecuteFirstCommandL( KSavingText );
         }
      else
         {
@@ -1202,11 +1243,16 @@ TBool CCreatorEngine::IsDeleteCommand(TInt aCommand)
 
 // ---------------------------------------------------------------------------
 
-TBool CCreatorEngine::GetRandomDataFilenameL(TDes& aFilename)
+TBool CCreatorEngine::GetRandomDataL()
 	{
+    TFileName fileName;
     CCommandParser* commandParser = CCommandParser::NewLC(this);
-	TBool ret = commandParser->GetRandomDataFilenameL(aFilename);
+	TBool ret = commandParser->GetRandomDataFilenameL(fileName);
     CleanupStack::PopAndDestroy(commandParser);
+    if (ret)
+        {
+        ret = GetRandomDataFromFileL(fileName);
+        }
     return ret;
 	}
 

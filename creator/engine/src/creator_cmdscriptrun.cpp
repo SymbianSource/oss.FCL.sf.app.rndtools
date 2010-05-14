@@ -16,8 +16,8 @@
 */
 
 
-#include <EIKENV.H>
-#include <COEAUI.H>  
+#include <eikenv.h>
+#include <coeaui.h>  
 #include <pathinfo.h> 
 #include "creator_cmdscriptrun.h"
 #include "engine.h"

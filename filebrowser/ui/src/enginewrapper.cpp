@@ -24,6 +24,8 @@
 #include "filebrowsersettings.h"
 #include "settingsview.h"
 
+#include <HbProgressDialog>
+
 #include <QString>
 #include <QFileInfo>
 #include <QModelIndex>
@@ -33,7 +35,8 @@
 EngineWrapper::EngineWrapper()
     : mEngine(0),
     mFilesFound(),
-    mSettings(0)
+    mSettings(0),
+    mWaitDialog(0)
 {
 }
 
@@ -45,6 +48,8 @@ EngineWrapper::~EngineWrapper()
         TRAP_IGNORE(mEngine->DeActivateEngineL());
         delete mEngine;
     } 
+    if (mWaitDialog)
+        delete mWaitDialog;
 }
 
 // ---------------------------------------------------------------------------
@@ -686,6 +691,11 @@ void EngineWrapper::toolsSetDebugMask(quint32 aDbgMask)
     mEngine->FileUtils()->SetDebugMaskL(aDbgMask);
 }
 
+void EngineWrapper::toolsWriteAllFiles()
+{
+    mEngine->FileUtils()->WriteAllFilesL();
+}
+
 void EngineWrapper::showFileCheckSums(const QModelIndex &aIndex, TFileBrowserCmdFileChecksums checksumType)
 {
     mEngine->FileUtils()->ShowFileCheckSumsL(aIndex.row(), checksumType);
@@ -699,8 +709,8 @@ void EngineWrapper::showFileCheckSums(const QModelIndex &aIndex, TFileBrowserCmd
 
 void EngineWrapper::ShowErrorNote(const TDesC& aDescText, TBool aNoTimeout /*= EFalse*/)
 {
-    QString qStringText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
-    Notifications::showErrorNote(qStringText, aNoTimeout);
+    QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
+    Notifications::showErrorNote(qText, aNoTimeout);
 }
 
 // ---------------------------------------------------------------------------
@@ -716,14 +726,44 @@ void EngineWrapper::ShowInformationNote(const TDesC &aDescText, const TDesC &aDe
 
 void EngineWrapper::ShowConfirmationNote(const TDesC& aDescText, TBool aNoTimeout /*= EFalse*/)
 {
-    QString qStringText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
-    Notifications::showConfirmationNote(qStringText, aNoTimeout);
+    QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
+    Notifications::showConfirmationNote(qText, aNoTimeout);
+}
+
+void EngineWrapper::ShowWaitDialog(const TDesC& aDescText)
+{
+    const QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
+    if (!mWaitDialog) {
+        mWaitDialog = new HbProgressDialog(HbProgressDialog::WaitDialog);
+        QObject::connect(mWaitDialog, SIGNAL(cancelled ()), this, SLOT(waitDialogCancelled()));
+    }
+
+    mWaitDialog->setText(qText);
+    mEngine->FileUtils()->SetAllowProcessing(true);
+    //mWaitDialog->setAttribute(Qt::WA_DeleteOnClose);
+    mWaitDialog->show();
+}
+
+void EngineWrapper::CancelWaitDialog()
+{
+    if (mWaitDialog)
+        mWaitDialog->cancel();
+}
+
+void EngineWrapper::waitDialogCancelled()
+{
+    mEngine->FileUtils()->SetAllowProcessing(false);
+}
+
+void EngineWrapper::ProcessEvents()
+{
+    qApp->processEvents();
 }
 
 TBool EngineWrapper::ShowConfirmationQuery(const TDesC& aDescText)
 {
-    QString qStringText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
-    return Notifications::showConfirmationQuery(qStringText);
+    QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
+    return Notifications::showConfirmationQuery(qText);
 }
 
 // ---------------------------------------------------------------------------

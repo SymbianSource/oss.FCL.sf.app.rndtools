@@ -39,7 +39,7 @@ class CCreatorEngine;
 class CNotepadParameters;
 
 
-class CCreatorNotepad : public CBase, public MCreatorModuleBase
+class CCreatorNotepad : public CCreatorModuleBase
     {
 public: 
     static CCreatorNotepad* NewL(CCreatorEngine* aEngine);
@@ -51,7 +51,8 @@ private:
     void ConstructL(CCreatorEngine* aEngine); // from MCreatorModuleBase
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    
     TInt CreateNoteEntryL(CNotepadParameters *aParameters);
     void DeleteAllL();
     void DeleteAllCreatedByCreatorL();

@@ -16,7 +16,7 @@
 */
 
 
-#include <drmrights.h>
+#include <DRMRights.h>
 
 #include "engine.h"
 #include "enginewrapper.h"
@@ -129,9 +129,11 @@ CCreatorFiles::~CCreatorFiles()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorFiles::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorFiles::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorFiles::AskDataFromUserL");
+    
+    CCreatorModuleBase::AskDataFromUserL( aCommand );
     
     if ( aCommand == ECmdDeleteCreatorFiles )
         {
@@ -144,7 +146,7 @@ TBool CCreatorFiles::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
     
     iDirectoryQueriedFromUser->Des().Copy( KNullDesC );
 
-    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?")))
+    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(&iEntriesToBeCreated, _L("How many entries to create?")))
         {
         // set a default directory  (eg. c:\Nokia\Images\)
         TFileName directory;
@@ -580,7 +582,7 @@ TBool CCreatorFiles::AskDRMDataFromUserL()
     //encDlg->ListBox()->SetCurrentItemIndexAndDraw( 0 );
 
 	// create a popup list
-    if ( iEngine->GetEngineWrapper()->PopupListDialog(_L("Encryption"), items, encIndex) )
+    if ( iEngine->GetEngineWrapper()->PopupListDialog(_L("Encryption"), items, &encIndex, this, 1) )
         {
         if ( encIndex > 0 )
             {
@@ -612,8 +614,8 @@ TBool CCreatorFiles::AskDRMDataFromUserL()
 TBool CCreatorFiles::AskDRMCDDataFromUserL()
     {
     LOGSTRING("Creator: CCreatorFiles::AskDRMCDDataFromUserL");
-    TInt count( 0 );
-    if ( iEngine->GetEngineWrapper()->EntriesQueryDialog( count, _L("How many counts\r\n(0=unlimited)?"), ETrue ) )
+    TInt count(0);
+    if ( iEngine->GetEngineWrapper()->EntriesQueryDialog( &iDummy, _L("How many counts\r\n(0=unlimited)?"), ETrue ) )
         {
         if ( count > 0 )
             {
@@ -680,7 +682,7 @@ TBool CCreatorFiles::AskDRMCDDataFromUserL()
     */
     
     TInt minutes( 0 );
-    if ( iEngine->GetEngineWrapper()->EntriesQueryDialog( minutes, _L("How many minutes until expire (0=unlimited)?"), ETrue ) )
+    if ( iEngine->GetEngineWrapper()->EntriesQueryDialog( &iDummy, _L("How many minutes until expire (0=unlimited)?"), ETrue ) )
         {
         if ( minutes > 0 )
             {

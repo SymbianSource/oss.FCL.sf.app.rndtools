@@ -89,8 +89,18 @@ private:
     HBufC* iEmailAddress;
 };
 
-class CCreatorMessages : public CBase, public MCreatorModuleBase, public MMsvSessionObserver
+class CCreatorMessages : public CCreatorModuleBase, public MMsvSessionObserver
     {
+enum TCreatorMessagesStatus{
+    ECreatorMessagesDelete = 0,
+    ECreatorMessagesStart, 
+    ECreatorMessagesMessageType,
+    ECreatorMessagesFolderType,
+    ECreatorMessagesMessageStatus, 
+    ECreatorMessagesCharsInBody,
+    ECreatorMessagesAttachment,
+};
+
 public: 
     static CCreatorMessages* NewL(CCreatorEngine* aEngine);
     static CCreatorMessages* NewLC(CCreatorEngine* aEngine);
@@ -130,8 +140,9 @@ private:
     void DeleteAllFromFolderL( const TMsvId aContext, CMsvSession* aSession, CSmsClientMtm* aClientMtm, TBool aOnlyCreatedWithCreator = EFalse );
     
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
-
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData); //from MUIObserver
+    
     TInt CreateMessageEntryL(CMessagesParameters *aParameters, TBool aTakeUserGivenParameters=EFalse);    
     TInt CreateRandomMessageEntryL(TInt aCommand);
     void DeleteAllL();

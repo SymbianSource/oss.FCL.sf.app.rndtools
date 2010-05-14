@@ -51,12 +51,6 @@ class FileBrowserView : public HbView
 {
     Q_OBJECT
 
-    enum resourceItem
-    {
-	FileItem,
-	Directory
-    };
-
 public:
     explicit FileBrowserView(FileBrowserMainWindow &mainWindow);
     virtual ~FileBrowserView();
@@ -65,32 +59,13 @@ public:
     QModelIndexList getSelectedItemsOrCurrentItem();
 
 public slots:
+    void refreshList();
 
 private:
     void fileOverwriteDialog();
-    void openListDialog(const QStringList& items, const QString &aTitleText, QObject* receiver, const char* member);
-
-    void diskAdmin(int cmd);
-    HbDialog *filePathQuery(const QString &headingText,
-                            const QString &text,
-                            const QString &primaryActionText,
-                            const QString &secondaryActionText);
-
-//    HbDialog *openTextQuery(const QString &headingText,
-//                            const QString &text,
-//                            const QString &primaryActionText,
-//                            const QString &secondaryActionText);
-
-    HbDialog *openNumberQuery(const QString &headingText,
-                              const QString &text,
-                              const QString &primaryActionText,
-                              const QString &secondaryActionText,
-                              int aMin = -99999,
-                              int aMax = 99999);
+    void openListDialog(const QStringList& items, const QString &titleText, QObject* receiver, const char* member);
 
     void openPropertyDialog(const QStringList& propertyList, const QString& title);
-
-//    QModelIndexList *getSelectedItemsOrCurrentItem();
 
     void createToolBar();
     // Menu related methods
@@ -106,7 +81,7 @@ private:
     void createAboutMenuItem();
     void createExitMenuItem();
 
-    void refreshList();
+//    void refreshList();
     void populateFolderContent();
 
 private slots:
@@ -252,6 +227,7 @@ private slots:
 signals:
     void aboutToShowSettingsView();
     void aboutToShowEditorView(const QString &, bool);
+    void aboutToShowSearchView(const QString &);
     void aboutToSimulateLeave(int);
 
 private slots:
@@ -287,10 +263,6 @@ private:
     MenuAction mFileViewMenuActions;
     HbAction *mToolbarBackAction;
 
-    // search
-    SearchView *mSearch;
-    // settings
-    SettingsView *mSettingsView;
     // flags
     bool mItemHighlighted;
     bool mLocationChanged;
@@ -305,7 +277,7 @@ private:
     QString mAbsoluteFilePath;
     OverwriteOptions mOverwriteOptions;
     QModelIndex mModelIndex;
-    bool mIsRenameAllowed;
+    QString mNewFileName;
     bool mProceed;
     bool mEraseMBR;
 };
