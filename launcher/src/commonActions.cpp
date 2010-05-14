@@ -20,7 +20,7 @@
 
 #include "hbaction.h"
 #include "hbmenu.h"
-#include "commonactions.h"
+#include "commonActions.h"
 #include "notifications.h"
 #include "enginewrapper.h"
 

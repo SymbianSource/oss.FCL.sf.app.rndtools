@@ -33,8 +33,8 @@
 
 
 
-CMemSpyViewThreadInfoItemCodeSeg::CMemSpyViewThreadInfoItemCodeSeg( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
-:   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeCodeSeg )
+CMemSpyViewThreadInfoItemCodeSeg::CMemSpyViewThreadInfoItemCodeSeg( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemGeneric( aSession, aObserver, aProcId, aId, EMemSpyThreadInfoItemTypeCodeSeg )
     {
     }
 
@@ -47,9 +47,9 @@ TBool CMemSpyViewThreadInfoItemCodeSeg::HandleCommandL( TInt aCommand )
 
 
 CMemSpyViewBase* CMemSpyViewThreadInfoItemCodeSeg::PrepareChildViewL()
-    {
+    {	
     CMemSpyViewBase* child = NULL;
-    
+    /* TODO
     // Get the code segment list
     CMemSpyThreadInfoCodeSeg* codeSegInfoItem = static_cast< CMemSpyThreadInfoCodeSeg* >( iInfoItem );
     CMemSpyEngineCodeSegList* list = &codeSegInfoItem->List();
@@ -69,8 +69,8 @@ CMemSpyViewBase* CMemSpyViewThreadInfoItemCodeSeg::PrepareChildViewL()
         child->ConstructL( Rect(), *Parent() );
         CleanupStack::Pop( child );
         }
-        
-    return child;
+    */
+    return child;    
     }
 
 

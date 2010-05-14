@@ -22,7 +22,7 @@
 #include <hbtextedit.h>
 
 #include "enginewrapper.h"
-#include "commonactions.h"
+#include "commonActions.h"
 #include "outputview.h"
 
 // xml definition of view

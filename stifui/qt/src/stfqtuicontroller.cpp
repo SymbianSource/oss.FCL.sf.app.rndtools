@@ -18,18 +18,16 @@
 #include "stfqtuicontroller.h"
 #include <stifinternal/UIStoreIf.h>
 #include <stifinternal/UIStoreContainer.h>
-//#include "stiflogger.h"
 #include <QDateTime>
 
 const QString TEMPSETNAME = "TEMPSET";
 const QString DEFAULTINI = "c:\\testframework\\testframework.ini";
 
-//__DECLARE_LOG
+
 
 StfQtUIController::StfQtUIController(IStfQtUIModel* aModel) :
     model(aModel), isShowOutput(false)
     {
-//    __OPENLOGL ("\\STFQtUI\\", "StifQtUi.log" );
     executor = new CStifExecutor();
     executor->OpenIniFile(DEFAULTINI);
     executor->AddStifCaseUpdateListener(this);
@@ -40,15 +38,20 @@ StfQtUIController::~StfQtUIController()
     executor->RemoveStifCaseUpdateListener(this);
     delete executor;
     executor = NULL;
-//    __CLOSELOG;
     }
 //for cases
 
 bool StfQtUIController::OpenEngineIniFile(const QString& fileName)
     {
+    QString path = fileName;
+    if(path.contains('/'))
+        {
+        path = path.replace('/', '\\');
+        }
+    executor->RemoveStifCaseUpdateListener(this);
     delete executor;
     executor = new CStifExecutor();
-    bool rst = executor->OpenIniFile(fileName);
+    bool rst = executor->OpenIniFile(path);
     executor->AddStifCaseUpdateListener(this);
     return rst;
     }
@@ -132,19 +135,26 @@ void StfQtUIController::RunCases(const QList<CSTFCase>& caseList,
         }
     }
 
-void StfQtUIController::AddCaseToSet(const QList<CSTFCase>& caseList,
-        const QString& /*setName*/)
+bool StfQtUIController::AddCaseToSet(const QList<CSTFCase>& caseList,
+        const QString& setName)
     {
-    QString setName = QDateTime::currentDateTime().toString("hh_mm_ss");
-    setName.append(".set");
-    executor->CreateSet(setName);
+    QString name = setName;
+    bool rst = true;
     foreach(CSTFCase aCase, caseList)
             {
-            executor->AddtoSet(setName, aCase);
+            rst = executor->AddtoSet(name, aCase);
+            if(!rst)
+                {
+                break;
+                }
             }
-    executor->SaveSet(setName);
-    executor->RemoveSet(setName);
+    if(!rst)
+        {
+        return false;
+        }
+    rst = executor->SaveSet(name);
     FireOnSetListChanged();
+    return rst;
     }
 
 //for set
@@ -164,18 +174,29 @@ QList<QString> StfQtUIController::GetCaseListBySet(const QString& setName)
     return caseList;
     }
 
-void StfQtUIController::CreateSet(const QString& setName)
+bool StfQtUIController::CreateSet(QString& setName)
     {
-    executor->CreateSet(setName);
-    //executor->SaveSet(setName);
+    bool rst = executor->CreateSet(setName);
+    if(!rst)
+        {
+        return rst;
+        }
+    rst = executor->SaveSet(setName);
     FireOnSetListChanged();
+    return rst;
     }
 
-void StfQtUIController::DeleteSet(const QString& setName)
+bool StfQtUIController::DeleteSet(const QString& setName)
     {
-    executor->RemoveSet(setName);
-    //executor->SaveSet(setName);
+    bool rst = executor->RemoveSet(setName);
+    if(!rst)
+        {
+        return false;
+        }
+    QString name = setName;
+    rst = executor->SaveSet(name);
     FireOnSetListChanged();
+    return rst;
     }
 
 void StfQtUIController::RunSets(const QString& setName, const TSTFCaseRunningType& type)
@@ -201,6 +222,12 @@ void StfQtUIController::AbortCase()
     {
     model->AbortCase();
     FireOnGetOutput("Case Aborted");
+    }
+
+CSTFCase StfQtUIController::GetRunningCase(int index)
+    {
+    CStartedTestCase* startedCase = (CStartedTestCase*) index;
+    return model->GetRunningCase(startedCase);
     }
 
 bool StfQtUIController::ShowOutput()
@@ -297,7 +324,7 @@ void StfQtUIController::OnGetCaseOutput(CStartedTestCase* aCase, QString& msg)
 void StfQtUIController::FireOnCaseOutputChanged(
         IStfEventListener::CaseOutputCommand cmd, int index, QString msg)
     {
-    if (ShowOutput())
+    if (true)//ShowOutput
         {
         foreach(IStfEventListener* listener, listenerList)
                 {

@@ -34,8 +34,8 @@
 
 
 
-CMemSpyViewThreadInfoItemStack::CMemSpyViewThreadInfoItemStack( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
-:   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeStack )
+CMemSpyViewThreadInfoItemStack::CMemSpyViewThreadInfoItemStack( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemGeneric( aSession, aObserver, aProcId, aId, EMemSpyThreadInfoItemTypeStack )
     {
     }
 
@@ -69,19 +69,19 @@ TBool CMemSpyViewThreadInfoItemStack::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewThreadInfoItemStack::OnCmdStackInfoL()
     {
-    iEngine.HelperStack().OutputStackInfoL( Thread() );
+   // TODO iEngine.HelperStack().OutputStackInfoL( Thread() );
     }
 
 
 void CMemSpyViewThreadInfoItemStack::OnCmdStackDataUserL()
     {
-    iEngine.HelperStack().OutputStackDataL( Thread(), EMemSpyDriverDomainUser );
+    // TODO iEngine.HelperStack().OutputStackDataL( Thread(), EMemSpyDriverDomainUser );
     }
 
 
 void CMemSpyViewThreadInfoItemStack::OnCmdStackDataKernelL()
     {
-    iEngine.HelperStack().OutputStackDataL( Thread(), EMemSpyDriverDomainKernel );
+    // TODO iEngine.HelperStack().OutputStackDataL( Thread(), EMemSpyDriverDomainKernel );
     }    
 
 
@@ -89,6 +89,6 @@ void CMemSpyViewThreadInfoItemStack::DynInitMenuPaneL( TInt aResourceId, CEikMen
     {
     if  ( aResourceId == R_MEMSPY_MENUPANE )
         {
-        aMenuPane->SetItemDimmed( EMemSpyCmdStack, Thread().IsDead() );
+        //TODO aMenuPane->SetItemDimmed( EMemSpyCmdStack, Thread().IsDead() );
         }
     }

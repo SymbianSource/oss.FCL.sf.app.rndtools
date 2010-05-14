@@ -35,7 +35,7 @@
 #include <swi/sisregistrysession.h>
 #include <swi/sisregistrypackage.h>
 #include <javaregistryincludes.h>
-#include <widgetregistryclient.h>
+#include <WidgetRegistryClient.h>
 
 using namespace Java;
 
@@ -622,7 +622,26 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
                     iInstOpts.iLang =         (TLanguage) parameters[offset]; offset++;
                     iInstOpts.iUsePhoneLang = (TBool) parameters[offset]; offset++;
                     iInstOpts.iUpgradeData =  ConvertToPolicy( parameters[offset] );
+                    offset++;
+                    HTI_LOG_FORMAT( "parameters length: %d", parameters.Length());
+                    HTI_LOG_FORMAT( "next offset: %d", offset);
 
+                    if(parameters.Length() > offset)
+                        {
+                        TInt language = iInstOpts.iLang;
+                        if (parameters.Length() == offset+2)
+                            {
+                            language = parameters[offset] + parameters[offset+1]<<8;
+                            }
+                        if (parameters.Length() == offset+1)
+                            {
+                            language = parameters[offset];
+                            }
+                        if ((language > ELangTest) && (language < ELangMaximum))
+                            {
+                            iInstOpts.iLang =         (TLanguage) language;
+                            }
+                        }
                     HTI_LOG_FORMAT( "iDrive: %c",        iInstOpts.iDrive.GetLowerCase() );
                     HTI_LOG_FORMAT( "iLang: %d",         iInstOpts.iLang );
                     HTI_LOG_FORMAT( "iUsePhoneLang: %d", iInstOpts.iUsePhoneLang );
@@ -1558,7 +1577,7 @@ TBool CHtiAppControl::ValidateInstallParams( const TDesC8& aParams, TBool aIsUni
         offset += length; // skip over password
         offset += 4;      // the last one byte params
 
-        if ( aParams.Length() != offset )
+        if ( aParams.Length() < offset || aParams.Length() > offset + 2)
             {
             HTI_LOG_TEXT( "ValidateInstallParams: Failed, final length incorrect" );
             return EFalse;

@@ -33,6 +33,9 @@ public:
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
 private:
+	QString formatSize(qint64 size) const;
+	
+private:
 	QList<MemSpyKernelObjectType*> mObjectTypes;
 };
 

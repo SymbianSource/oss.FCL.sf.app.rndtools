@@ -26,6 +26,7 @@ enum ViewIndex {
 	MainView,
 	ProcessView,
 	ThreadView,
+	ThreadDetailIndexView,
 	ThreadDetailView,
 	KernelObjectTypeView,
 	KernelObjectView,

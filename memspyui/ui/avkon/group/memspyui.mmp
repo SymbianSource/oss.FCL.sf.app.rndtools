@@ -64,7 +64,6 @@ source			MemSpyViewDriveInfo.cpp
 source			MemSpyViewECom.cpp
 */
 source          MemSpyViewThreads.cpp
-/*
 source          MemSpyViewThreadInfoItemList.cpp
 source          MemSpyViewThreadInfoItemGeneric.cpp
 source          MemSpyViewThreadInfoItemHeap.cpp
@@ -74,6 +73,7 @@ source          MemSpyViewThreadInfoItemChunk.cpp
 source          MemSpyViewThreadInfoItemServer.cpp
 source          MemSpyViewThreadInfoItemActiveObject.cpp
 source          MemSpyViewThreadInfoItemGeneralInfo.cpp
+/*
 source          MemSpyViewHeapTracking.cpp
 source          MemSpyViewHeapTrackingResults.cpp
 source          MemSpyViewHeapTrackingSettings.cpp

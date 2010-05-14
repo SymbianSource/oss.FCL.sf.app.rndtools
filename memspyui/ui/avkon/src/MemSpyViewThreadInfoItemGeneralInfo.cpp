@@ -26,6 +26,7 @@
 #include <memspy/engine/memspyengineobjectthreadinfocontainer.h>
 #include <memspy/engine/memspyenginehelperprocess.h>
 #include <memspy/engine/memspyenginehelperheap.h>
+#include <memspysession.h>
 
 // User includes
 #include "MemSpyContainerObserver.h"
@@ -33,9 +34,14 @@
 #include "MemSpyViewThreadInfoItemHeap.h"
 
 
-
+/*
 CMemSpyViewThreadInfoItemGeneralInfo::CMemSpyViewThreadInfoItemGeneralInfo( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
 :   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeGeneralInfo )
+    {
+    }
+*/
+CMemSpyViewThreadInfoItemGeneralInfo::CMemSpyViewThreadInfoItemGeneralInfo( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemGeneric( aSession, aObserver, aProcId, aId, EMemSpyThreadInfoItemTypeGeneralInfo )
     {
     }
 

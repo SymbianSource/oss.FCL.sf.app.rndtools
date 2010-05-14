@@ -19,10 +19,10 @@
 
 #include "gifanimator.h"
 
-#include <S32FILE.H>
-#include <FBS.H>
-#include <GDI.H>
-#include <ImageConversion.h>
+#include <s32file.h>
+#include <fbs.h>
+#include <gdi.h>
+#include <imageconversion.h>
 #include "enginewrapper.h"
 
     

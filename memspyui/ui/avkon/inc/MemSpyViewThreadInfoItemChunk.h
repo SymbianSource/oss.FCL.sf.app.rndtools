@@ -25,11 +25,12 @@
 // User includes
 #include "MemSpyViewThreadInfoItemGeneric.h"
 
+class RMemSpySession;
 
 class CMemSpyViewThreadInfoItemChunk : public CMemSpyViewThreadInfoItemGeneric
     {
 public:
-    CMemSpyViewThreadInfoItemChunk( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer );
+    CMemSpyViewThreadInfoItemChunk( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId,  TThreadId aId, TMemSpyThreadInfoItemType aType );
 
 private: // From CMemSpyViewBase
     CMemSpyViewBase* PrepareChildViewL();

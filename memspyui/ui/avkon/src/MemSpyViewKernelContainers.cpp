@@ -109,7 +109,8 @@ void CMemSpyViewKernelContainers::SetListBoxModelL()
 		TInt size = iKernelObjects[i]->Size();
 		const TMemSpySizeText sizeText( MemSpyEngineUtils::FormatSizeText( size, 0 ) ); //TODO: is this OK to call Engine Utils?
 								
-		HBufC* tempName = HBufC::NewL( iKernelObjects[i]->Name().Length() + 32 ); //TODO: to removed this bulharic constant
+		HBufC* tempName = HBufC::NewL( iKernelObjects[i]->Name().Length() + 32 );
+		//HBufC* tempName = HBufC::NewL( KMaxFullName );
 		CleanupStack::PushL( tempName );
 		TPtr tempNamePtr( tempName->Des() );
 		tempNamePtr.Copy( iKernelObjects[i]->Name() );									
@@ -126,7 +127,7 @@ void CMemSpyViewKernelContainers::SetListBoxModelL()
 			pName.Append( _L("s") );
 			}
 
-		pName.AppendFormat( _L(", %S"), &sizeText ); // TODO: to create some ServerUtils class with formating methods for size and type!
+		pName.AppendFormat( _L(", %S"), &sizeText );
 		
 		model->AppendL( pName );
 		
@@ -173,7 +174,9 @@ TBool CMemSpyViewKernelContainers::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewKernelContainers::OnCmdOutputAllContainerContentsL()
     {
-	/* TODO
+	iMemSpySession.OutputAllContainerContents();
+		
+	/*
     CMemSpyEngineOutputSink& sink = iEngine.Sink();
     iModel->OutputL( sink );
     */

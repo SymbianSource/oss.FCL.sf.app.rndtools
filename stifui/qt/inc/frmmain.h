@@ -20,11 +20,14 @@
 #define FRMMAIN_H
 
 #include <QMainWindow>
+#include <QtGui>
 #include "istfqtuicontroller.h"
 #include "istfqtuimodel.h"
 #include "dlgoutput.h"
 #include "uisetting.h"
 #include "dlgsetting.h"
+#include "dlgsetselector.h"
+#include "uiversion.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -43,15 +46,15 @@ class QMessageBox;
 class QFileDialog;
 QT_END_NAMESPACE
 
-const QString QtUIVersion = "StfQtUI v1.0.1";
 
-class frmMain : public QMainWindow, public IStfEventListener, public IStifModelEventListener
+
+class FrmMain : public QMainWindow, public IStfEventListener, public IStifModelEventListener
 {
     Q_OBJECT
 
 public:
-    frmMain();
-    ~frmMain();
+    FrmMain();
+    ~FrmMain();
     
     
 public: //Implement IStfEventListener
@@ -63,6 +66,9 @@ public: //Implement IStfEventListener
 public: //Implement IStifModelEventListener
     void OnCaseStatisticChanged() ;
     void OnRunningCaseChanged() ;
+    
+protected:
+    void paintEvent(QPaintEvent *event);
     
 protected slots:
     void onTabWidgetSelectIndexChanged();
@@ -79,16 +85,20 @@ private:
     QList<CSTFCase> getSelectedCases();
     void reloadStatisticItem(QString name, QTreeWidgetItem* item, TSTFCaseStatusType type);
     void setSetting();
+    void startRunning();
     
 private:
     IStfQtUIController* controller;
     IStfQtUIModel* model;
     DlgOutput* dlgOutput;
     UiSetting* uiSetting; 
-    
+    bool layoutType;
 
 private: //UI Components
-    QWidget *MainWidget;
+    QWidget* centerWidget;
+    QGridLayout *mainLayout;
+    QGroupBox *groupBox;
+    
     //menus and actions
     QMenu *operateMenu;
     //output panel
@@ -120,7 +130,7 @@ private: //UI Components
     QListWidget *lstStartedCases;
     QPushButton *btnPauseCase;
     QPushButton *btnAbortCase;
-    QPlainTextEdit *txtCaseOutput;
+    QPushButton *btnShowOutput;
 
     //menu actions
     QAction *actExit;
@@ -135,14 +145,18 @@ private: //UI Components
     QAction *actExpandAll;
     QAction *actCollapseAll;
     QAction *actSetting;
+    QMenu *menuRunCase; 
     //sets actions
     QAction *actRunSetSeq;
     QAction *actRunSetPar;
     QAction *actNewSet;
     QAction *actDelSet;
+    QMenu *menuRunSet;
     //running actions.
     QAction *actPause;
     QAction *actAbort;
+    QAction *actOutput;
+    
     //statistics actions
     QAction *actClearStatistics;
 
@@ -157,6 +171,8 @@ private slots:
     void on_actSelectAll_triggered();
     void on_actExpandAll_triggered();
     void on_actCollapseAll_triggered();
+    void on_actExpand_triggered();
+    void on_actCollapse_triggered();
     void on_actSetting_triggered();
         
     void on_actRunSetSeq_triggered();
@@ -165,6 +181,7 @@ private slots:
     void on_actDelSet_triggered();
     void on_actPause_triggered();
     void on_actAbort_triggered();
+    void on_actOutput_triggered();
     void on_actClearStatistics_triggered();
     void on_treeModuleList_itemClicked(QTreeWidgetItem* item, int column);
 
@@ -176,4 +193,4 @@ private slots:
 
 };
 
-#endif // FRMMAIN_H
+#endif // FrmMain_H

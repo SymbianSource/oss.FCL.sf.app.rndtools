@@ -18,7 +18,7 @@
 #ifndef ENGINEWRAPPER_H
 #define ENGINEWRAPPER_H
 
-#include <S32FILE.H>
+#include <s32file.h>
 #include <hbapplication.h>
 
 

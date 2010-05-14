@@ -35,7 +35,7 @@ NAME MEMS
 
 
 // User includes
-#include "MemSpy.hrh"
+#include "../ui/avkon/inc/MemSpy.hrh"
 
 
 RESOURCE RSS_SIGNATURE { }

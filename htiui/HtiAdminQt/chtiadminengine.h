@@ -20,7 +20,7 @@
 
 #include <e32std.h>
 #include <e32base.h>
-#include <BADESCA.H> 
+#include <badesca.h> 
 
 
 class HtiEngineWrapper;

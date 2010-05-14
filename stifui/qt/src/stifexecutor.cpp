@@ -21,25 +21,41 @@
 #include <f32file.h>
 #include <HAL.h>
 #include <hal_data.h>
-#include <stiflogger.h>
+#include "stiflogger.h"
 #include <QString>
 #include "stifexecutor.h"
 #include "StifTFwIf.h"
 
+_LIT( KLogPath, "\\Logs\\STFUI\\" ); 
+// Log file
+_LIT( KLogFile, "StifUi.log" ); 
 
 CStifExecutor::CStifExecutor() :
     listenerList(NULL)
     {
-//    __LOG(_L("started"));
+    iLog = CStifLogger::NewL( KLogPath, 
+            KLogFile,
+            CStifLogger::ETxt,
+            CStifLogger::EFile,
+            ETrue,
+            ETrue,
+            ETrue,
+            EFalse,
+            ETrue,
+            EFalse,
+            100 );
+
+
+    iLog->Log(_L("started"));
     TInt result;
     TRAP(result, CUIStoreIf::ConstructL());
-//    __LOG1(_L("CUIStoreIf ConstructL, result=%d"), result);
+    iLog->Log(_L("CUIStoreIf ConstructL, result=%d"), result);
     if (result != KErrNone)
         {
         return;
         }
     TRAP(result, iBuffer = HBufC::NewL(500));
-//    __LOG1(_L("Create Case Execution output buffer, result=%d"), result);
+    iLog->Log(_L("Create Case Execution output buffer, result=%d"), result);
 
     }
 
@@ -52,13 +68,13 @@ CStifExecutor::~CStifExecutor()
         delete listenerList;
         listenerList = NULL;
         }
-//    __LOG(_L("finished"));
+    iLog->Log(_L("finished"));
     }
 
 bool CStifExecutor::OpenIniFile(const QString& filename)
     {
     TInt result = UIStore().Open(QString2TPtrC(filename));
-//    __LOG2(_L("Open ini file %s.result=%d"),QString2TPtrC(filename).Ptr(),result);
+    iLog->Log(_L("Open ini file %s.result=%d"),QString2TPtrC(filename).Ptr(),result);
     return (result == KErrNone);
     }
 
@@ -78,10 +94,22 @@ QString CStifExecutor::TDesC2QString(const TDesC& des)
     //#endif
     }
 
+bool CStifExecutor::LogResult(const TInt result,const QString str)
+    {
+    QString tmp = str + " result=%d";
+    iLog->Log(QString2TPtrC(tmp), result);
+    bool rst = true;
+    if(result != KErrNone)
+        {
+        rst = false;
+        }
+    return rst;
+    }
+
 void CStifExecutor::AddStifCaseUpdateListener(
         IStifCaseUpdateListener* listener)
     {
-//    __LOG(_L("AddStifCaseUpdateListener"));
+    iLog->Log(_L("AddStifCaseUpdateListener"));
     if (!listenerList)
         {
         listenerList = new QList<IStifCaseUpdateListener*> ();
@@ -95,7 +123,7 @@ void CStifExecutor::AddStifCaseUpdateListener(
 void CStifExecutor::RemoveStifCaseUpdateListener(
         IStifCaseUpdateListener* listener)
     {
-//    __LOG(_L("RemoveStifCaseUpdateListener"));
+    iLog->Log(_L("RemoveStifCaseUpdateListener"));
     if (!listenerList)
         {
         return;
@@ -112,13 +140,15 @@ QList<CSTFModule> CStifExecutor::GetModuleList()
     {
     QList<CSTFModule> list;
     RRefArray<TDesC> modules;
-//    __LOG(_L("GetModuleList"));
+    iLog->Log(_L("GetModuleList"));
     TInt ret = UIStore().Modules(modules);
-//    __LOG1(_L("LoadAllModules %d"), ret);
-//    __LOG1(_L("Modules number=%d"), modules.Count());
+    iLog->Log(_L("LoadAllModules %d"), ret);
+    iLog->Log(_L("Modules number=%d"), modules.Count());
     for (TInt i = 0; i < modules.Count(); i++)
         {
-//        __LOG1(_L("Get Module Names %d"), i);
+        iLog->Log(_L("Get Module Names %d"), i);
+        iLog->Log(_L("Get Module Name = %d .=%s"),i,modules[i].Ptr());
+            
         CSTFModule module;
         module.SetName(QString::fromUtf16(modules[i].Ptr(),
                 modules[i].Length()));
@@ -136,10 +166,11 @@ QList<CSTFCase> CStifExecutor::GetCaseList(const QString& moduleName)
     QList<CSTFCase> list;
     RRefArray<CTestInfo> testCases;
     TInt ret = UIStore().TestCases(testCases, name, KNullDesC);
-//    __LOG1(_L("Get TestCases: %d"), ret);
+    iLog->Log(_L("Get TestCases: %d"), ret);
     for (TInt i = 0; i < testCases.Count(); i++)
         {
-//       __LOG1(_L("Case Number: %d"),testCases[i].TestCaseNum());
+        iLog->Log(_L("Case Number: %d"),testCases[i].TestCaseNum());
+        iLog->Log(_L("Case Name: %s"),testCases[i].TestCaseTitle().Ptr());
         CSTFCase testcase;
         testcase.SetName(TDesC2QString(testCases[i].TestCaseTitle()));
         testcase.SetIndex(i);
@@ -152,20 +183,20 @@ QList<CSTFCase> CStifExecutor::GetCaseList(const QString& moduleName)
 
 void CStifExecutor::ExecuteSingleCase(const QString& moduleName, const int caseIndex)
     {
-//    __LOG(_L("ExecuteCase start"));
+    iLog->Log(_L("ExecuteCase start"));
     TPtrC name = QString2TPtrC(moduleName);
     RRefArray<CTestInfo> testCases;
     TInt ret = UIStore().TestCases(testCases, name, KNullDesC);
-//    __LOG1(_L("Get TestCases return code=%d"), ret);
+    iLog->Log(_L("Get TestCases return code=%d"), ret);
     if (testCases.Count() > caseIndex)
         {
         TInt index;
         UIStore().StartTestCase(testCases[caseIndex], index);
-//        __LOG1(_L("start test case index=%d"), index);
+        iLog->Log(_L("start test case index=%d"), index);
         }
     testCases.Reset();
     testCases.Close();
-//    __LOG(_L("ExecuteCase end"));
+    iLog->Log(_L("ExecuteCase end"));
 
     }
 
@@ -174,7 +205,7 @@ QList<QString> CStifExecutor::GetSetList()
     QList<QString> list;
     RRefArray<TDesC> aArray;
     TInt ret = UIStore().GetTestSetsList(aArray);
-//    __LOG1(_L("Get TestSet list return code=%d"), ret);
+    iLog->Log(_L("Get TestSet list return code=%d"), ret);
     if (ret != KErrNone) //setInfos.Count() != 1
         {
         return list;
@@ -190,28 +221,28 @@ QList<QString> CStifExecutor::GetSetList()
 
 QList<CSTFCase> CStifExecutor::GetCaseListFromSet(const QString& setName)
     {
-//    __LOG(_L("GetCaseListFromSet start."));
+    iLog->Log(_L("GetCaseListFromSet start."));
     QList<CSTFCase> list;
     TPtrC name = QString2TPtrC(setName);
 
-    //__LOG(name);
+    //iLog->Log(name);
     if (name.Length() == 0)
         {
         return list;
         }
 
-//    __LOG1(_L("name.Length()=%d"), name.Length());
+    iLog->Log(_L("name.Length()=%d"), name.Length());
     TInt ret = UIStore().LoadTestSet(name);
-//    __LOG1(_L("Load Test Set return=%d"),ret);
+    iLog->Log(_L("Load Test Set return=%d"),ret);
     const CTestSetInfo* set = NULL;
     TRAP(ret , set = &UIStore().TestSetL(name));
-//    __LOG(_L("GetCaseListFromSet TestSetL."));
+    iLog->Log(_L("GetCaseListFromSet TestSetL."));
     if(ret != KErrNone)
         {
         return list;
         }
     const RRefArray<const CTestInfo>& testCases = set->TestCases();
-//    __LOG(_L("GetCaseListFromSet TestCases."));
+    iLog->Log(_L("GetCaseListFromSet TestCases."));
     TInt count = testCases.Count();
     for (TInt i = 0; i < count; i++)
         {
@@ -221,58 +252,73 @@ QList<CSTFCase> CStifExecutor::GetCaseListFromSet(const QString& setName)
         testcase.SetModuleName(TDesC2QString(testCases[i].ModuleName()));
         list.append(testcase);
         }
-//    __LOG(_L("GetCaseListFromSet end."));
+    iLog->Log(_L("GetCaseListFromSet end."));
     return list;
     }
 
-void CStifExecutor::CreateSet(const QString& setName)
+bool CStifExecutor::CreateSet(const QString& setName)
     {
     TPtrC name = QString2TPtrC(setName);
     TInt ret = UIStore().CreateTestSet(name);
-//    __LOG1(_L("CreateSet return: %d"), ret);
-//    ret = UIStore().LoadTestSet(name);
-//    __LOG1(_L("Load Set after CreateSet return: %d"), ret);
-        
-        
+    return LogResult(ret, "CreateSet");
     }
 
-void CStifExecutor::SaveSet(QString& setName)
+bool CStifExecutor::SaveSet(QString& setName)
     {
     TPtrC name = QString2TPtrC(setName);
     TFileName testSetName;
     testSetName.Copy(name);
-    TInt ret = UIStore().SaveTestSet(testSetName);
+    TInt ret = UIStore().SaveTestSet2(testSetName);
     setName = TDesC2QString(testSetName);
-//    __LOG1(_L("SaveSet return: %d"),ret);
+    return LogResult(ret, "SaveSet");
     }
 
-void CStifExecutor::RemoveSet(const QString& setName)
+bool CStifExecutor::RemoveSet(const QString& setName)
     {
     //This method wil not work at this stage.
     TPtrC name = QString2TPtrC(setName);
-    UIStore().RemoveTestSet(name);
+    TInt ret = UIStore().RemoveTestSet(name);
+    return LogResult(ret, "RemoveSet");
     }
 
-void CStifExecutor::AddtoSet(const QString& setName, CSTFCase& caseInfo)
+bool CStifExecutor::AddtoSet(const QString& setName, CSTFCase& caseInfo)
     {
+    iLog->Log(_L("AddToSet Start"));
+        
     //IMPORT_C TInt AddToTestSet( const TDesC& aSetName, const CTestInfo& aTestInfo );
     TPtrC modulename = QString2TPtrC(caseInfo.ModuleName());
+    iLog->Log(_L("AddToSet dealwith module: %s"), modulename.Ptr());
+    iLog->Log(_L("Case name: %s"),QString2TPtrC(caseInfo.Name()).Ptr());
+    iLog->Log(_L("Case index: %d"),caseInfo.Index());
+    TInt caseIndex = caseInfo.Index();
+    if(caseInfo.ModuleName().toLower() == "testscripter"
+            ||caseInfo.ModuleName().toLower() == "teftestmodule")
+        {
+        caseIndex++;
+        }
     RRefArray<CTestInfo> testCases;
     TInt ret = UIStore().TestCases(testCases, modulename, KNullDesC);
-//    __LOG1(_L("Get TestCases: %d"), ret);
+    if(!LogResult(ret, "AddToSet, GetTestCases"))
+        {
+        return false;
+        }
+    
+    ret = -1;
     for (TInt i = 0; i < testCases.Count(); i++)
         {
-//        __LOG1(_L("Case Number: %d"),testCases[i].TestCaseNum());
-        if (TDesC2QString(testCases[i].TestCaseTitle()) == caseInfo.Name()
-                && testCases[i].TestCaseNum() == caseInfo.Index())
+        iLog->Log(_L("Case Number: %d"),testCases[i].TestCaseNum());
+        iLog->Log(_L("Case Title: %s"),testCases[i].TestCaseTitle().Ptr());        
+        
+        if (testCases[i].TestCaseNum() == caseIndex)
             {
             ret = UIStore().AddToTestSet(QString2TPtrC(setName), testCases[i]);
-//            __LOG1(_L("AddToTestSet: %d"), ret);
+            iLog->Log(_L("AddToTestSet: %d"), ret);
             break;
             }
         }
     testCases.Reset();
     testCases.Close();
+    return LogResult(ret, "AddToSet");
     }
 
 void CStifExecutor::ExecuteSet(const QString& SetName, const int startIndex,
@@ -287,25 +333,25 @@ void CStifExecutor::ExecuteSet(const QString& SetName, const int startIndex,
     TInt ret;
     TBuf<30> test;
     test.Append(QString2TPtrC(SetName));
-//    __LOG(_L("StartTestSet GetSetName:"));
-//    __LOG(test);
+    iLog->Log(_L("StartTestSet GetSetName:"));
+    iLog->Log(test);
     TRAP(ret, set = &UIStore().TestSetL(test));
             
     //const CTestSetInfo& set = UIStore().TestSetL(QString2TPtrC(SetName));
     if(ret != KErrNone)
         {
-//        __LOG1(_L("StartTestSet GetTestSet Error return=%d"),ret);
+        iLog->Log(_L("StartTestSet GetTestSet Error return=%d"),ret);
         return;
         }
     int a = startIndex;
     ret = UIStore().StartTestSet(*set, a, setType);
-//    __LOG1(_L("StartTestSet return=%d"),ret);
+    iLog->Log(_L("StartTestSet return=%d"),ret);
     }
 
 void CStifExecutor::Update(CStartedTestCase* aCase, int flags)
     {
-//    __LOG1(_L("CStifExecutor::Update return case=%d"),aCase);
-//    __LOG1(_L("CStifExecutor::Update return status=%d"),flags);
+    iLog->Log(_L("CStifExecutor::Update return case=%d"),aCase);
+    iLog->Log(_L("CStifExecutor::Update return status=%d"),flags);
     
     if(aCase == NULL)
         {
@@ -328,8 +374,8 @@ void CStifExecutor::Update(CStartedTestCase* aCase, int flags)
             buffer.Append(_L("\r\n"));
             }
         QString msg = TDesC2QString(buffer);
-//        __LOG(_L("Get output msg:"));
-//        __LOG(buffer);
+        iLog->Log(_L("Get output msg:"));
+        iLog->Log(buffer);
         if (listenerList)
             {
             for (int i = 0; i < listenerList->size(); i++)

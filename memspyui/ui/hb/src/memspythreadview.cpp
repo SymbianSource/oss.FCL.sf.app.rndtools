@@ -132,7 +132,7 @@ void MemSpyThreadView::itemClicked(const QModelIndex& index)
 {
 	QVariantMap map;
 	map["tid"] = index.data(Qt::UserRole);
-	mViewManager.showView(ThreadDetailView, map);
+	mViewManager.showView(ThreadDetailIndexView, map);
 }
 
 void MemSpyThreadView::catchLongPress(HbAbstractViewItem *item, const QPointF &coords)

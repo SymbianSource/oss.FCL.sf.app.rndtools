@@ -25,6 +25,10 @@
 #include <memspy/engine/memspyengineobjectthreadinfoobjects.h>
 #include <memspy/engine/memspyengineobjectthreadinfocontainer.h>
 #include <memspy/engine/memspyenginehelperprocess.h>
+#include <memspysession.h>
+
+// UI Utils include
+#include "MemSpyUiUtils.h"
 
 // User includes
 #include "MemSpyContainerObserver.h"
@@ -42,16 +46,15 @@
 const TInt KMemSpyIdleResetListboxTimerPeriod = 250000;
 
 
-CMemSpyViewThreadInfoItemList::CMemSpyViewThreadInfoItemList( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThread& aThread )
-:   CMemSpyViewBase( aEngine, aObserver ), iThread( aThread )
+CMemSpyViewThreadInfoItemList::CMemSpyViewThreadInfoItemList( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcess, TThreadId aThread )
+:   CMemSpyViewBase( aSession, aObserver ), iParentProcessId( aProcess ), iThreadId( aThread )
     {
-    iThread.Process().Open();
-    iThread.Open();
     }
 
 
 CMemSpyViewThreadInfoItemList::~CMemSpyViewThreadInfoItemList()
     {
+	/* TODO: to consider what to do with this
     delete iIdleResetListboxTimer;
 
     TRAP_IGNORE( 
@@ -63,9 +66,7 @@ CMemSpyViewThreadInfoItemList::~CMemSpyViewThreadInfoItemList()
         {
         iCurrentInfoItem->Close();
         }
-
-    iThread.Process().Close();
-    iThread.Close();
+    */
     }
 
 
@@ -77,13 +78,15 @@ void CMemSpyViewThreadInfoItemList::ConstructL( const TRect& aRect, CCoeControl&
     //
     iIdleResetListboxTimer = CPeriodic::NewL( CActive::EPriorityIdle );
     //
+    /*
     CMemSpyThreadInfoContainer& container = iThread.InfoContainerL();
     container.ObserverAddL( *this );
+    */
     //
     CMemSpyViewBase::ConstructL( aRect, aContainer, aSelectionRune );
     //
-    if  ( aSelectionRune )
-        {
+    /*if  ( aSelectionRune )
+        {		
         CMemSpyThreadInfoItemBase* selectedItem = reinterpret_cast< CMemSpyThreadInfoItemBase* >( aSelectionRune );
         const TInt index = container.InfoItemIndexByType( selectedItem->Type() );
         if  ( index >= 0 && index < iListBox->Model()->NumberOfItems() )
@@ -93,31 +96,17 @@ void CMemSpyViewThreadInfoItemList::ConstructL( const TRect& aRect, CCoeControl&
             }
         }
     else if ( container.MdcaCount() > 0 )
-        {
-        iListBox->SetCurrentItemIndex( 0 );
+        {*/
+        iListBox->SetCurrentItemIndex( 0 ); //for now
         HandleListBoxItemSelectedL( 0 );
-        }
+        //}
     }
-
-
-const CMemSpyProcess& CMemSpyViewThreadInfoItemList::Process() const
-    {
-    return iThread.Process();
-    }
-
-
-const CMemSpyThread& CMemSpyViewThreadInfoItemList::Thread() const
-    {
-    return iThread;
-    }
-
 
 const CMemSpyThreadInfoItemBase& CMemSpyViewThreadInfoItemList::CurrentInfoItem() const
     {
-    __ASSERT_ALWAYS( iCurrentInfoItem != NULL, User::Invariant() );
+    //__ASSERT_ALWAYS( iCurrentInfoItem != NULL, User::Invariant() );
     return *iCurrentInfoItem;
     }
-
 
 void CMemSpyViewThreadInfoItemList::RefreshL()
     {
@@ -134,9 +123,9 @@ TMemSpyViewType CMemSpyViewThreadInfoItemList::ViewType() const
 
 CMemSpyViewBase* CMemSpyViewThreadInfoItemList::PrepareParentViewL()
     {
-    CMemSpyViewBase* parent = new(ELeave) CMemSpyViewThreads( iEngine, iObserver, iThread.Process() );
+    CMemSpyViewBase* parent = new(ELeave) CMemSpyViewThreads( iMemSpySession, iObserver, iParentProcessId );
     CleanupStack::PushL( parent );
-    parent->ConstructL( Rect(), *Parent(), &iThread );
+    parent->ConstructL( Rect(), *Parent() );
     CleanupStack::Pop( parent );
     return parent;
     }
@@ -144,38 +133,41 @@ CMemSpyViewBase* CMemSpyViewThreadInfoItemList::PrepareParentViewL()
 
 CMemSpyViewBase* CMemSpyViewThreadInfoItemList::PrepareChildViewL()
     {
-    __ASSERT_ALWAYS( iCurrentInfoItem != NULL, User::Invariant() );
     CMemSpyViewBase* child = NULL;
 
-    // Decide what type of child view to create...
-    const TMemSpyThreadInfoItemType type = iCurrentInfoItem->Type();
-    //
+    TMemSpyThreadInfoItemType type;
+    iMemSpySession.GetInfoItemType( iCurrentInfoItemId, iThreadId, type );
+    
     switch( type )
-        {
+        {    	
     case EMemSpyThreadInfoItemTypeHeap:
-        child = new(ELeave) CMemSpyViewThreadInfoItemHeap( iEngine, iObserver, iThread.InfoContainerL() );
-        break;
+        child = new(ELeave) CMemSpyViewThreadInfoItemHeap( iMemSpySession, iObserver, iParentProcessId, iThreadId, type );
+        break;        
     case EMemSpyThreadInfoItemTypeStack:
-        child = new(ELeave) CMemSpyViewThreadInfoItemStack( iEngine, iObserver, iThread.InfoContainerL() );
-        break;
+        child = new(ELeave) CMemSpyViewThreadInfoItemStack( iMemSpySession, iObserver, iParentProcessId, iThreadId, type );
+        break;        
     case EMemSpyThreadInfoItemTypeChunk:
-        child = new(ELeave) CMemSpyViewThreadInfoItemChunk( iEngine, iObserver, iThread.InfoContainerL() );
+        child = new(ELeave) CMemSpyViewThreadInfoItemChunk( iMemSpySession, iObserver, iParentProcessId, iThreadId, type  );
         break;
     case EMemSpyThreadInfoItemTypeCodeSeg:
-        child = new(ELeave) CMemSpyViewThreadInfoItemCodeSeg( iEngine, iObserver, iThread.InfoContainerL() );
-        break;
+        child = new(ELeave) CMemSpyViewThreadInfoItemCodeSeg( iMemSpySession, iObserver, iParentProcessId, iThreadId, type  );
+        break;        
     case EMemSpyThreadInfoItemTypeServer:
-        child = new(ELeave) CMemSpyViewThreadInfoItemServer( iEngine, iObserver, iThread.InfoContainerL() );
-        break;
+        child = new(ELeave) CMemSpyViewThreadInfoItemServer( iMemSpySession, iObserver, iParentProcessId, iThreadId, type  );
+        break;        
     case EMemSpyThreadInfoItemTypeActiveObject:
-        child = new(ELeave) CMemSpyViewThreadInfoItemActiveObject( iEngine, iObserver, iThread.InfoContainerL() );
-        break;
+        child = new(ELeave) CMemSpyViewThreadInfoItemActiveObject( iMemSpySession, iObserver, iParentProcessId, iThreadId, type  );
+        break;             
     case EMemSpyThreadInfoItemTypeGeneralInfo:
-        child = new(ELeave) CMemSpyViewThreadInfoItemGeneralInfo( iEngine, iObserver, iThread.InfoContainerL() );
+        child = new(ELeave) CMemSpyViewThreadInfoItemGeneralInfo( iMemSpySession, iObserver, iParentProcessId, iThreadId, type );
         break;
+    /* 
+     * This subview is permanently removed from Thread Info Item subview.
+     * 
     case EMemSpyThreadInfoItemTypeMemoryTracking:
         child = new(ELeave) CMemSpyViewThreadInfoItemMemoryTracking( iEngine, iObserver, iThread.InfoContainerL() );
         break;
+    */
     case EMemSpyThreadInfoItemTypeSession:
     case EMemSpyThreadInfoItemTypeSemaphore:
     case EMemSpyThreadInfoItemTypeMutex:
@@ -192,14 +184,14 @@ CMemSpyViewBase* CMemSpyViewThreadInfoItemList::PrepareChildViewL()
     case EMemSpyThreadInfoItemTypeOtherProcesses:
     case EMemSpyThreadInfoItemTypeOwnedThreadHandles:
     case EMemSpyThreadInfoItemTypeOwnedProcessHandles:
-        child = new(ELeave) CMemSpyViewThreadInfoItemGeneric( iEngine, iObserver, iThread.InfoContainerL(), type );
+        child = new(ELeave) CMemSpyViewThreadInfoItemGeneric( iMemSpySession, iObserver, iParentProcessId, iThreadId, type );
         break;
     
     default:
-        __ASSERT_ALWAYS( EFalse, User::Panic( _L("MemSpy-View"), 0) );
-        break;
+       // __ASSERT_ALWAYS( EFalse, User::Panic( _L("MemSpy-View"), 0) );
+        break;        
         }
-    //
+       
     CleanupStack::PushL( child );
     child->ConstructL( Rect(), *Parent() );
     CleanupStack::Pop( child );
@@ -230,7 +222,7 @@ void CMemSpyViewThreadInfoItemList::DynInitMenuPaneL( TInt aResourceId, CEikMenu
     {
     if  ( aResourceId == R_MEMSPY_MENUPANE )
         {
-        aMenuPane->SetItemDimmed( EMemSpyCmdThread, iThread.IsDead() );
+     //   aMenuPane->SetItemDimmed( EMemSpyCmdThread, iThread.IsDead() ); //TODO
         }
     else if ( aResourceId == MenuCascadeResourceId() )
         {
@@ -243,12 +235,12 @@ void CMemSpyViewThreadInfoItemList::DynInitMenuPaneL( TInt aResourceId, CEikMenu
 
 void CMemSpyViewThreadInfoItemList::OnCmdInfoHandlesL()
     {
-    iThread.InfoContainerForceSyncronousConstructionL().PrintL();
+    //iThread.InfoContainerForceSyncronousConstructionL().PrintL(); //TODO:
     }
 
 
 void CMemSpyViewThreadInfoItemList::HandleMemSpyEngineInfoContainerEventL( TEvent aEvent, TMemSpyThreadInfoItemType aType )
-    {
+    {/*
     if  ( aEvent == EInfoItemChanged )
         {
         }
@@ -263,13 +255,123 @@ void CMemSpyViewThreadInfoItemList::HandleMemSpyEngineInfoContainerEventL( TEven
 
     iIdleResetListboxTimer->Cancel();
     iIdleResetListboxTimer->Start( KMemSpyIdleResetListboxTimerPeriod, KMemSpyIdleResetListboxTimerPeriod, TCallBack( IdleUpdateListBoxModel, this ) );
+    */
     }
 
 
 void CMemSpyViewThreadInfoItemList::SetListBoxModelL()
-    {
-    CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-    listbox->Model()->SetItemTextArray( &iThread.InfoContainerL() );
+    {	
+	CDesC16ArrayFlat* iModel = new (ELeave) CDesC16ArrayFlat( 32 );
+	
+	HBufC* iItem = HBufC::NewL( 32 );
+	
+	iItem = MemSpyUiUtils::FormatItem( KGeneral );
+	TPtr pItem( iItem->Des() );
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KHeap );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KStack );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KChunks );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KCodeSegs );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KOpenFiles );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KActiveObjects );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KThreadHandlers );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KProcessHandlers );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KServers );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KConnections );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KSemaphores );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KThreadReferences );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KProcessReferences );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KMutexes );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KTimers );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KDD );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KChangeNotif );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KUndertakers );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KLogicalDrivers );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();
+	
+	iItem = MemSpyUiUtils::FormatItem( KPhysicalDrivers );
+	pItem = iItem->Des();
+	iModel->AppendL( pItem );
+	pItem.Zero();		
+	
+    CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox ); 
+    listbox->Model()->SetItemTextArray( iModel );
     listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
     }
 
@@ -283,6 +385,9 @@ void CMemSpyViewThreadInfoItemList::HandleListBoxItemActionedL( TInt /*aIndex*/ 
 
 void CMemSpyViewThreadInfoItemList::HandleListBoxItemSelectedL( TInt aIndex )
     {
+	iCurrentInfoItemId = aIndex;
+	
+	/*
     if  ( iCurrentInfoItem )
         {
         CMemSpyThreadInfoItemBase* item = iCurrentInfoItem;
@@ -293,7 +398,7 @@ void CMemSpyViewThreadInfoItemList::HandleListBoxItemSelectedL( TInt aIndex )
     // Identify the type of item to display...
     iCurrentInfoItem = &iThread.InfoContainerL().Item( aIndex );
     iCurrentInfoItem->Open();
-
+*/
     // Notify observer about item selection
     ReportEventL( MMemSpyViewObserver::EEventItemSelected );
     }
@@ -309,6 +414,7 @@ TInt CMemSpyViewThreadInfoItemList::IdleUpdateListBoxModel( TAny* aSelf )
 
 void CMemSpyViewThreadInfoItemList::DoIdleUpdateListBoxModelL()
     {
+	/*
     CMemSpyThreadInfoContainer& container = iThread.InfoContainerL();
 
     // Try to maintain current item selection if at all possible.
@@ -332,5 +438,5 @@ void CMemSpyViewThreadInfoItemList::DoIdleUpdateListBoxModelL()
         }
 
     iIdleResetListboxTimer->Cancel();
+    */
     }
-

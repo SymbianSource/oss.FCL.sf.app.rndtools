@@ -16,7 +16,7 @@
  */
 
 #include "memspymainview.h"
-#include "viewManager.h"
+#include "viewmanager.h"
 
 #include <QStringListModel>
 #include <QDebug>

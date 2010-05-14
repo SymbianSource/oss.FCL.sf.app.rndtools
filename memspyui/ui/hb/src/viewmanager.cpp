@@ -25,6 +25,7 @@
 #include "memspymainview.h"
 #include "memspyprocessview.h"
 #include "memspythreadview.h"
+#include "memspythreaddetailindexview.h"
 #include "memspythreaddetailview.h"
 #include "memspykernelobjecttypeview.h"
 #include "memspykernelobjectview.h"
@@ -40,6 +41,7 @@ MemSpyView* (*sFactories[])(EngineWrapper&, ViewManager&) = {
 	&factory<MemSpyMainView>,
 	&factory<MemSpyProcessView>,
 	&factory<MemSpyThreadView>,
+	&factory<MemSpyThreadDetailIndexView>,
 	&factory<MemSpyThreadDetailView>,
 	&factory<MemSpyKernelObjectTypeView>,
 	&factory<MemSpyKernelObjectView>,

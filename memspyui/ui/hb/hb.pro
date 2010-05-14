@@ -30,6 +30,7 @@ HEADERS += inc/enginewrapper.h \
 	inc/memspymainview.h \
 	inc/memspyprocessview.h \
 	inc/memspythreadview.h \
+	inc/memspythreaddetailindexview.h \
 	inc/memspythreaddetailview.h \
 	inc/memspykernelobjecttypeview.h \
 	inc/memspykernelobjectview.h \
@@ -42,6 +43,7 @@ SOURCES += src/main.cpp \
 	src/memspymainview.cpp \
 	src/memspyprocessview.cpp \
 	src/memspythreadview.cpp \
+	src/memspythreaddetailindexview.cpp \
 	src/memspythreaddetailview.cpp \
 	src/memspykernelobjecttypeview.cpp \
 	src/memspykernelobjectview.cpp \

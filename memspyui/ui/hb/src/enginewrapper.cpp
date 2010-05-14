@@ -54,9 +54,22 @@ QList<MemSpyThread*> EngineWrapper::getThreads(ProcessId processId)
 	return result;
 }
 
+QList<MemSpyThreadInfoItem*> EngineWrapper::getThreadInfo(ThreadId threadId, ThreadInfoType type)
+{
+	QList<MemSpyThreadInfoItem*> result;
+	RArray<CMemSpyApiThreadInfoItem*> threadInfo;
+	TRAPD(error, mSession.GetThreadInfoItems(threadInfo, threadId, 
+			static_cast<TMemSpyThreadInfoItemType>(type)));
+	if (error == KErrNone)
+		for (TInt i=0; i<threadInfo.Count(); i++)
+			result.append(new MemSpyThreadInfoItem(threadInfo[i]));
+	
+	return result;
+}
+
 void EngineWrapper::setThreadPriority(ThreadId threadId, ThreadPriority priority)
 {
-	TRAPD(error, mSession.SetThreadPriorityL(threadId, priority));
+	TRAP_IGNORE(mSession.SetThreadPriorityL(threadId, priority));
 }
 
 QList<MemSpyKernelObjectType*> EngineWrapper::getKernelObjectTypes()
