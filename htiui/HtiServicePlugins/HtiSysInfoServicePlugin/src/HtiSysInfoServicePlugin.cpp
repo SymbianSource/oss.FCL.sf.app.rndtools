@@ -23,7 +23,11 @@
 #include <HtiDispatcherInterface.h>
 #include <HtiLogging.h>
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 #include <aknkeylock.h>
+#include <ScreensaverInternalPSKeys.h>
+#endif
+
 #include <AknSkinsInternalCRKeys.h>
 #include <AknsSkinUID.h>
 #include <AknsSrvClient.h>
@@ -43,7 +47,6 @@
 #include <mmtsy_names.h>
 #include <rmmcustomapi.h>
 #include <hwrmpowerstatesdkpskeys.h>
-#include <ScreensaverInternalPSKeys.h>
 #include <settingsinternalcrkeys.h>
 #include <sysutil.h>
 #include <tz.h>
@@ -80,7 +83,6 @@ _LIT8( KErrDescrDeleteTempFile, "Error deleting temp file" );
 _LIT8( KErrDescrSysUtil, "SysUtil failed" );
 _LIT8( KErrDescrSetTime, "Setting time failed" );
 _LIT8( KErrDescrDateTimeFormat, "Setting date and time formats failed" );
-_LIT8( KErrDescrScreenSaver, "Setting screen saver state failed" );
 _LIT8( KErrDescrGetNetworkModes, "Getting network modes failed" );
 _LIT8( KErrDescrSetNetworkMode, "Setting network mode failed" );
 _LIT8( KErrDescrIrActivation, "IR activation failed" );
@@ -90,11 +92,14 @@ _LIT8( KErrDescrBtOnDenied, "Turning BT on not allowed (Offline mode)" );
 _LIT8( KErrDescrBtOffDenied, "Turning BT off not allowed (active connections)" );
 _LIT8( KErrDescrBtSettings, "Bluetooth settings failed" );
 _LIT8( KErrDescrBtDeletePairings, "Deleting Bluetooth pairing(s) failed" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 _LIT8( KErrDescrKeyLock, "Key lock toggle failed" );
-_LIT8( KErrDescrInvalidTime, "Auto key guard time value too large (max 3600)" );
-_LIT8( KErrDescrAutoKeyGuardFailed, "Setting auto key guard time failed" );
+_LIT8( KErrDescrScreenSaver, "Setting screen saver state failed" );
 _LIT8( KErrDescrInvalidSSTimeout, "Invalid screen saver timeout value" );
 _LIT8( KErrDescrSSTimeoutFailed, "Setting screen saver timeout failed" );
+#endif
+_LIT8( KErrDescrInvalidTime, "Auto key guard time value too large (max 3600)" );
+_LIT8( KErrDescrAutoKeyGuardFailed, "Setting auto key guard time failed" );
 _LIT8( KErrDescrDrmDbConnect, "DRM DB connect failed." );
 _LIT8( KErrDescrDrmDbDelete,  "DRM DB delete failed." );
 _LIT8( KErrDescrBatteryLevel, "Getting battery level failed." );
@@ -176,9 +181,12 @@ CHtiSysInfoServicePlugin* CHtiSysInfoServicePlugin::NewL()
 // Constructor
 //------------------------------------------------------------------------------
 CHtiSysInfoServicePlugin::CHtiSysInfoServicePlugin():
-    iMemEater( NULL ), iReply( NULL ), iAllowSSValue( -1 ),
-    iAllowSSPropertyAttached( EFalse ), iGalleryUpdateSupported( ETrue )
+    iMemEater( NULL ), iReply( NULL ), iGalleryUpdateSupported( ETrue )
     {
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+        iAllowSSValue = -1;
+        iAllowSSPropertyAttached = EFalse;
+#endif
     }
 
 //------------------------------------------------------------------------------
@@ -199,7 +207,9 @@ CHtiSysInfoServicePlugin::~CHtiSysInfoServicePlugin()
         {
         iAllowSSSubscriber->Unsubscribe();
         }
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     iAllowSSProperty.Close();
+#endif 
     delete iAllowSSSubscriber;
     }
 
@@ -514,6 +524,7 @@ void CHtiSysInfoServicePlugin::NotifyMemoryChange( TInt aAvailableMemory )
         }
     }
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 //------------------------------------------------------------------------------
 // CHtiSysInfoServicePlugin::HandleAllowSSPropertyChange
 //------------------------------------------------------------------------------
@@ -537,7 +548,7 @@ TInt CHtiSysInfoServicePlugin::HandleAllowSSPropertyChange( TAny* aPtr )
     return err;
     }
 
-
+#endif
 /*
  * Private helper methods
  */
@@ -1458,6 +1469,9 @@ void CHtiSysInfoServicePlugin::HandleLightsCommandL( const TDesC8& aMessage )
 void CHtiSysInfoServicePlugin::HandleScreenSaverCommandL(
                                     const TDesC8& aMessage )
     {
+    HTI_LOG_FUNC_IN(
+            "CHtiSysInfoServicePlugin::HandleScreenSaverCommandL" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 ) 
     if ( aMessage.Length() != 1 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1522,6 +1536,12 @@ void CHtiSysInfoServicePlugin::HandleScreenSaverCommandL(
 
     iReply = HBufC8::NewL( 1 );
     iReply->Des().Append( 0 );
+#else
+    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+            KErrDescrNotSupported, KSysInfoServiceUid);
+#endif 
+    HTI_LOG_FUNC_OUT(
+                "CHtiSysInfoServicePlugin::HandleScreenSaverCommandL" );
     }
 
 //------------------------------------------------------------------------------
@@ -1532,6 +1552,7 @@ void CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL(
     {
     HTI_LOG_FUNC_IN(
             "CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL" );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     if ( aMessage.Length() != 2 )
         {
         iDispatcher->DispatchOutgoingErrorMessage(
@@ -1566,6 +1587,10 @@ void CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL(
         }
 
     delete persRep;
+#else
+    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+            KErrDescrNotSupported, KSysInfoServiceUid);
+#endif 
     HTI_LOG_FUNC_OUT(
         "CHtiSysInfoServicePlugin::HandleScreenSaverTimeoutCommandL" );
     }
@@ -2145,7 +2170,7 @@ void CHtiSysInfoServicePlugin::HandleBtDeletePairingsL( const TDesC8& aMessage )
 void CHtiSysInfoServicePlugin::HandleKeyLockToggleL( const TDesC8& aMessage )
     {
     HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::HandleKeyLockToggleL" );
-
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 ) 
     if ( aMessage.Length() != 3 )
         {
         iDispatcher->DispatchOutgoingErrorMessage( KErrArgument,
@@ -2212,7 +2237,10 @@ void CHtiSysInfoServicePlugin::HandleKeyLockToggleL( const TDesC8& aMessage )
         }
 
     keyLock.Close();
-
+#else
+    iDispatcher->DispatchOutgoingErrorMessage(KErrArgument,
+            KErrDescrNotSupported, KSysInfoServiceUid);
+#endif    
     HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleKeyLockToggleL" );
     }
 

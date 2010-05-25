@@ -35,13 +35,13 @@ public: //Implement IStfQtUIController.
     QList<QString> GetCaseListByModule(const QString& moduleName);
     CSTFCase GetCase(const QString& moduleName, const int index);
     void RunCases(const QList<CSTFCase>& caseList, const TSTFCaseRunningType& type);
-    void AddCaseToSet(const QList<CSTFCase>& aCase, const QString& setName);
+    bool AddCaseToSet(const QList<CSTFCase>& aCase, const QString& setName);
     
     //for set
     QList<QString> GetSetList();
     QList<QString> GetCaseListBySet(const QString& setName);
-    void CreateSet(const QString& setName);
-    void DeleteSet(const QString& setName);
+    bool CreateSet(QString& setName);
+    bool DeleteSet(const QString& setName);
     void RunSets(const QString& setName, const TSTFCaseRunningType& type);
     
     //for Started
@@ -49,6 +49,7 @@ public: //Implement IStfQtUIController.
     void ResumeCase();
     void AbortCase();
     bool ShowOutput();
+    CSTFCase GetRunningCase(int index);
     void SetShowOutput(bool isShow);
     
     //for staticstic

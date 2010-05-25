@@ -21,9 +21,9 @@
 #include <hbmenu.h>
 #include <hbaction.h>
 #include <hblabel.h>
-#include <HbInputDialog.h>
+#include <hbinputdialog.h>
 #include <qgraphicslinearlayout.h>
-#include <HbListDialog.h>
+//#include <HbListDialog.h>
 #include <hbmessagebox.h>
 
 
@@ -264,43 +264,43 @@ void MainView::stopHti()
 void MainView::enableComm()
 {
     //Get current selection
-	QString currentComm;
-	mEngineWrapper.getSelectedComm(currentComm);
-	int curSelection = mPluginList.indexOf(currentComm, 0);
-	
-	QStringList selection;
-	bool ok = false;
-	selection = HbListDialog::getStringItems("Select Comm", mPluginList, curSelection, &ok, HbAbstractItemView::SingleSelection);
-		
-	if(ok){
-			if(selection[0] == QString("Bt serial comm")){
-				enableBTComm();
-			}
-			else if(selection[0] == QString("IP comm")){
-				enableIPComm();
-			}
-			else if(selection[0] == QString("SERIAL comm")){
-				enableSerialComm();
-			}
-			else{
-				//All other comm plugins
-				mEngineWrapper.enableOtherComm(selection[0]);
-			}	
-		}
+//	QString currentComm;
+//	mEngineWrapper.getSelectedComm(currentComm);
+//	int curSelection = mPluginList.indexOf(currentComm, 0);
+//	
+//	QStringList selection;
+//	bool ok = false;
+//	selection = HbListDialog::getStringItems("Select Comm", mPluginList, curSelection, &ok, HbAbstractItemView::SingleSelection);
+//		
+//	if(ok){
+//			if(selection[0] == QString("Bt serial comm")){
+//				enableBTComm();
+//			}
+//			else if(selection[0] == QString("IP comm")){
+//				enableIPComm();
+//			}
+//			else if(selection[0] == QString("SERIAL comm")){
+//				enableSerialComm();
+//			}
+//			else{
+//				//All other comm plugins
+//				mEngineWrapper.enableOtherComm(selection[0]);
+//			}	
+//		}
 }
 
 // ---------------------------------------------------------------------------
 void MainView::enableSerialComm()
 {
-	bool ok = false;
-    QString str = HbInputDialog::getText(
-					"Set Comm Port number ",
-					"",
-					&ok);
-    
-    if(ok){
-    	mEngineWrapper.enableSerial(str);
-    }
+//	bool ok = false;
+//    QString str = HbInputDialog::getText(
+//					"Set Comm Port number ",
+//					"",
+//					&ok);
+//    
+//    if(ok){
+//    	mEngineWrapper.enableSerial(str);
+//    }
 }
 
 
@@ -308,109 +308,109 @@ void MainView::enableSerialComm()
 void MainView::enableIPComm()
 {
     // Get IAPs list
-    QStringList iapsList;
-    mEngineWrapper.listIAPs(iapsList); 
-    if(iapsList.count() == 0)
-    {
-        HbMessageBox msg("No IAPs for selection!", HbMessageBox::MessageTypeWarning);
-        msg.exec();
-        return;
-    }
-    
-    // Get current selection
-    QString curIapName;
-    QString param = "IAPName";
-    mEngineWrapper.getIPCfgParam(param, curIapName);
-    int curSelction = iapsList.indexOf(curIapName, 0);
-    
-    QString iap;
-	QStringList selection;
-	bool ok = false;
-	selection = HbListDialog::getStringItems("Select IAP:", iapsList, curSelction, &ok, HbAbstractItemView::SingleSelection);
-	
-	if(ok)
-	{
-        iap = selection[0];
-	}
-	else
-	{
-        return;
-	}
-	
-	QStringList srcList;
-	srcList <<"Listen" <<"Connect";
-	
-	selection = HbListDialog::getStringItems("Select IP Comm", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-	
-	if(ok){
-		if(selection[0] == srcList[0]){
-			QString port = HbInputDialog::getText(
-								"Local port",
-								"",
-								&ok);	
-		
-			if(ok){
-				mEngineWrapper.ipListen(port, iap);
-			}
-			
-		}
-		else{
-			QString host = HbInputDialog::getText(
-								"Remote Host",
-								"",
-								&ok);	
-					
-			if(ok){
-				QString port = HbInputDialog::getText(
-												"Remote port",
-												"",
-												&ok);	
-			
-				if(ok){
-					mEngineWrapper.ipConnect(host, port, iap);
-				}
-			}
-		}
-			
-	}
+//    QStringList iapsList;
+//    mEngineWrapper.listIAPs(iapsList); 
+//    if(iapsList.count() == 0)
+//    {
+//        HbMessageBox msg("No IAPs for selection!", HbMessageBox::MessageTypeWarning);
+//        msg.exec();
+//        return;
+//    }
+//    
+//    // Get current selection
+//    QString curIapName;
+//    QString param = "IAPName";
+//    mEngineWrapper.getIPCfgParam(param, curIapName);
+//    int curSelction = iapsList.indexOf(curIapName, 0);
+//    
+//    QString iap;
+//	QStringList selection;
+//	bool ok = false;
+//	selection = HbListDialog::getStringItems("Select IAP:", iapsList, curSelction, &ok, HbAbstractItemView::SingleSelection);
+//	
+//	if(ok)
+//	{
+//        iap = selection[0];
+//	}
+//	else
+//	{
+//        return;
+//	}
+//	
+//	QStringList srcList;
+//	srcList <<"Listen" <<"Connect";
+//	
+//	selection = HbListDialog::getStringItems("Select IP Comm", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
+//	
+//	if(ok){
+//		if(selection[0] == srcList[0]){
+//			QString port = HbInputDialog::getText(
+//								"Local port",
+//								"",
+//								&ok);	
+//		
+//			if(ok){
+//				mEngineWrapper.ipListen(port, iap);
+//			}
+//			
+//		}
+//		else{
+//			QString host = HbInputDialog::getText(
+//								"Remote Host",
+//								"",
+//								&ok);	
+//					
+//			if(ok){
+//				QString port = HbInputDialog::getText(
+//												"Remote port",
+//												"",
+//												&ok);	
+//			
+//				if(ok){
+//					mEngineWrapper.ipConnect(host, port, iap);
+//				}
+//			}
+//		}
+//			
+//	}
 }
 
 // ---------------------------------------------------------------------------
 void MainView::enableBTComm()
 {
-	QStringList srcList;
-	QStringList selection;
-	 
-	srcList <<"BT address" <<"BT name" <<"Search when starting" ;
-	
-	bool ok = false;
-	selection = HbListDialog::getStringItems("", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-	
-	if(ok){
-		if(selection[0] == srcList[0]){
-			QString address = HbInputDialog::getText(
-						"BT address",
-						"",
-						&ok);
-		
-			if(ok){
-				mEngineWrapper.enableBtByAddress(address);	
-			}
-		}
-		else if(selection[0] == srcList[1]){
-			QString name = HbInputDialog::getText(
-								"BT name",
-								"",
-								&ok);
-				
-					if(ok){
-						mEngineWrapper.enableBtByName(name);	
-					}
-		}
-		else if(selection[0] == srcList[2]){
-			mEngineWrapper.btSearch();
-		}
-	}
+//	QStringList srcList;
+//	QStringList selection;
+//	 
+//	srcList <<"BT address" <<"BT name" <<"Search when starting" ;
+//	
+//	bool ok = false;
+//	selection = HbListDialog::getStringItems("", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
+//	
+//	if(ok){
+//		if(selection[0] == srcList[0]){
+//			QString address = HbInputDialog::getText(
+//						"BT address",
+//						"",
+//						&ok);
+//		
+//			if(ok){
+//				mEngineWrapper.enableBtByAddress(address);	
+//			}
+//		}
+//		else if(selection[0] == srcList[1]){
+//			QString name = HbInputDialog::getText(
+//								"BT name",
+//								"",
+//								&ok);
+//				
+//					if(ok){
+//						mEngineWrapper.enableBtByName(name);	
+//					}
+//		}
+//		else if(selection[0] == srcList[2]){
+//			mEngineWrapper.btSearch();
+//		}
+//	}
 }
 
 
@@ -418,40 +418,40 @@ void MainView::enableBTComm()
 void MainView::setPriority()
 {
     // Get current priority
-    bool ok = false;
-    QString curPriority;
-    QString param = "Priority";
-    mEngineWrapper.getHtiCfgParam(param, curPriority);
-    int curSelection = curPriority.toInt(&ok);
-    if(ok){
-        curSelection--;
-    }
-    else{
-    curSelection = 2;
-    }
-    
-	QStringList srcList;
-	QStringList selection;
-	 
-	srcList <<"Backgroung" <<"Foregound" <<"High" << "Absolute High";
-	
-	
-	selection = HbListDialog::getStringItems("Select Hti Priority", srcList, curSelection, &ok, HbAbstractItemView::SingleSelection);
-	
-	if(ok){
-		if(selection[0] == srcList[0]){
-			mEngineWrapper.setPriorityBackground();
-		}
-		else if(selection[0] == srcList[1]){
-					mEngineWrapper.setPriorityForeground();
-		}
-		else if(selection[0] == srcList[2]){
-			mEngineWrapper.setPriorityHigh();
-		}
-		else{
-			mEngineWrapper.setPriorityAbsoluteHigh();
-		}	
-	}
+//    bool ok = false;
+//    QString curPriority;
+//    QString param = "Priority";
+//    mEngineWrapper.getHtiCfgParam(param, curPriority);
+//    int curSelection = curPriority.toInt(&ok);
+//    if(ok){
+//        curSelection--;
+//    }
+//    else{
+//    curSelection = 2;
+//    }
+//    
+//	QStringList srcList;
+//	QStringList selection;
+//	 
+//	srcList <<"Backgroung" <<"Foregound" <<"High" << "Absolute High";
+//	
+//	
+//	selection = HbListDialog::getStringItems("Select Hti Priority", srcList, curSelection, &ok, HbAbstractItemView::SingleSelection);
+//	
+//	if(ok){
+//		if(selection[0] == srcList[0]){
+//			mEngineWrapper.setPriorityBackground();
+//		}
+//		else if(selection[0] == srcList[1]){
+//					mEngineWrapper.setPriorityForeground();
+//		}
+//		else if(selection[0] == srcList[2]){
+//			mEngineWrapper.setPriorityHigh();
+//		}
+//		else{
+//			mEngineWrapper.setPriorityAbsoluteHigh();
+//		}	
+//	}
 }
 
 // ---------------------------------------------------------------------------
@@ -493,62 +493,62 @@ void MainView::disableConsole()
 // ---------------------------------------------------------------------------
 void MainView::showParamList()
 {
-	QStringList srcList;
-	QStringList selection;
-	QString value;
-	QString name;
-	QString cfgSelection;
-	QString paramSelection;
-	QString cfgHti = "Hti.cfg";
-	QString cfgBtComm ="HtiBtComm.cfg";
-	QString cfgSerialComm = "HtiSerialComm.cfg";
-	QString cfgIPComm = "HtiIPComm.cfg";
-	 
-	srcList <<cfgHti <<cfgBtComm <<cfgSerialComm << cfgIPComm;
-	
-	bool ok = false;
-	selection = HbListDialog::getStringItems("Select cfg file to modify", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-	
-	if(ok){
-        cfgSelection = selection[0];
-        srcList.clear();
-	    if(cfgSelection == cfgHti){
-	    srcList <<"CommPlugin" <<"MaxMsgSize" <<"MaxQueueSize" <<"MaxHeapSize"<<"Priority"
-	            <<"ShowConsole"<<"MaxWaitTime"<<"StartUpDelay"<<"EnableHtiWatchDog"
-	            <<"EnableHtiAutoStart"<<"ShowErrorDialogs"<<"ReconnectDelay";
-	    }
-	    else if(cfgSelection == cfgBtComm){
-	        srcList <<"BtDeviceName" <<"BtDeviceName";
-	    }
-	    else if(cfgSelection == cfgSerialComm){
-            srcList <<"CommPort" <<"DataRate"<<"Parity"<<"DataBits"<<"StopBits"<<"SendDelay"<<"Handshake";
-	    }
-	    else{
-	    srcList <<"IAPName"<<"LocalPort"<<"RemoteHost"<<"RemotePort"<<"ConnectTimeout";
-	    }
-	    
-	    selection = HbListDialog::getStringItems("Select a parameter name in" + cfgSelection, srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-	}
-    
-    if(ok){
-        name = selection[0];
-        value = HbInputDialog::getText("Value for paramater " + name, "", &ok);
-    }
-    
-    if(ok){
-       if(cfgSelection == cfgHti){
-            mEngineWrapper.setHtiCfgParam(name, value);
-        }
-        else if(cfgSelection == cfgBtComm){
-            mEngineWrapper.setBtCfgParam(name, value);
-        }
-        else if(cfgSelection == cfgSerialComm){
-            mEngineWrapper.setSerialCfgParam(name, value);
-        }
-        else{
-            mEngineWrapper.setIPCfgParam(name, value);
-        }   
-    }
+//	QStringList srcList;
+//	QStringList selection;
+//	QString value;
+//	QString name;
+//	QString cfgSelection;
+//	QString paramSelection;
+//	QString cfgHti = "Hti.cfg";
+//	QString cfgBtComm ="HtiBtComm.cfg";
+//	QString cfgSerialComm = "HtiSerialComm.cfg";
+//	QString cfgIPComm = "HtiIPComm.cfg";
+//	 
+//	srcList <<cfgHti <<cfgBtComm <<cfgSerialComm << cfgIPComm;
+//	
+//	bool ok = false;
+//	selection = HbListDialog::getStringItems("Select cfg file to modify", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
+//	
+//	if(ok){
+//        cfgSelection = selection[0];
+//        srcList.clear();
+//	    if(cfgSelection == cfgHti){
+//	    srcList <<"CommPlugin" <<"MaxMsgSize" <<"MaxQueueSize" <<"MaxHeapSize"<<"Priority"
+//	            <<"ShowConsole"<<"MaxWaitTime"<<"StartUpDelay"<<"EnableHtiWatchDog"
+//	            <<"EnableHtiAutoStart"<<"ShowErrorDialogs"<<"ReconnectDelay";
+//	    }
+//	    else if(cfgSelection == cfgBtComm){
+//	        srcList <<"BtDeviceName" <<"BtDeviceName";
+//	    }
+//	    else if(cfgSelection == cfgSerialComm){
+//            srcList <<"CommPort" <<"DataRate"<<"Parity"<<"DataBits"<<"StopBits"<<"SendDelay"<<"Handshake";
+//	    }
+//	    else{
+//	    srcList <<"IAPName"<<"LocalPort"<<"RemoteHost"<<"RemotePort"<<"ConnectTimeout";
+//	    }
+//	    
+//	    selection = HbListDialog::getStringItems("Select a parameter name in" + cfgSelection, srcList, 0, &ok, HbAbstractItemView::SingleSelection);
+//	}
+//    
+//    if(ok){
+//        name = selection[0];
+//        value = HbInputDialog::getText("Value for paramater " + name, "", &ok);
+//    }
+//    
+//    if(ok){
+//       if(cfgSelection == cfgHti){
+//            mEngineWrapper.setHtiCfgParam(name, value);
+//        }
+//        else if(cfgSelection == cfgBtComm){
+//            mEngineWrapper.setBtCfgParam(name, value);
+//        }
+//        else if(cfgSelection == cfgSerialComm){
+//            mEngineWrapper.setSerialCfgParam(name, value);
+//        }
+//        else{
+//            mEngineWrapper.setIPCfgParam(name, value);
+//        }   
+//    }
 }
 
 

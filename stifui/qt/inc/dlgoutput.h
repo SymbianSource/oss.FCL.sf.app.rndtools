@@ -51,6 +51,7 @@ private://implement IStfEventListener
 private slots:
     void on_btnPause_clicked();
     void on_btnAbort_clicked();
+    void on_btnClose_clicked();
     
     
 private:
@@ -58,11 +59,8 @@ private:
     QTabWidget* tabMain;
     QPushButton* btnPause;
     QPushButton* btnAbort;
+    QPushButton* btnClose;
     QHash<QString , QPlainTextEdit*> tabList;
-    
-private:
-    void on_btnClose_clicked();
-    
     
 };
 

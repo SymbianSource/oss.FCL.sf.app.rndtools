@@ -1961,7 +1961,7 @@ void CFileBrowserFileUtils::SetAttributesL()
                 clearAttMask |= KEntryAttSystem;
             }
         
-        iModel->FileListContainer()->SetScreenLayoutL(EDisplayModeNormal);
+        iModel->FileListContainer()->SetScreenLayoutL(EDisplayModeFullScreen);
         iModel->FileListContainer()->SetNaviPaneTextL(naviText);
 
         CFileBrowserAttributeEditorDlg* dlg = CFileBrowserAttributeEditorDlg::NewL(setAttMask, clearAttMask, recurse);
@@ -2003,7 +2003,7 @@ void CFileBrowserFileUtils::SetAttributesL()
 
 void CFileBrowserFileUtils::SearchL()
     {
-    iModel->FileListContainer()->SetScreenLayoutL(EDisplayModeNormal);
+	iModel->FileListContainer()->SetScreenLayoutL(EDisplayModeFullScreen);
     iModel->FileListContainer()->SetNaviPaneTextL(KNullDesC);
     
     iSearchAttributes.iSearchDir = iCurrentPath;

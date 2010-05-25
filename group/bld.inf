@@ -28,3 +28,4 @@
 #include "../stifui/avkon/group/bld.inf"
 #include "../memspyui/group/bld.inf"
 #include "../htiui/group/bld.inf"
+#include "../piprofilerui/group/bld.inf"
