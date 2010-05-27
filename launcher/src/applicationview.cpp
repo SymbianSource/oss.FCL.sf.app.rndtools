@@ -26,7 +26,7 @@
 #include "launchermainwindow.h"
 #include "enginewrapper.h"
 #include "notifications.h"
-#include "commonactions.h"
+#include "commonActions.h"
 #include "outputview.h"
 
 

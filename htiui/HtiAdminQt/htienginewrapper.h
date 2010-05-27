@@ -20,7 +20,7 @@
 
 #include <e32cmn.h>
 #include <qobject.h>
-#include <QStringList.h>
+#include <qstringlist.h>
 
 class CHtiAdminEngine;
 class QString;

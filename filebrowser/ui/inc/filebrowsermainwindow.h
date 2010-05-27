@@ -25,6 +25,7 @@ class EngineWrapper;
 class FileBrowserView;
 class SettingsView;
 class EditorView;
+class SearchView;
 
 class FileBrowserMainWindow : public HbMainWindow
     {
@@ -40,12 +41,14 @@ private slots:
     void openFileBrowserView();
     void openSettingsView();
     void openEditorView(const QString &, bool);
+    void openSearchView(const QString &);
     
 private:
     EngineWrapper* mEngineWrapper;
     FileBrowserView* mFileBrowserView;
     SettingsView* mSettingsView;
     EditorView* mEditorView;
+    SearchView* mSearchView;
     };
 
 #endif /* FILEBROWSERMAINWINDOW_H_ */

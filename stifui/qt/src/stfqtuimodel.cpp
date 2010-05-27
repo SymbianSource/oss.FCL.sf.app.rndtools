@@ -65,6 +65,11 @@ void StfQtUIModel::RemoveRunningCase(const CStartedTestCase* startedCase)
     FireOnRunningCaseChangedEvent();
     }
 
+CSTFCase StfQtUIModel::GetRunningCase(const CStartedTestCase* startedCase)
+    {
+    return runningCaseList.value(startedCase);
+    }
+
 void StfQtUIModel::AddCaseByStatus(const TSTFCaseStatusType& type, const CSTFCase& aCase)
     {
     switch (type)

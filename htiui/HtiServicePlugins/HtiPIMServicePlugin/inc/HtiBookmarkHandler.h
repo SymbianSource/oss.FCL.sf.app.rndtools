@@ -21,8 +21,8 @@
 
 // INCLUDES
 #include <e32std.h>
-#include <favouriteslimits.h>
-#include <favouritessession.h>
+#include <FavouritesLimits.h>
+#include <FavouritesSession.h>
 #include <HtiServicePluginInterface.h>
 
 // CONSTANTS

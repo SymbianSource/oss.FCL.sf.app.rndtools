@@ -16,12 +16,13 @@
 */
 
 
-
-
 #ifndef __CREATOR_MODULEBASE_H__
 #define __CREATOR_MODULEBASE_H__
 
 #include <e32base.h>
+
+#include "engine.h"
+#include "creator_traces.h"
 
 // Dictionary uids for each Creator module.
 // Dictionaries are for storing item identifiers created by Creator.
@@ -46,29 +47,96 @@ class CCreatorEngine;
 class MCreatorModuleBaseParameters;
 class CCommandParser;
 
+_LIT(KSavingText, "Saving");
+
 class MCreatorModuleBase
     {
 public:
 
 private:
     // constructs the module, add "iEngine = aEngine" and other construction stuff to the body
-    virtual void ConstructL(CCreatorEngine* aEngine) = 0;
+    virtual void ConstructL( CCreatorEngine* aEngine ) = 0;
 
 public:
     // this one is called when user select some features directly from menu, not running a script
     // should call CreateRandomData() function
     // returns ETrue when success, EFalse when user has cancelled
-    virtual TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries) = 0;
+    virtual TBool AskDataFromUserL( TInt aCommand ) = 0;
     virtual void DeleteAllL() = 0;
     virtual void DeleteAllCreatedByCreatorL() = 0;
-
-public:
-    CCreatorEngine* iEngine;
-
-private:
-
     };
 
+
+class CCreatorModuleBase : public CBase, public MCreatorModuleBase, public MUIObserver
+    {
+
+public:
+    enum TCreatorModuleStatus
+        {
+        ECreatorModuleDelete = 0, 
+        ECreatorModuleStart
+        };
+    
+    CCreatorModuleBase(){ }
+    
+    virtual TBool AskDataFromUserL(TInt aCommand)
+        {
+        iCommand = aCommand;
+        return EFalse;// will finish user interaction and engine will shutdown modules
+        }
+    
+    virtual void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
+        {
+        LOGSTRING("Creator: CCreatorModuleBase::QueryDialogClosedL");
+        
+        if( aPositiveAction == EFalse )
+            {
+            iEngine->ShutDownEnginesL();
+            return;
+            }
+        
+        TBool finished(EFalse);
+        TBool retval(ETrue);
+        switch(aUserData)
+            {
+            case ECreatorModuleDelete:
+                iEntriesToBeCreated = 1;
+                finished = ETrue;
+                break;
+            case ECreatorModuleStart:
+                finished = ETrue;
+                break;
+            default:
+                //some error
+                retval = EFalse;
+                break;
+            }
+        if( retval == EFalse )
+            {
+            iEngine->ShutDownEnginesL();
+            }
+        else if( finished )
+            {
+            // add this command to command array
+            iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
+            // started exucuting commands
+            iEngine->ExecuteFirstCommandL( KSavingText );
+            }
+        }
+
+protected:
+    // constructs the module, add "iEngine = aEngine" and other construction stuff to the body
+    virtual void ConstructL(CCreatorEngine* aEngine)
+        {
+        iEngine = aEngine;
+        };
+    
+protected:
+    CCreatorEngine* iEngine;
+    TInt iCommand;
+    TInt iEntriesToBeCreated;
+    TInt iDummy;
+    };
 
 class MCreatorModuleBaseParameters
     {

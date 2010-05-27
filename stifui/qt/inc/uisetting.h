@@ -18,6 +18,10 @@
 #define UISETTING_H_
 #include <QHash>
 
+const QString KShowOutput = "showoutput";
+const QString KStyleSheet = "StyleSheet";
+
+
 class UiSetting
     {
 public:
@@ -32,6 +36,7 @@ private:
     bool load();
     bool save();
     void loadDefault();
+    QString getDefaultValue(const QString& item);
     
 private:
     QHash<QString, QString> settingList;

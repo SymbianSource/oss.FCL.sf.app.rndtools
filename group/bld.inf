@@ -25,6 +25,6 @@
 //Orbit version added #include "../loadgen/group/bld.inf"
 //Orbit version added #include "../perfmon/group/bld.inf"
 //Orbit version added #include "../screengrabber/group/bld.inf"
-#include "../stifui/avkon/group/bld.inf"
+//Orbit version added #include "../stifui/avkon/group/bld.inf"
 //Orbit version added #include "../memspyui/group/bld.inf"
 //Orbit version added #include "../htiui/group/bld.inf"

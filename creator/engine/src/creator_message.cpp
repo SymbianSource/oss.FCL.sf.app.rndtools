@@ -123,187 +123,129 @@ CCreatorMessages::~CCreatorMessages()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorMessages::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+void CCreatorMessages::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
+    {
+    LOGSTRING("Creator: CCreatorMessages::QueryDialogClosedL");  
+    
+    if( aPositiveAction == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        return;
+        }
+    
+    TBool finished(EFalse);
+    TBool retval(ETrue);
+    switch(aUserData)
+        {
+        case ECreatorMessagesDelete:
+            iEntriesToBeCreated = 1;
+            finished = ETrue;
+            break;
+        case ECreatorMessagesStart:
+            // message type query
+            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message type"), R_MESSAGE_TYPE_QUERY, (TInt*) &iMessageType, this, ECreatorMessagesMessageType);
+            break;
+        case ECreatorMessagesMessageType:
+            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Folder type"), R_FOLDER_TYPE_QUERY, (TInt*) &iFolderType, this, ECreatorMessagesFolderType);
+            break;
+        case ECreatorMessagesFolderType:
+            // query create as unread
+            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message status"), R_UNREAD_QUERY, (TInt*)&iCreateAsUnread, this, ECreatorMessagesMessageStatus);
+            break;
+        case ECreatorMessagesMessageStatus:
+            if( iMessageType == ESMS || iMessageType == EMMS || iMessageType == EEmail )
+                {
+                iDefinedMessageLength = 100;
+                retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iDefinedMessageLength, _L("Amount of characters in message body?"), ETrue, 
+                    this, ECreatorMessagesCharsInBody
+                    );
+                break;
+                }
+            else
+                {
+                iDefinedMessageLength = 0;
+                // goto query attachments ... :-) DO NOT break;
+                }
+        case ECreatorMessagesCharsInBody:
+            // query attachments
+            iAttachments->Reset();
+            if( iMessageType == EMMS || iMessageType == EEmail)
+                {
+                retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_MULTI_SELECTION_QUERY, 
+                    iAttachments, this, ECreatorMessagesAttachment
+                    );
+                }
+            else if( iMessageType == EAMS )
+                {
+                iAttachments->AppendL( TInt(0) );
+                retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_AMS_ATTACHMENT_SINGLE_SELECTION_QUERY, 
+                    &iAttachments->At(0), this, ECreatorMessagesAttachment
+                    );
+                }
+            else if( iMessageType == EIrMessage || iMessageType == EBTMessage )
+                {
+                iAttachments->AppendL( TInt(0) );
+                retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_SINGLE_SELECTION_QUERY,
+                    &iAttachments->At(0), this, ECreatorMessagesAttachment
+                    );
+                }
+            else
+                {
+                finished = ETrue;
+                }
+            break;
+        case ECreatorMessagesAttachment:
+            finished = ETrue;
+            if(iMessageType== EMMS || iMessageType == EEmail)
+                {
+                // "none" is selected
+                if (iAttachments->At(0) == 0)
+                    {
+                    iAttachments->Reset();
+                    }
+                else  // otherwise fix indexes
+                    {
+                    for (TInt i=0; i<iAttachments->Count(); i++)
+                        iAttachments->At(i)--;  // decrease value by one 
+
+                    }
+                }
+            break;
+        default:
+            //some error
+            retval = EFalse;
+            break;
+        }
+    if( retval == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        }
+    else if( finished )
+        {
+        // add this command to command array
+        iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
+        // started exucuting commands
+        iEngine->ExecuteFirstCommandL( KSavingText );
+        }
+    }
+//----------------------------------------------------------------------------
+
+TBool CCreatorMessages::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorMessages::AskDataFromUserL");
 
+    CCreatorModuleBase::AskDataFromUserL(aCommand);
+    
     if ( aCommand == ECmdDeleteMessages )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages?"), this, ECreatorMessagesDelete );
         }
     else if ( aCommand ==  ECmdDeleteCreatorMessages )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages created with Creator?"), this, ECreatorMessagesDelete  );
         }
 
-    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?")))
-        {
-        
-        // message type query
-        if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message type"), R_MESSAGE_TYPE_QUERY, (TInt&) iMessageType))
-            {
-			if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Folder type"), R_FOLDER_TYPE_QUERY, (TInt&) iFolderType))
-                {
-                /*
-                if (iFolderType == EMailbox)
-                    {
-                    // array to hold mailbox names
-                    CDesCArray* names = new (ELeave) CDesCArrayFlat(16);
-                    CleanupStack::PushL(names);                    
-                    
-                    CMsvSession* session = CMsvSession::OpenSyncL(*this);
-                    CleanupStack::PushL(session);
-    
-                    // generate list of mailboxes
-                    CMsvEntrySelection* entrySelection = MsvUiServiceUtilities::GetListOfAccountsWithMTML(*session, KUidMsgTypeSMTP, ETrue);
-                    CleanupStack::PushL(entrySelection);
-
-                    TBool doReturn(EFalse);
-                    
-                    if (entrySelection->Count() == 0)
-                        {
-                        CAknInformationNote* note = new(ELeave) CAknInformationNote;
-                        note->ExecuteLD(_L("No mailboxes found"));
-
-                        doReturn = ETrue;
-                        }
-                    else
-                        {
-                        // get mailbox names
-                        for (TInt i=0; i<entrySelection->Count(); i++)
-                            {
-                            CMsvEntry* centry = session->GetEntryL(entrySelection->At(i));
-                            CleanupStack::PushL(centry);
-
-                            TMsvEntry tentry = centry->Entry();
-                            names->AppendL(tentry.iDetails);
-                            CleanupStack::PopAndDestroy(); //centry
-                            }
-                        
-                        // show query
-                        TInt index(0);
-                        CAknListQueryDialog* dlg = new(ELeave) CAknListQueryDialog(&index);
-                        dlg->PrepareLC(R_MAILBOX_SELECTION_QUERY);
-                        dlg->SetItemTextArray(names);
-                        dlg->SetOwnershipType(ELbmDoesNotOwnItemArray);
-
-                        if(dlg->RunLD())
-                            {
-                            iUserSelectedMailbox = entrySelection->At(index);
-
-                            doReturn = EFalse;
-                            }
-                        else
-                            {
-                            doReturn = ETrue;
-                            }    
-                        
-                        }
-                    
-                    CleanupStack::PopAndDestroy(3); // names, session, entrySelection
-                    
-                    if (doReturn)
-                        return EFalse;                    
-                    }
-                */
-
-                // query create as unread
-                if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message status"), R_UNREAD_QUERY, (TInt&)iCreateAsUnread))
-                    {                
-                    // query number of characters in msg body
-                    switch (iMessageType)
-                        {
-                        case ESMS:
-                        case EMMS:
-                        case EEmail:
-                            {
-                            iDefinedMessageLength = 100;
-                            if (iEngine->GetEngineWrapper()->EntriesQueryDialog(iDefinedMessageLength, _L("Amount of characters in message body?"), ETrue))
-                                {
-                                ;
-                                }
-                            else
-                                return EFalse;
-
-                            break;
-                            }
-                        case EAMS:
-                        	{
-                        	iDefinedMessageLength = 0;
-                        	break;
-                        	}
-                        default: break;
-                        }
-
-                    // query attachments
-                    iAttachments->Reset();
-              
-                    switch (iMessageType)
-                        {
-                        case EMMS:
-                        case EEmail:
-                            {
-                            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_MULTI_SELECTION_QUERY, iAttachments))
-                                {
-                                // "none" is selected
-                                if (iAttachments->At(0) == 0)
-                                    iAttachments->Reset();
-                                else  // otherwise fix indexes
-                                    {
-                                    for (TInt i=0; i<iAttachments->Count(); i++)
-                                        iAttachments->At(i)--;  // decrease value by one 
-
-                                    }
-                                }
-                            else
-                                return EFalse;
-                            
-                            break;
-                            }
-                        case EAMS:
-                        	{
-                            iAttachments->AppendL( TInt(0) );
-                            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_AMS_ATTACHMENT_SINGLE_SELECTION_QUERY, iAttachments->At(0)))
-                                {
-                                ;
-                                }
-                            else
-                                return EFalse;                        
-
-                            break;
-                        	}
-                            
-                        case EIrMessage:
-                        case EBTMessage:
-                            {
-                            iAttachments->AppendL( TInt(0) );
-                            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_SINGLE_SELECTION_QUERY, iAttachments->At(0)))
-                                {
-                                ;
-                                }
-                            else
-                                return EFalse;                        
-
-                            break;
-                            }
-                        default: break;
-                        }
-                    
-                    return ETrue;  // all queries accepted
-
-                    }
-                else
-                    return EFalse;
-                }
-            else
-                return EFalse;
-            }
-        else
-            return EFalse;
-			
-        }
-    // else
-        return EFalse;
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog( &iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorMessagesStart );
     }
 
 //----------------------------------------------------------------------------

@@ -20,7 +20,7 @@
 #include <HbMenu>
 #include <HbToolBar>
 #include <HbAction>
-#include <HbMessagebox>
+#include <HbMessageBox>
 #include <HbLabel>
 
 #include "mainview.h"

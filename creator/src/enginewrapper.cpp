@@ -18,8 +18,7 @@
 
 #include <hbprogressdialog.h>
 #include <hbmessagebox.h>
-
-#include <hbpopup.h>
+#include <hblabel.h>
 
 #include <QString>
 #include <QDate>
@@ -106,7 +105,7 @@ void EngineWrapper::ShowErrorMessage(const TDesC& aErrorMessage)
 
 // ---------------------------------------------------------------------------
 
-void EngineWrapper::ShowNote(const TDesC& aNoteMessage, TInt aResourceId)
+void EngineWrapper::ShowNote(const TDesC& aNoteMessage, TInt /*aResourceId*/)
 {
     QString note((QChar*)aNoteMessage.Ptr(),aNoteMessage.Length());
     Notifications::showGlobalNote(note, HbMessageBox::MessageTypeInformation, HbPopup::ConfirmationNoteTimeout);
@@ -132,40 +131,59 @@ void EngineWrapper::IncrementProgressbarValue()
 
 void EngineWrapper::CloseProgressbar()
 {
-    delete iProgressDialog;
-    iProgressDialog = 0;
+    if(iProgressDialog){
+        delete iProgressDialog;
+        iProgressDialog = 0;
+    }
 }
 
 // ---------------------------------------------------------------------------
 
-TBool EngineWrapper::EntriesQueryDialog(TInt& aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero)
+TBool EngineWrapper::EntriesQueryDialog(TInt* aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero, MUIObserver* observer, int userData)
     {
 	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
-    bool err = Notifications::entriesQueryDialog(aNumberOfEntries, text, aAcceptsZero);
-	return err;
+	TBool success(EFalse);
+    try{
+        CreatorInputDialog::launch(text, aNumberOfEntries, aAcceptsZero ? true : false, observer, userData);
+        success = ETrue;
+    }
+    catch (std::exception& e)
+        {
+        Notifications::error( QString("exception: ")+e.what() );
+        }
+	return success;
     }
 	
 // ---------------------------------------------------------------------------	
 
-TBool EngineWrapper::TimeQueryDialog(TTime aTime, const TDesC& aPrompt)
+TBool EngineWrapper::TimeQueryDialog(TTime* aTime, const TDesC& aPrompt, MUIObserver* observer, int userData)
     {
-    // TTime to QDate
-    TBuf<20> timeString;
-    _LIT(KDateString,"%D%M%Y%/0%1%/1%2%/2%3%/3");
-    TRAP_IGNORE( aTime.FormatL(timeString, KDateString) );
-    QString temp = QString::fromUtf16(timeString.Ptr(), timeString.Length());
-    temp.replace(QChar('/'), QChar('-'));
-    QDate date = QDate::fromString(temp, "dd-MM-yyyy");
-
-	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
-    bool err = Notifications::timeQueryDialog(date, text);
-	return err;
+    QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
+    TBool success(EFalse);
+    try{
+        CreatorDateTimeDialog::launch(text, aTime, observer, userData); 
+        success = ETrue;
+    }
+    catch (std::exception& e)
+        {
+        Notifications::error( QString("exception: ")+e.what() );
+        }
+    return success;
     }
 
-TBool EngineWrapper::YesNoQueryDialog(const TDesC& aPrompt)
+TBool EngineWrapper::YesNoQueryDialog(const TDesC& aPrompt, MUIObserver* observer, int userData)
 {
 	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
-    return Notifications::yesNoQueryDialog(text);	
+	TBool success(EFalse);
+    try{
+        CreatorYesNoDialog::launch(text, "", observer, userData);	
+        success = ETrue;
+    }
+    catch (std::exception& e)
+        {
+        Notifications::error( QString("exception: ")+e.what() );
+        }
+    return success;
 }
  
 // ---------------------------------------------------------------------------	
@@ -177,16 +195,12 @@ bool EngineWrapper::ExecuteOptionsMenuCommand(int commandId)
 		TRAP(err, iEngine->RunScriptL());
 	}
 	else if (commandId == ECmdSelectRandomDataFile) {
-		TFileName filename;
 		TBool ret = EFalse;
-		TRAP(err, ret = iEngine->GetRandomDataFilenameL(filename));
-		if (err != KErrNone) {
+		TRAP(err, ret = iEngine->GetRandomDataL());
+		if ( err != KErrNone || ret == EFalse ) {
 			Notifications::error("Error in getting random data.");
 			return false;
 		}		
-		if (ret == true) {
-			TRAP(err, iEngine->GetRandomDataFromFileL(filename));
-		}
 	}
     else {
 		TRAP(err, iEngine->ExecuteOptionsMenuCommandL(commandId));
@@ -202,7 +216,7 @@ bool EngineWrapper::ExecuteOptionsMenuCommand(int commandId)
 
 // ---------------------------------------------------------------------------	
 
-bool EngineWrapper::PopupListDialog(const TDesC& aPrompt, CDesCArray* aFileNameArray, TInt& aIndex) 
+TBool EngineWrapper::PopupListDialog(const TDesC& aPrompt, const CDesCArray* aFileNameArray, TInt* aIndex, MUIObserver* aObserver, TInt aUserData) 
 {
 	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
 	QStringList itemList;
@@ -213,8 +227,16 @@ bool EngineWrapper::PopupListDialog(const TDesC& aPrompt, CDesCArray* aFileNameA
 				  aFileNameArray->MdcaPoint(i).Length()));
 	}
 	// TODO: HbSelectionDialog handle close & user choice
-	Notifications::popupListDialog(text, itemList, HbAbstractItemView::SingleSelection);
-	return false;
+	TBool success(EFalse);
+    try{
+        CreatorSelectionDialog::launch(text, itemList, aIndex, aObserver, aUserData);
+	    success = ETrue;
+    }
+    catch (std::exception& e)
+        {
+        Notifications::error( QString("exception: ")+e.what() );
+        }
+    return success;
 }
 
 // ---------------------------------------------------------------------------	
@@ -246,7 +268,7 @@ void EngineWrapper::ProgressDialogCancelled()
 
 // ---------------------------------------------------------------------------
 
-bool EngineWrapper::ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt& aIndex)
+TBool EngineWrapper::ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt* aIndex, MUIObserver* aObserver, TInt aUserData)
 {
 	bool ret = false;
 	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
@@ -293,34 +315,42 @@ bool EngineWrapper::ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt
 		}
 	}
     // TODO: HbSelectionDialog handle close & user choice
-    Notifications::popupListDialog(text, itemList, HbAbstractItemView::SingleSelection);
-    return false;
-
+	TBool success(EFalse);
+    try{
+        CreatorSelectionDialog::launch(text, itemList, aIndex, aObserver, aUserData);
+        success = ETrue;
+    }
+    catch (std::exception& e)
+        {
+        Notifications::error( QString("exception: ")+e.what() );
+        }
+    return success;
 }
 
-bool EngineWrapper::ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aIndexes)
+TBool EngineWrapper::ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aSelectedItems, MUIObserver* aObserver, TInt aUserData)
 {
-	bool ret = false;
-	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
+    TBool success(EFalse);
 	QStringList itemList;
-	QList<int> indexes;
+	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
 	if (aId == R_ATTACHMENT_MULTI_SELECTION_QUERY) {
-		itemList << "None" << "JPEG 25kB" << "JPEG 300kB" << "JPEG 500kB" << "PNG 15kB" << "GIF 2kB" << "RNG 1kB" 
-			<< "MIDI 10kB" << "WAVE 20kB" << "AMR 20kB" << "Excel 15kB" << "Word 20kB" << "PowerPoint 40kB" 
-			<< "Text 10kB" << "Text 70kB" << "3GPP 70kB" << "MP3 250kB" << "AAC 100kB" << "RM 95kB";
-
-		//ret = Notifications::popupListDialog(text, itemList, indexes);
-		// TODO: HbSelectionDialog handle close & user choice
-		Notifications::popupListDialog(text, itemList, HbAbstractItemView::MultiSelection);
-
-		if (ret == true) {
-			aIndexes->Reset();
-			for (int i = 0; i < indexes.count(); i++) {
-				aIndexes->AppendL(indexes.at(i));
-			}
-		}
+       itemList << "None" << "JPEG 25kB" << "JPEG 300kB" << "JPEG 500kB" << "PNG 15kB" << "GIF 2kB" << "RNG 1kB" 
+           << "MIDI 10kB" << "WAVE 20kB" << "AMR 20kB" << "Excel 15kB" << "Word 20kB" << "PowerPoint 40kB" 
+           << "Text 10kB" << "Text 70kB" << "3GPP 70kB" << "MP3 250kB" << "AAC 100kB" << "RM 95kB";
 	}
-	return ret;			
+	else{
+        Notifications::error("Error in resource id.");
+        return EFalse;
+    }
+	
+    try{
+        CreatorSelectionDialog::launch(text, itemList, aSelectedItems, aObserver, aUserData);
+        success = ETrue;
+    }
+    catch (std::exception& e)
+        {
+        Notifications::error( QString("exception: ")+e.what() );
+        }
+    return success;
 }
 
 void EngineWrapper::CloseCreatorApp()

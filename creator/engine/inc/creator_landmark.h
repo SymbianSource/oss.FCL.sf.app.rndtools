@@ -25,7 +25,7 @@
 #include "creator_modulebase.h"
 
 #include <e32base.h>
-#include <epos_landmarks.h>
+#include <EPos_Landmarks.h>
 
 class CLandmarkParameters;
 class CPosLandmarkDatabase;
@@ -33,7 +33,7 @@ class CPosLmOperation;
 
 static const TInt KLandmarkFieldLength = 256;
 
-class CCreatorLandmarks : public CBase, public MCreatorModuleBase
+class CCreatorLandmarks : public CCreatorModuleBase
     {
 public: 
     static CCreatorLandmarks* NewL(CCreatorEngine* aEngine);
@@ -46,7 +46,8 @@ private:
     TPosLmItemId GetCategoryIdL( TPosLmGlobalCategory aGlobalCategoryID );
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    
     TInt CreateLandmarkEntryL(CLandmarkParameters *aParameters);
     static TPosLmGlobalCategory GetCategoryIdL(const TDesC& aCategoryStr);
     void DeleteAllL();

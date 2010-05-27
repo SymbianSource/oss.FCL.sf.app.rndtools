@@ -39,8 +39,13 @@ class CCreatorEngine;
 class CLogsParameters;
 
 
-class CCreatorLogs : public CActive, public MCreatorModuleBase
+class CCreatorLogs : public CActive, public MCreatorModuleBase, public MUIObserver
     {
+enum TCreatorLogsStatus{
+    ECreatorLogsDelete = 0,
+    ECreatorLogsStart
+};
+
 public: 
     static CCreatorLogs* NewL(CCreatorEngine* aEngine);
     static CCreatorLogs* NewLC(CCreatorEngine* aEngine);
@@ -54,8 +59,9 @@ private:
 	void DoCancel();  // from CActive
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
-
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData);    
+    
     TInt CreateMissedCallEntryL(CLogsParameters *aParameters);    
     TInt CreateReceivedCallEntryL(CLogsParameters *aParameters);
     TInt CreateDialledNumberEntryL(CLogsParameters *aParameters);
@@ -63,6 +69,11 @@ public:
     void DeleteAllCreatedByCreatorL();
 
 private:
+    CCreatorEngine* iEngine;
+    TInt iCommand;
+    TInt iEntriesToBeCreated;
+    TInt iDummy;
+
     CLogClient* iLogClient;
     CLogEvent* iLogEvent;
     CActiveSchedulerWait iLogWriteWait;

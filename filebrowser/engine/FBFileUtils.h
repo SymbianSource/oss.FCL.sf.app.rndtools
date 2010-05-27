@@ -334,7 +334,7 @@ public: // public interfaces
     void GetDriveVolumeLabel(TInt aIndex, TFileName &aVolumeLabel);
 
     CFileEntryList* FileEntries() const;
-    CDriveEntryList* DriveEntries() const;   
+    CDriveEntryList* DriveEntries() const;
     
 public:    
     inline TInt SortMode() { return iSortMode; }
@@ -348,7 +348,8 @@ public:
     inline TSearchAttributes GetSearchAttributes(){ return iSearchAttributes; };
     inline void ChangeAttributes(TSearchAttributes attributes) { iSearchAttributes = attributes; };
     inline TSearchResults SearchResults(){ return iFileSearchResults; };
-    inline CFileEntryList* FoundFiles() { return iFileEntryList; };
+    inline CFileEntryList* FoundFiles() { return iFileEntryList; };    
+    inline void SetAllowProcessing(TBool aAllowProcessing) { iAllowProcessing = aAllowProcessing; }
 	
 private:
     TState                          iState;
@@ -388,6 +389,7 @@ private:
     RTz                             iTz;
     TSearchResults                  iFileSearchResults;
     CDesCArray*                     iTextArray;
+    TBool                           iAllowProcessing;
     };
 
 

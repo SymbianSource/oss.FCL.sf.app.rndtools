@@ -122,14 +122,12 @@ CMemSpyViewBase* CMemSpyViewThreads::PrepareParentViewL()
 
 
 CMemSpyViewBase* CMemSpyViewThreads::PrepareChildViewL()
-    {
-	/*
-    CMemSpyViewThreadInfoItemList* child = new(ELeave) CMemSpyViewThreadInfoItemList( iEngine, iObserver, *iCurrentThread );
+    {	
+    CMemSpyViewThreadInfoItemList* child = new(ELeave) CMemSpyViewThreadInfoItemList( iMemSpySession, iObserver, iParentProcessId, iCurrentThreadId );
     CleanupStack::PushL( child );
     child->ConstructL( Rect(), *Parent() );
     CleanupStack::Pop( child );
-    return child;
-    */
+    return child;    
     }
 
 

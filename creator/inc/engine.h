@@ -23,13 +23,14 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <f32file.h>
-#include <W32STD.H>
+#include <s32file.h>
+#include <s32mem.h>
+#include <w32std.h>
 
 //#include <aknenv.h>
 #include <coeutils.h>
 #include <apparc.h>
 #include <eikenv.h>
-//#include <aknprogressdialog.h>
 //#include <eikprogi.h>
 #include <bautils.h>
 #include <commdb.h>
@@ -37,18 +38,6 @@
 
 #include "creator.hrh"
 #include "creator_std.h"
-#include "creator_scriptentry.h"
-#include "creator_modulebase.h"
-#include "creator_browser.h"
-#include "creator_calendar.h"
-#include "creator_phonebookbase.h"
-#include "creator_note.h"
-#include "creator_log.h"
-#include "creator_connectionmethodbase.h"
-#include "creator_mailbox.h"
-//#include "creator_imps.h"
-#include "creator_message.h"
-#include "creator_landmark.h"
 #include "creator_randomdataparser.h"
 
 //class CCreatorAppUi;
@@ -63,11 +52,15 @@ class CCreatorIMPS;
 class CCreatorFiles;
 class CCreatorMessages;
 class CCreatorLandmarks;
+class MCreatorModuleBase;
+class CCreatorPhonebookBase;
+class CCreatorModuleBaseParameters;
+class CCreatorConnectionSettingsBase;
 class CDictionaryFileStore;
 class CImageDecoder;
 class CFbsBitmap;
 class CBitmapScaler;
-
+class CCommandParser;
 class EngineWrapper;
 class CCreatorCmdScriptRun;
 
@@ -84,6 +77,42 @@ enum TListQueryId
 	R_AMS_ATTACHMENT_SINGLE_SELECTION_QUERY,
 	R_ATTACHMENT_SINGLE_SELECTION_QUERY
 	};
+
+/*
+ * Interface for UI dialogs
+ */
+class MUIObserver
+    {
+public:
+    /**
+     * Called when some dialog in UI is closed
+     *
+     * @since S60 10.1
+     * @param aPositiveAction ETrue if "Ok", "Yes" or other "positive" button was pressed
+     * @param aUserData number that was passed to UI before dialog was opened
+     * @return None.
+     */
+    virtual void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData) = 0;
+
+    };
+
+/*
+ * Interface for CCommandParser
+ */
+class MCommandParserObserver
+    {
+public:
+    /**
+     * Called when CCommandParser user has choosen some file(script file, random data file)
+     *
+     * @since S60 10.1
+     * @param aSuccess ETrue if "Ok", "Yes" or other "positive" button was pressed
+     * @param aFileName filename chosen by user
+     * @return None.
+     */
+    virtual void FileChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC) = 0;
+
+    };
 
 /**
  * Device memory information
@@ -104,7 +133,7 @@ public:
 // Common constant for undefined integer value:
 const TInt KUndef = KErrNotFound;
 
-class CCreatorEngine : public CActive 
+class CCreatorEngine : public CActive, public MUIObserver, public MCommandParserObserver
 	{
 public:
     
@@ -213,10 +242,8 @@ private:
     TInt RunError(TInt aError);
     void DoCancel();
 
-    void ExecuteFirstCommandL(const TDesC& aText);
     void ExecuteCommand();
     void StartEnginesL();
-    void ShutDownEnginesL();
     void CheckForMoreCommandsL();
     
     TBool IsDeleteCommand( TInt aCommand );
@@ -228,11 +255,35 @@ private:
     void GenerateSourceImageFileL( const TTestDataPath aFileType, const TDesC& aFileName );
     void GenereteSourceTextFileL( const TDesC& aFileName, TInt aSize );
 
+public: // from MUIObserver
+    /**
+     * Called when some dialog in UI is closed
+     *
+     * @since S60 10.1
+     * @param aPositiveAction ETrue if "Ok", "Yes" or other "positive" button was pressed
+     * @param aUserData number that was passed to UI before dialog was opened
+     * @return ?description
+     */
+    virtual void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData);
+    
+public: // from MCommandParserObserver
+    /**
+     * Called when CCommandParser user has choosen some file(script file, random data file)
+     *
+     * @since S60 10.1
+     * @param aSuccess ETrue if "Ok", "Yes" or other "positive" button was pressed
+     * @param aFileName filename chosen by user
+     * @return None.
+     */
+    virtual void FileChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC);
+    
 public:
     void ExecuteOptionsMenuCommandL(TInt aCommand);
     void RunScriptL();
     TInt RunScriptL(const TDesC& aScriptFile);
-
+    void ShutDownEnginesL();
+    void ExecuteFirstCommandL(const TDesC& aText);
+    
     void AppendToCommandArrayL(TInt aCommand, CCreatorModuleBaseParameters* aParameters, TInt aNumberOfEntries = 1);
     TInt CommandArrayCount();
  
@@ -280,7 +331,7 @@ public:
     
     void SetDefaultPathForFileCommandL(TInt aCommand, TFileName& aPath);
 
-    TBool GetRandomDataFilenameL(TDes& aFilename);
+    TBool GetRandomDataL();
     TBool GetRandomDataFromFileL(const TDesC& aFilename);
     void CancelComplete();
     CDictionaryFileStore* FileStoreLC();
@@ -338,6 +389,7 @@ private:
     CCreatorMessages* iMessages;
     CCreatorLandmarks* iLandmarks;
 	CCreatorCmdScriptRun* iCmdScriptRun;
+	CCommandParser* iCommandParser;
 
     // options menu command home module
     MCreatorModuleBase* iUsedOptionsMenuModule;

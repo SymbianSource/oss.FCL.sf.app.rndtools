@@ -40,6 +40,11 @@ QString UiSetting::ReadSetting(const QString& item)
         {
         value = settingList.value(item);
         }
+    else
+        {
+        value = getDefaultValue(item);
+        settingList.insert(item, value);
+        }
     return value;
     }
 
@@ -58,10 +63,24 @@ void UiSetting::SetSetting(const QString& item, const QString& value)
 void UiSetting::loadDefault()
     {
     settingList.clear();
-    settingList.insert("showoutput", "true");
+    settingList.insert(KShowOutput, getDefaultValue(KShowOutput));
+    settingList.insert(KStyleSheet, getDefaultValue(KStyleSheet));
     //add mor default setting here.
     }
 
+QString UiSetting::getDefaultValue(const QString& item)
+    {
+    QString result = "";
+    if(item == KShowOutput)
+        {
+        result = "true";
+        }
+    else if(item == KStyleSheet)
+        {
+        result = ":/qss/coffee.qss";
+        }
+    return result;
+    }
 
 bool UiSetting::load()
     {
@@ -75,7 +94,7 @@ bool UiSetting::load()
     int index;
     while(!in.atEnd())
         {
-        line = in.readLine().trimmed().toLower();
+        line = in.readLine().trimmed();
         if(!line.startsWith("//"))
             {
             index = line.indexOf("=");

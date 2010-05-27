@@ -28,13 +28,12 @@
 
 // Classes referenced
 class TMemSpyDriverHandleInfoGeneric;
-
-
+class RMemSpySession;
 
 class CMemSpyViewThreadInfoItemServer : public CMemSpyViewThreadInfoItemGeneric
     {
 public:
-    CMemSpyViewThreadInfoItemServer( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer );
+    CMemSpyViewThreadInfoItemServer( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType );
 
 public: // From CMemSpyViewBase
     void ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune = NULL );

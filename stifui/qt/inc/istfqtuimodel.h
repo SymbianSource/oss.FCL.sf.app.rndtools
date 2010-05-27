@@ -19,7 +19,6 @@
 #ifndef ISTFQTUIMODEL_H
 #define ISTFQTUIMODEL_H
 
-//#include <TestModuleInfo.h>
 #include "cstfcase.h"
 #include "cstfmodule.h"
 #include <UIStoreIf.h>
@@ -42,6 +41,7 @@ public:
     virtual void AddRunningCase(const CStartedTestCase* startedCase, const CSTFCase& stfCase) = 0;
     virtual void RemoveRunningCase(const CStartedTestCase* startedCase) = 0;
     virtual void AddCaseByStatus(const TSTFCaseStatusType& type, const CSTFCase& aCase) = 0;
+    virtual CSTFCase GetRunningCase(const CStartedTestCase* startedCase) = 0;
     virtual void PauseCase() = 0;
     virtual void ResumeCase() = 0;
     virtual void AbortCase() = 0;

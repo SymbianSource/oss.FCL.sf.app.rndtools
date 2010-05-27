@@ -16,7 +16,7 @@
 */
 
 
-#include <favouriteswapap.h> 
+#include <FavouritesWapAp.h> 
 
 #include "engine.h"
 #include "enginewrapper.h"
@@ -124,56 +124,58 @@ CCreatorBrowser::~CCreatorBrowser()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorBrowser::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorBrowser::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorBrowser::AskDataFromUserL");
 
+    CCreatorModuleBase::AskDataFromUserL( aCommand );//ignore retval
+    
     TBool result( EFalse );
     switch ( aCommand )
         {
         case ECmdDeleteBrowserBookmarks:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmarks?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmarks?"), this, ECreatorModuleDelete );
             break;
             }
         case ECmdDeleteCreatorBrowserBookmarks:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmarks created with Creator?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmarks created with Creator?"), this, ECreatorModuleDelete );
             break;
             }
         case ECmdDeleteBrowserBookmarkFolders:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmark folders?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmark folders?"), this, ECreatorModuleDelete );
             break;
             }
         case ECmdDeleteCreatorBrowserBookmarkFolders:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmark folders created with Creator?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser bookmark folders created with Creator?"), this, ECreatorModuleDelete );
             break;
             }
         case ECmdDeleteBrowserSavedPages:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages?"), this, ECreatorModuleDelete );
             break;
             }
         case ECmdDeleteCreatorBrowserSavedPages:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages created with Creator?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages created with Creator?"), this, ECreatorModuleDelete );
             break;
             }
         case ECmdDeleteBrowserSavedPageFolders:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages folders?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages folders?"), this, ECreatorModuleDelete );
             break;
             }
         case ECmdDeleteCreatorBrowserSavedPageFolders:
             {
-            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages folders created with Creator?") );
+            result = iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Browser saved pages folders created with Creator?"), this, ECreatorModuleDelete );
             break;
             }
         default:
             {
-            result = iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?"));
+            result = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorModuleStart );
             break;
             }
         }

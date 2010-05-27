@@ -14,14 +14,11 @@
 * Description:
 *
 */
-
-
-#include <hblabel.h>
-//#include <hbdeviceprogressdialog.h>
-#include <hbmessagebox.h>
-
 #include "notifications.h"
 
+#include <HbLabel>
+#include <HbProgressDialog>
+#include <HbMessageBox>
 
 // ---------------------------------------------------------------------------
 
@@ -50,16 +47,6 @@ void Notifications::showAboutNote()
 
 // ---------------------------------------------------------------------------
 
-//HbDeviceProgressDialog* Notifications::showWaitDialog(const QString &text)
-//{
-//    HbDeviceProgressDialog *note = new HbDeviceProgressDialog( HbProgressDialog::WaitDialog );
-//    note->setText( text );
-//    note->show();
-//    return note;
-//}
-
-// ---------------------------------------------------------------------------
-
 void Notifications::showInformationNote(const QString &text, const QString &title)
 {
     showMessageBox(HbMessageBox::MessageTypeInformation, text, title, false);
@@ -83,6 +70,7 @@ void Notifications::showConfirmationNote(const QString &text, bool noTimeout)
 
 bool Notifications::showConfirmationQuery(const QString &aText)
 {
+    Q_UNUSED(aText);
     return false; //HbMessageBox::question(aText);
 }
 

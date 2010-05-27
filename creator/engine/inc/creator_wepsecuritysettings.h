@@ -72,7 +72,7 @@ public:
 
 private:
     CCreatorWEPSecuritySettings();
-    void ConstructL(); // from MCreatorModuleBase
+    void ConstructL();
 
 
 public:

@@ -33,11 +33,16 @@
 #include "MemSpyViewThreadInfoItemHeap.h"
 
 
-
+/*
 CMemSpyViewThreadInfoItemHeap::CMemSpyViewThreadInfoItemHeap( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
 :   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeHeap )
     {
     }
+*/
+CMemSpyViewThreadInfoItemHeap::CMemSpyViewThreadInfoItemHeap( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemGeneric( aSession, aObserver, aProcId, aId , EMemSpyThreadInfoItemTypeHeap )
+    {
+    } 
 
 
 TBool CMemSpyViewThreadInfoItemHeap::HandleCommandL( TInt aCommand )
@@ -69,19 +74,19 @@ TBool CMemSpyViewThreadInfoItemHeap::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapDataL()
     {
-    iEngine.HelperHeap().OutputHeapDataUserL( Thread() );
+    //iEngine.HelperHeap().OutputHeapDataUserL( Thread() ); //TODO
     }
 
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapCellListingL()
     {
-    iEngine.HelperHeap().OutputCellListingUserL( Thread() );
+    //iEngine.HelperHeap().OutputCellListingUserL( Thread() ); //TODO
     }
 
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapInfoL()
     {
-    iEngine.HelperHeap().OutputHeapInfoUserL( Thread() );
+    //iEngine.HelperHeap().OutputHeapInfoUserL( Thread() ); //TODO
     }
 
 
@@ -89,6 +94,6 @@ void CMemSpyViewThreadInfoItemHeap::DynInitMenuPaneL( TInt aResourceId, CEikMenu
     {
     if  ( aResourceId == R_MEMSPY_MENUPANE )
         {
-        aMenuPane->SetItemDimmed( EMemSpyCmdHeap, Thread().IsDead() );
+        //aMenuPane->SetItemDimmed( EMemSpyCmdHeap, Thread().IsDead() ); //TODO
         }
     }

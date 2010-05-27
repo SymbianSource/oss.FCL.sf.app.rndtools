@@ -22,8 +22,8 @@ DEPENDPATH += src
 DEPENDPATH += inc
 INCLUDEPATH += inc
 
-HEADERS += launchermainwindow.h applicationview.h enginewrapper.h notifications.h  outputview.h commonactions.h
-SOURCES += main.cpp launchermainwindow.cpp applicationview.cpp enginewrapper.cpp notifications.cpp  outputview.cpp commonactions.cpp
+HEADERS += launchermainwindow.h applicationview.h enginewrapper.h notifications.h  outputview.h commonActions.h
+SOURCES += main.cpp launchermainwindow.cpp applicationview.cpp enginewrapper.cpp notifications.cpp  outputview.cpp commonActions.cpp
 RESOURCES += launcher.qrc
 
 symbian: {

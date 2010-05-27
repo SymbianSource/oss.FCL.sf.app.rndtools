@@ -67,6 +67,7 @@ private: // From CCoeControl
 
 private: // From MAknTabObserver
     void TabChangedL( TInt aIndex ); 
+    TPtrC TypeAsString( TMemSpyDriverContainerType aType );
     
 private: // Command handlers
     void OnCmdTerminateL();

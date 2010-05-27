@@ -70,7 +70,6 @@ private:
     void ConstructL(CCreatorEngine* aEngine); // from MCreatorModuleBase
 
 public:  
-    virtual TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries);
     TInt CreateContactEntryL(CCreatorModuleBaseParameters *aParameters);    
     TInt CreateGroupEntryL(CCreatorModuleBaseParameters *aParameters);
     TInt CreateSubscribedContactEntryL(CCreatorModuleBaseParameters *aParameters); 
@@ -136,7 +135,6 @@ private:
     static TInt iPhoneNumberFields[];
     static TInt iUrlFields[];
     static TInt iEmailFields[];
-    TBool iAddAllFields;
     CVPbkContactLinkArray* iContactLinkArray;
     CVPbkContactLinkArray* iContactsToDelete;
     CVPbkContactLinkArray* iContactGroupsToDelete;

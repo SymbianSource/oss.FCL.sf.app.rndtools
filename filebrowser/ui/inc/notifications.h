@@ -18,24 +18,19 @@
 #ifndef NOTIFICATIONS_H_
 #define NOTIFICATIONS_H_
 
-//#include <hbdeviceprogressdialog.h>
 #include <hbmessagebox.h>
+
+class HbProgressDialog;
 
 class Notifications
 {
 public:
-    
     static void showAboutNote();
     static void showMessageBox(HbMessageBox::MessageBoxType type, const QString &text, const QString &label, int timeout = HbPopup::NoTimeout);
     static void showInformationNote(const QString &text, const QString &title = QString());
     static void showErrorNote(const QString &text, bool noTimeout = false);
     static void showConfirmationNote(const QString &text, bool noTimeout = false);
     static bool showConfirmationQuery(const QString &aText);
-    
-
-//    static HbDeviceProgressDialog* showWaitDialog(const QString &text);
-
-private:    
 };
 
 #endif // NOTIFICATIONS_H_

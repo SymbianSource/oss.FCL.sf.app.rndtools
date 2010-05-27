@@ -24,7 +24,7 @@
 #include <badesca.h>
 #include <engine.h>
 
- #include <QObject> // for iProgressNote signal connect
+#include <QObject> // for iProgressNote signal connect
 
 
 class MainView;
@@ -32,6 +32,7 @@ class MemoryDetails;
 class HbProgressDialog;
 class HbPopup;
 class HbCommonNote;
+class HbAction;
 
 
 /**
@@ -102,22 +103,22 @@ public:
 	/**
 	* Create entries query dialog
 	*/
-	TBool EntriesQueryDialog(TInt& aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero = EFalse);
+	TBool EntriesQueryDialog(TInt* aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero = EFalse, MUIObserver* aObserver = NULL, int userData = 0);
 
 	/**
 	* Create time query dialog
 	*/    
-    TBool TimeQueryDialog(TTime aTime, const TDesC& aPrompt);
+    TBool TimeQueryDialog(TTime* aTime, const TDesC& aPrompt, MUIObserver* aObserver = NULL, int userData = 0);
 
 	/**
 	* Create yes or no query dialog
 	*/    
-    TBool YesNoQueryDialog(const TDesC& aPrompt);
+    TBool YesNoQueryDialog(const TDesC& aPrompt, MUIObserver* aObserver = NULL, int userData = 0);
 	
 	/**
 	* Popup list dialog for selecting item from dialog list
 	*/
-	bool PopupListDialog(const TDesC& aPrompt, CDesCArray* aFileNameArray, TInt& aIndex); 
+	TBool PopupListDialog(const TDesC& aPrompt, const CDesCArray* aFileNameArray, TInt* aIndex, MUIObserver* aObserver = NULL, TInt aUserData=0); 
 	
 	/**
 	* Directory query dialog
@@ -127,12 +128,12 @@ public:
 	/**
 	* Create list query single-selection dialog
 	*/
-	bool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt& aIndex);
+	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt* aSeletedItem, MUIObserver* aObserver = NULL, TInt aUserData=0);
 
 	/**
 	* Create list query multi-selection dialog
 	*/
-	bool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aIndexes);
+	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aSelectedItems, MUIObserver* aObserver = NULL, TInt aUserData=0);
 	
 	
 	/**
@@ -145,7 +146,7 @@ private slots:
 	/**
 	* progress dialog cancelled
 	*/
-	void ProgressDialogCancelled();    
+	void ProgressDialogCancelled();
 	
 private:
     
@@ -156,6 +157,7 @@ private:
     /* progress dialog that is shown */
     HbProgressDialog* iProgressDialog;
     
+    MCreatorModuleBase *iModule;
 };
 
 #endif //ENGINEWRAPPER_H

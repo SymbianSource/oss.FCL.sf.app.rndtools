@@ -23,6 +23,8 @@
 
 #include "creator_scriptelement.h"
 
+class CMailboxesParameters;
+
 namespace creatormailbox
 {
     _LIT(Kmailbox, "mailbox");

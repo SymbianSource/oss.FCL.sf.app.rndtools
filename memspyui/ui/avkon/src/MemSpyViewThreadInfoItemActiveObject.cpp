@@ -112,8 +112,8 @@ void CMemSpyViewThreadInfoItemActiveObjectBase::OnCmdWriteAOListingL()
 
 
 
-CMemSpyViewThreadInfoItemActiveObject::CMemSpyViewThreadInfoItemActiveObject( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
-:   CMemSpyViewThreadInfoItemActiveObjectBase( aEngine, aObserver, aContainer )
+CMemSpyViewThreadInfoItemActiveObject::CMemSpyViewThreadInfoItemActiveObject( RMemSpySession& aSession, MMemSpyViewObserver& aObserver,  TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemActiveObjectBase( aSession, aObserver, aId, aType )
     {
     }
 

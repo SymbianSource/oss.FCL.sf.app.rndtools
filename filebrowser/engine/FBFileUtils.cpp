@@ -27,6 +27,8 @@
 #include <f32file.h>
 #include <eikfutil.h>
 #include <apparc.h>
+#include <apaid.h>
+#include <apaidpartner.h>
 #include <eikenv.h>
 #include <bautils.h>
 #include <gulicon.h>
@@ -1960,46 +1962,48 @@ void CFileBrowserFileUtils::SearchL()
 //    if (dlgResult)
 //        {
 //        iEngine->EikonEnv()->BusyMsgL(_L("** Searching **"), TGulAlignment(EHCenterVTop));
-//
-//        iFileEntryList->Reset();
-//
-//        // if search dir is empty, find from all drives
-//        if (iSearchAttributes.iSearchDir == KNullDesC)
-//            {
-//            for (TInt i=0; i<iDriveEntryList->Count(); i++)
-//                {
-//                TDriveEntry driveEntry = iDriveEntryList->At(i);
-//
-//                TBuf<10> driveRoot;
-//                driveRoot.Append(driveEntry.iLetter);
-//                driveRoot.Append(_L(":\\"));
-//
-//                DoSearchFiles(iSearchAttributes.iWildCards, driveRoot);
-//
-//                if (iSearchAttributes.iRecurse)
-//                    DoSearchFilesRecursiveL(iSearchAttributes.iWildCards, driveRoot);
-//
-//                }
-//
-//            }
-//
-//        // otherwise just search from the selected directory
-//        else
-//            {
-//            DoSearchFiles(iSearchAttributes.iWildCards, iSearchAttributes.iSearchDir);
-//
-//            if (iSearchAttributes.iRecurse)
-//                DoSearchFilesRecursiveL(iSearchAttributes.iWildCards, iSearchAttributes.iSearchDir);
-//            }
-//
+
+
+        iEngine->FileBrowserUI()->ShowWaitDialog(_L("** Searching  **"));
+        iFileEntryList->Reset();
+
+        // if search dir is empty, find from all drives
+        if (iSearchAttributes.iSearchDir == KNullDesC)
+            {
+            for (TInt i=0; i<iDriveEntryList->Count(); i++)
+                {
+                TDriveEntry driveEntry = iDriveEntryList->At(i);
+
+                TBuf<10> driveRoot;
+                driveRoot.Append(driveEntry.iLetter);
+                driveRoot.Append(_L(":\\"));
+
+                DoSearchFiles(iSearchAttributes.iWildCards, driveRoot);
+
+                if (iSearchAttributes.iRecurse)
+                    DoSearchFilesRecursiveL(iSearchAttributes.iWildCards, driveRoot);
+                }
+
+            }
+
+        // otherwise just search from the selected directory
+        else
+            {
+            DoSearchFiles(iSearchAttributes.iWildCards, iSearchAttributes.iSearchDir);
+
+            if (iSearchAttributes.iRecurse)
+                DoSearchFilesRecursiveL(iSearchAttributes.iWildCards, iSearchAttributes.iSearchDir);
+            }
+
 //        iEngine->EikonEnv()->BusyMsgCancel();
-//
+        iEngine->FileBrowserUI()->CancelWaitDialog();
+
 //        TInt operations = iFileEntryList->Count();
-//
-//        iListingMode = ESearchResults;
-//        iEngine->FileListContainer()->ListBox()->SetCurrentItemIndex(0);
-//        RefreshViewL();
-//
+
+        iListingMode = ESearchResults;
+        // TODO iEngine->FileListContainer()->ListBox()->SetCurrentItemIndex(0);
+        RefreshViewL();
+
 //        _LIT(KMessage, "%d entries found");
 //        TFileName noteMsg;
 //        noteMsg.Format(KMessage, operations);
@@ -2016,8 +2020,9 @@ TInt CFileBrowserFileUtils::DoSearchFiles(const TDesC& aFileName, const TDesC& a
     CDir* dir;
     TInt err = fileFinder.FindWildByPath(aFileName, &aPath, dir);
 
-    while (err == KErrNone)
+    while (err == KErrNone && iAllowProcessing)
         {
+        iEngine->FileBrowserUI()->ProcessEvents();
         for (TInt i=0; i<dir->Count(); i++)
             {
             TEntry entry = (*dir)[i];
@@ -3266,7 +3271,7 @@ void CFileBrowserFileUtils::WriteAllFilesL()
         CleanupClosePushL(file);
         iFindFileEntryList->Reset();
         
-        iEngine->EikonEnv()->BusyMsgL(_L("** Generating **"), TGulAlignment(EHCenterVTop));
+        iEngine->FileBrowserUI()->ShowWaitDialog(_L("** Generating **"));
         
         for (TInt i=0; i<iDriveEntryList->Count(); i++)
             {
@@ -3291,12 +3296,14 @@ void CFileBrowserFileUtils::WriteAllFilesL()
             
             writeBuf.Copy(fileEntry.iPath);
             writeBuf.Append(fileEntry.iEntry.iName);
+            writeBuf.Append(_L(" - "));
+            writeBuf.AppendNum(fileEntry.iEntry.iSize);
+            writeBuf.Append(_L(" B"));
             writeBuf.Append(KFileNewLine);
-            
             file.Write(writeBuf);
             }
         
-        iEngine->EikonEnv()->BusyMsgCancel();
+        iEngine->FileBrowserUI()->CancelWaitDialog();
         
         CleanupStack::PopAndDestroy(); //file
         iFindFileEntryList->Reset();
@@ -3325,8 +3332,9 @@ TInt CFileBrowserFileUtils::DoFindFiles(const TDesC& aFileName, const TDesC& aPa
     CDir* dir;
     TInt err = fileFinder.FindWildByPath(aFileName, &aPath, dir);
 
-    while (err == KErrNone)
+    while (err == KErrNone && iAllowProcessing)
         {
+        iEngine->FileBrowserUI()->ProcessEvents();
         for (TInt i=0; i<dir->Count(); i++)
             {
             TEntry entry = (*dir)[i];

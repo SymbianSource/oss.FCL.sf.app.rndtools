@@ -21,28 +21,9 @@
 #include <QObject>
 
 #include <memspysession.h>
-#include <memspyapiprocess.h>
 
 typedef quint64 ProcessId;
 typedef quint64 ThreadId;
-
-class MemSpyProcess
-{
-public:
-	MemSpyProcess(CMemSpyApiProcess* process)
-		: mProcess(process)
-	{}
-	
-	virtual  ~MemSpyProcess() { delete mProcess;	}
-	
-	ProcessId id() const { return mProcess->Id(); }
-	
-	QString name() const { return QString((QChar*) mProcess->Name().Ptr(), mProcess->Name().Length()); }
-	
-	
-private:
-	CMemSpyApiProcess *mProcess;
-};
 
 enum ThreadPriority
 {
@@ -94,6 +75,51 @@ enum KernelObjectType
 	KernelObjectTypeCondVar
 };
 
+enum ThreadInfoType
+{
+	ThreadInfoTypeGeneral = EMemSpyThreadInfoItemTypeGeneralInfo,
+	ThreadInfoTypeHeap = EMemSpyThreadInfoItemTypeHeap,
+	ThreadInfoTypeStack = EMemSpyThreadInfoItemTypeStack,
+	ThreadInfoTypeChunk = EMemSpyThreadInfoItemTypeChunk,
+	ThreadInfoTypeCodeSeg = EMemSpyThreadInfoItemTypeCodeSeg,
+	ThreadInfoTypeOpenFiles = EMemSpyThreadInfoItemTypeOpenFiles,
+	ThreadInfoTypeActiveObjects = EMemSpyThreadInfoItemTypeActiveObject,
+	ThreadInfoTypeOwnedThreadHandles = EMemSpyThreadInfoItemTypeOwnedThreadHandles,
+	ThreadInfoTypeOwnedProcessHandles = EMemSpyThreadInfoItemTypeOwnedProcessHandles,
+	ThreadInfoTypeServer = EMemSpyThreadInfoItemTypeServer,
+	ThreadInfoTypeSession = EMemSpyThreadInfoItemTypeSession,
+	ThreadInfoTypeSemaphore = EMemSpyThreadInfoItemTypeSemaphore,
+	ThreadInfoTypeOtherThreads = EMemSpyThreadInfoItemTypeOtherThreads,
+	ThreadInfoTypeOtherProcesses = EMemSpyThreadInfoItemTypeOtherProcesses,
+	ThreadInfoTypeMutex = EMemSpyThreadInfoItemTypeMutex,
+	ThreadInfoTypeTimer = EMemSpyThreadInfoItemTypeTimer,
+	ThreadInfoTypeChannel = EMemSpyThreadInfoItemTypeLogicalChannel,
+	ThreadInfoTypeChangeNotifier = EMemSpyThreadInfoItemTypeChangeNotifier,
+	ThreadInfoTypeUndertaker = EMemSpyThreadInfoItemTypeUndertaker,
+	ThreadInfoTypeMessageQueue = EMemSpyThreadInfoItemTypeMessageQueue,
+	ThreadInfoTypeConditionalVariable = EMemSpyThreadInfoItemTypeConditionalVariable,
+	ThreadInfoTypeLDD = EMemSpyThreadInfoItemTypeLDD,
+	ThreadInfoTypePDD = EMemSpyThreadInfoItemTypePDD,
+};
+
+class MemSpyProcess
+{
+public:
+	MemSpyProcess(CMemSpyApiProcess* process)
+		: mProcess(process)
+	{}
+	
+	virtual  ~MemSpyProcess() { delete mProcess;	}
+	
+	ProcessId id() const { return mProcess->Id(); }
+	
+	QString name() const { return QString((QChar*) mProcess->Name().Ptr(), mProcess->Name().Length()); }
+	
+	
+private:
+	CMemSpyApiProcess *mProcess;
+};
+
 class MemSpyThread
 {
 public:
@@ -126,6 +152,10 @@ public:
 	int id() const { return mType->Type(); }
 	
 	QString name() const { return QString((QChar*) mType->Name().Ptr(), mType->Name().Length()); }
+	
+	int count() const { return mType->Count(); }
+	
+	qint64 size() const { return mType->Size(); }
 	
 private:
 	CMemSpyApiKernelObject *mType;
@@ -236,6 +266,23 @@ private:
 	CMemSpyApiKernelObjectItem *mObject;
 };
 
+class MemSpyThreadInfoItem 
+{
+public:
+	MemSpyThreadInfoItem(CMemSpyApiThreadInfoItem *item)
+		: mItem(item)
+	{}
+	
+	virtual  ~MemSpyThreadInfoItem() { delete mItem;	}
+	
+	QString caption() const { return QString((QChar*) mItem->Caption().Ptr(), mItem->Caption().Length()); }
+	
+	QString value() const { return QString((QChar*) mItem->Value().Ptr(), mItem->Value().Length()); }
+	
+private:
+	CMemSpyApiThreadInfoItem* mItem;
+};
+
 class EngineWrapper : public QObject
 {
 public:
@@ -245,6 +292,8 @@ public:
 	QList<MemSpyProcess*> getProcesses();
 	
 	QList<MemSpyThread*> getThreads(ProcessId processId);
+	
+	QList<MemSpyThreadInfoItem*> getThreadInfo(ThreadId threadId, ThreadInfoType type);
 	
 	void setThreadPriority(ThreadId threadId, ThreadPriority priority);
 	

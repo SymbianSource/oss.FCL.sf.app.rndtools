@@ -15,13 +15,13 @@
 *
 */
 
-#include <S32FILE.H> 
-#include <BAUTILS.H>
-#include <PATHINFO.H>
-#include <APPARC.H> 
-#include <IMAGECONVERSION.H>
-#include <TEXTRESOLVER.H>
-#include <APGTASK.H> 
+#include <s32file.h> 
+#include <bautils.h>
+#include <pathinfo.h>
+#include <apparc.h> 
+#include <imageconversion.h>
+#include <textresolver.h>
+#include <apgtask.h> 
 
 #include <hblabel.h>
 #include <hbmessagebox.h>

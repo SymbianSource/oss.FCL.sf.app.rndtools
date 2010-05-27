@@ -71,7 +71,7 @@ symbian: {
 			engine/inc/creator_std.h \
 			engine/inc/creator_traces.h \
 			engine/inc/creator_wepsecuritysettings.h \
-			engine/inc/randomData.txt \
+			engine/inc/randomdata.txt \
 			inc/engine.h \
 			inc/enginewrapper.h
 

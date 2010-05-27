@@ -19,13 +19,13 @@
 #ifndef STIFEXECUTOR_H_
 #define STIFEXECUTOR_H_
 
-//#include <TestModuleInfo.h>
 #include "cstfcase.h"
 #include "cstfmodule.h"
 #include <UIStoreIf.h>
 #include <UIStore.h>
 #include <UIEngine.h>
 #include <QList>
+#include <StifLogger.h>
 
 class IStifCaseUpdateListener
     {
@@ -49,10 +49,10 @@ public:
     void ExecuteSingleCase(const QString& moduleName, int caseIndex);
     QList<QString> GetSetList();
     QList<CSTFCase> GetCaseListFromSet(const QString& setName);
-    void CreateSet(const QString& setName);
-    void SaveSet(QString& setName);
-    void RemoveSet(const QString& setName);
-    void AddtoSet(const QString& setName, CSTFCase& caseInfo);
+    bool CreateSet(const QString& setName);
+    bool SaveSet(QString& setName);
+    bool RemoveSet(const QString& setName);
+    bool AddtoSet(const QString& setName, CSTFCase& caseInfo);
     void ExecuteSet(const QString& SetName, const int startIndex, const TSTFCaseRunningType type);
     
 public://implement CUIStoreIf 
@@ -63,9 +63,14 @@ public:
      TPtrC QString2TPtrC(const QString& aString);
      QString TDesC2QString(const TDesC& des);
      //CTestInfo* GetTestInfo(CSTFCase aCase);
+     
+private:
+     bool LogResult(const TInt result,const QString str);
 private:
    QList<IStifCaseUpdateListener*> *listenerList;
    HBufC*  iBuffer;
+   // Pointer to logger
+   CStifLogger * iLog;
     };
 
 

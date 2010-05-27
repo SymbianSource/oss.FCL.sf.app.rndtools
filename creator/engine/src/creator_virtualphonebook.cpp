@@ -297,19 +297,6 @@ CCreatorVirtualPhonebook::~CCreatorVirtualPhonebook()
     }
 
 //----------------------------------------------------------------------------
-TBool CCreatorVirtualPhonebook::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
-    {
-    LOGSTRING("Creator: CCreatorVirtualPhonebook::AskDataFromUserL");
-    TBool ret = CCreatorPhonebookBase::AskDataFromUserL(aCommand, aNumberOfEntries);
-   
-    if(ret && aCommand == ECmdCreatePhoneBookEntryContacts && !iDefaultFieldsSelected)    
-        {
-        iAddAllFields = iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Add all the other fields to contacts?"));
-        }
-    return ret;
-    }
-
-//----------------------------------------------------------------------------
 void CCreatorVirtualPhonebook::DeleteAllL()
     {
     LOGSTRING("Creator: CCreatorVirtualPhonebook::DeleteAllL");

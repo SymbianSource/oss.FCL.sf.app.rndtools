@@ -23,6 +23,22 @@
 
 class HbMenu;
 
+class MemSpyThreadDetailModel : public QAbstractListModel
+{
+public:
+	MemSpyThreadDetailModel(EngineWrapper &engine, ThreadId threadId, ThreadInfoType type, QObject *parent = 0);
+	
+	~MemSpyThreadDetailModel();
+	
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	
+private:
+	QList<MemSpyThreadInfoItem*> mThreadInfo;
+};
+
+
 class MemSpyThreadDetailView : public MemSpyView
 {
 	Q_OBJECT
@@ -32,10 +48,6 @@ public:
 		: MemSpyView(engine, viewManager) {}
 protected:
 	virtual void initialize(const QVariantMap& params);
-	virtual HbMenu* createToolMenu();
-
-private slots:
-	void changePriority();
 	
 private:
 	ThreadId mThreadId;

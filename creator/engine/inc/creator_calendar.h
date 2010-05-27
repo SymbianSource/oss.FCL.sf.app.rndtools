@@ -46,6 +46,16 @@ class CAsyncWaiter;
 
 class CCreatorInterimCalendar : public CCreatorCalendarBase, public MCalProgressCallBack
     {
+enum TCreatorCalendarStatus{
+    ECreatorCalendarDelete = 0,
+    ECreatorCalendarStart, 
+    ECreatorCalendarGetWeeklyEntries,
+    ECreatorCalendarGetAttendies,
+    ECreatorCalendarGetStartDate,
+    ECreatorCalendarGetEndDate, 
+    ECreatorCalendarAddDefaultAlarm
+};
+
 public: 
     static CCreatorInterimCalendar* NewL(CCreatorEngine* aEngine);
     static CCreatorInterimCalendar* NewLC(CCreatorEngine* aEngine);
@@ -63,8 +73,9 @@ private:
     void SetOrganizerL(CCalEntry& aCalEntry, CCalenderInterimParameters* parameters );
     
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
-
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData); //from MUIObserver
+    
     TInt CreateAppointmentEntryL(CCreatorModuleBaseParameters *aParameters);    
     TInt CreateEventEntryL(CCreatorModuleBaseParameters *aParameters);
     TInt CreateAnniversaryEntryL(CCreatorModuleBaseParameters *aParameters); 

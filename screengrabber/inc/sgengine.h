@@ -23,8 +23,8 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <f32file.h>
-#include <W32STD.H>
-#include <MdaAudioTonePlayer.h> 
+#include <w32std.h>
+#include <mdaaudiotoneplayer.h> 
 #include <qsymbianevent.h>
 
 

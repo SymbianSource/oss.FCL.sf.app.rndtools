@@ -16,8 +16,8 @@
 */
 
 
-#include <epos_cposlandmarkdatabase.h>
-#include <epos_cposlmcategorymanager.h>
+#include <EPos_CPosLandmarkDatabase.h>
+#include <EPos_CPosLmCategoryManager.h>
 #include <lbsposition.h>
 
 #include "engine.h"
@@ -353,18 +353,21 @@ CCreatorLandmarks::~CCreatorLandmarks()
 /**
  *
  */
-TBool CCreatorLandmarks::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorLandmarks::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorLandmarks::AskDataFromUserL");
+    
+    CCreatorModuleBase::AskDataFromUserL( aCommand );
+    
     if ( aCommand == ECmdDeleteLandmarks )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Landmarks?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Landmarks?"), this, ECreatorModuleDelete );
         }
     else if ( aCommand ==  ECmdDeleteCreatorLandmarks )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Landmarks created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Landmarks created with Creator?"), this, ECreatorModuleDelete );
         }
-    return iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many landmarks to create?"));    
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog(&iEntriesToBeCreated, _L("How many landmarks to create?"), EFalse, this, ECreatorModuleStart );    
     }
 
 /**

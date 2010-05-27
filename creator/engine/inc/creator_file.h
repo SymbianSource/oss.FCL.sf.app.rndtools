@@ -38,7 +38,7 @@ class CFilesParameters;
 class CDRMPermission;
 class CDRMConstraint;
 
-class CCreatorFiles : public CBase, public MCreatorModuleBase
+class CCreatorFiles : public CCreatorModuleBase
     {
 public: 
     static CCreatorFiles* NewL(CCreatorEngine* aEngine);
@@ -50,7 +50,9 @@ private:
     void ConstructL(CCreatorEngine* aEngine); // from MCreatorModuleBase
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+//    void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData); //from MUIObserver
+    void QueryDialogClosedL(TBool, TInt){/*TODO: DialogClosed*/};
     TInt CreateFileEntryL(CFilesParameters *aParameters, TInt aCommand);    
     void DeleteAllL();
     void DeleteAllCreatedByCreatorL();
