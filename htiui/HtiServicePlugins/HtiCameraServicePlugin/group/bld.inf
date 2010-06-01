@@ -11,17 +11,17 @@
 *
 * Contributors:
 *
-* Description:  A startup control file to add HtiFramework.exe to startup list.
+* Description:  Build information file for HtiAudioServicePlugin
 *
 */
 
-#include <StartupItem.rh>
-
-RESOURCE STARTUP_ITEM_INFO hti_framework
-    {
-    executable_name = "!:\\sys\\bin\\HtiFramework.exe";
-    recovery = EStartupItemExPolicyNone;
-    }
 
 
-// End of file
+PRJ_PLATFORMS
+
+PRJ_EXPORTS
+
+PRJ_MMPFILES
+HtiCameraServicePlugin.mmp
+
+//  End of File

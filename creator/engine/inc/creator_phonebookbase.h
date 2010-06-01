@@ -37,6 +37,7 @@ enum TCreatorPhonebookStatus{
     ECreatorPhonebookGetPhoneNumbersCount,
     ECreatorPhonebookGetUrlsCount,
     ECreatorPhonebookGetEmailsCount,
+    ECreatorPhonebookContactsAllFields,
     ECreatorPhonebookGetGroupFields,
     ECreatorPhonebookGetContactsInGroup
 };

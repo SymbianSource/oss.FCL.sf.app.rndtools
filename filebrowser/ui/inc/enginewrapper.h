@@ -81,9 +81,15 @@ public: // from MFileBrowserUI
     void ShowInformationNote(const TDesC &aDescText, const TDesC &aDescTitle);
     void ShowErrorNote(const TDesC& aDescText, TBool aNoTimeout = EFalse);
     void ShowConfirmationNote(const TDesC& aDescText, TBool aNoTimeout = EFalse);
+
+    void ShowProgressDialog(const TDesC& aDescText, TInt aMinimum, TInt aMaximum);
+    void CancelProgressDialog();
+    void SetProgressValue(TInt aValue);
+
     void ShowWaitDialog(const TDesC& aText);
     void CancelWaitDialog();
     void ProcessEvents();
+
     TBool ShowConfirmationQuery(const TDesC& aDescText);
 
 public: 
@@ -100,6 +106,7 @@ public:
 
     void startExecutingCommands(const QString &aCommandsExecutionMessage);
     void refreshView();
+    inline TListingMode listingMode() { return mEngine->FileUtils()->ListingMode(); }
 //    TBool IsCurrentDriveReadOnly();
 //    TBool IsCurrentItemDirectory();
     void moveUpOneLevel();
@@ -168,6 +175,7 @@ public:
     void showFileCheckSums(const QModelIndex &aIndex, TFileBrowserCmdFileChecksums checksumType);
 
 private slots:
+        void progressDialogCancelled();
         void waitDialogCancelled();
 
 private:
@@ -176,6 +184,7 @@ private:
     // List of found files results for Ui
     QStringList mFilesFound;
     FileBrowserSettings mSettings;
+    HbProgressDialog *mProgressDialog;
     HbProgressDialog *mWaitDialog;
     };
 

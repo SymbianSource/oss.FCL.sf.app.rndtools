@@ -103,37 +103,37 @@ public:
 	/**
 	* Create entries query dialog
 	*/
-	TBool EntriesQueryDialog(TInt* aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero = EFalse, MUIObserver* aObserver = NULL, int userData = 0);
+	TBool EntriesQueryDialog(TInt* aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero, MUIObserver* aObserver, TInt aUserData);
 
 	/**
 	* Create time query dialog
 	*/    
-    TBool TimeQueryDialog(TTime* aTime, const TDesC& aPrompt, MUIObserver* aObserver = NULL, int userData = 0);
+    TBool TimeQueryDialog(TTime* aTime, const TDesC& aPrompt, MUIObserver* aObserver, TInt aUserData);
 
 	/**
 	* Create yes or no query dialog
 	*/    
-    TBool YesNoQueryDialog(const TDesC& aPrompt, MUIObserver* aObserver = NULL, int userData = 0);
+    TBool YesNoQueryDialog(const TDesC& aPrompt, MUIObserver* aObserver, int userData);
 	
 	/**
 	* Popup list dialog for selecting item from dialog list
 	*/
-	TBool PopupListDialog(const TDesC& aPrompt, const CDesCArray* aFileNameArray, TInt* aIndex, MUIObserver* aObserver = NULL, TInt aUserData=0); 
+	TBool PopupListDialog(const TDesC& aPrompt, const CDesCArray* aFileNameArray, TInt* aIndex, MUIObserver* aObserver, TInt aUserData); 
 	
 	/**
 	* Directory query dialog
 	*/
-	bool DirectoryQueryDialog(const TDesC& aPrompt, TFileName& aDirectory);
+	TBool DirectoryQueryDialog(const TDesC& aPrompt, TDes& aDirectory, MUIObserver* aObserver, TInt aUserData);
 	
 	/**
 	* Create list query single-selection dialog
 	*/
-	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt* aSeletedItem, MUIObserver* aObserver = NULL, TInt aUserData=0);
+	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt* aSeletedItem, MUIObserver* aObserver, TInt aUserData);
 
 	/**
 	* Create list query multi-selection dialog
 	*/
-	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aSelectedItems, MUIObserver* aObserver = NULL, TInt aUserData=0);
+	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aSelectedItems, MUIObserver* aObserver, TInt aUserData);
 	
 	
 	/**

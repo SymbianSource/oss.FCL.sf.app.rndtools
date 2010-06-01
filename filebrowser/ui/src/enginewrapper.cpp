@@ -36,6 +36,7 @@ EngineWrapper::EngineWrapper()
     : mEngine(0),
     mFilesFound(),
     mSettings(0),
+    mProgressDialog(0),
     mWaitDialog(0)
 {
 }
@@ -48,6 +49,9 @@ EngineWrapper::~EngineWrapper()
         TRAP_IGNORE(mEngine->DeActivateEngineL());
         delete mEngine;
     } 
+    if (mProgressDialog)
+        delete mProgressDialog;
+
     if (mWaitDialog)
         delete mWaitDialog;
 }
@@ -728,6 +732,38 @@ void EngineWrapper::ShowConfirmationNote(const TDesC& aDescText, TBool aNoTimeou
 {
     QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
     Notifications::showConfirmationNote(qText, aNoTimeout);
+}
+
+void EngineWrapper::ShowProgressDialog(const TDesC& aDescText, TInt aMinimum, TInt aMaximum )
+{
+    const QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
+    if (!mProgressDialog) {
+        mProgressDialog = new HbProgressDialog(HbProgressDialog::WaitDialog);
+        QObject::connect(mProgressDialog, SIGNAL(cancelled ()), this, SLOT(progressDialogCancelled()));
+    }
+
+    mProgressDialog->setText(qText);
+    mProgressDialog->setMinimum(aMinimum);
+    mProgressDialog->setMaximum(aMaximum);
+    mEngine->FileUtils()->SetAllowProcessing(true);
+    mProgressDialog->show();
+}
+
+void EngineWrapper::CancelProgressDialog()
+{
+    if (mProgressDialog)
+        mProgressDialog->cancel();
+}
+
+void EngineWrapper::SetProgressValue(TInt aValue)
+{
+    if (mProgressDialog)
+        mProgressDialog->setProgressValue(aValue);
+}
+
+void EngineWrapper::progressDialogCancelled()
+{
+    mEngine->FileUtils()->DialogDismissedL();
 }
 
 void EngineWrapper::ShowWaitDialog(const TDesC& aDescText)

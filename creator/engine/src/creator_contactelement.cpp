@@ -222,7 +222,7 @@ void CCreatorContactElement::ExecuteCommandL()
                             {
                         // random
 							CleanupStack::PushL( field );
-							QContactDetail cntDetail = field->CreateContactDetail(iEngine,param,mapping.iDetail,mapping.iContext,mapping.iFieldCode, KErrNotFound );
+							QContactDetail cntDetail = field->CreateContactDetailL(iEngine,param,mapping.iDetail,mapping.iContext,mapping.iFieldCode, KErrNotFound );
                             if(!cntDetail.isEmpty())
                             	{
 								field->AddFieldToParam( param, cntDetail ); //it will do "param->iContactFields.AppendL(field);"
@@ -232,7 +232,7 @@ void CCreatorContactElement::ExecuteCommandL()
                         else
                             {
 							CleanupStack::PushL( field );
-                        	QContactDetail cntDetail = field->CreateContactDetail(iEngine,param,mapping.iDetail,mapping.iContext,mapping.iFieldCode, content );
+                        	QContactDetail cntDetail = field->CreateContactDetailL(iEngine,param,mapping.iDetail,mapping.iContext,mapping.iFieldCode, content );
                             if(!cntDetail.isEmpty())
                             	{
                         		field->AddFieldToParam( param, cntDetail ); //it will do "param->iContactFields.AppendL(field);"
@@ -261,7 +261,7 @@ void CCreatorContactElement::ExecuteCommandL()
                 
                 CCreatorContactField* field = CCreatorContactField::NewL();
                 CleanupStack::PushL( field );
-                QContactDetail cntDetail = field->CreateContactDetail(iEngine,param,fieldMappingTbl[i].iDetail,fieldMappingTbl[i].iContext,fieldMappingTbl[i].iFieldCode, KErrNotFound );
+                QContactDetail cntDetail = field->CreateContactDetailL(iEngine,param,fieldMappingTbl[i].iDetail,fieldMappingTbl[i].iContext,fieldMappingTbl[i].iFieldCode, KErrNotFound );
                 if(!cntDetail.isEmpty())
                 	{
 					field->AddFieldToParam( param, cntDetail ); //it will do "param->iContactFields.AppendL(field);"

@@ -69,6 +69,7 @@ CCreatorLogs* CCreatorLogs::NewLC(CCreatorEngine* aEngine)
 
 CCreatorLogs::CCreatorLogs() : CActive(0)
     {
+    iEntriesToBeCreated = 1;
     }
 
 void CCreatorLogs::ConstructL(CCreatorEngine* aEngine)
@@ -115,11 +116,13 @@ void CCreatorLogs::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
         return;
         }
     
+    const TDesC* showText = &KSavingText;
     TBool finished(EFalse);
     TBool retval(ETrue);
     switch(aUserData)
         {
         case ECreatorLogsDelete:
+            showText = &KDeletingText;
             iEntriesToBeCreated = 1;
             finished = ETrue;
             break;
@@ -140,7 +143,7 @@ void CCreatorLogs::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
         // add this command to command array
         iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
         // started exucuting commands
-        iEngine->ExecuteFirstCommandL( KSavingText );
+        iEngine->ExecuteFirstCommandL( *showText );
         }
     }
     

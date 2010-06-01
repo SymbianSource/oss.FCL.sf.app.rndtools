@@ -75,6 +75,7 @@ HbProgressDialog* Notifications::showProgressBar(const QString& text, int max)
 	HbProgressDialog *note = new HbProgressDialog(HbProgressDialog::ProgressDialog);
     note->setText(text);
     note->setMaximum(max);
+    note->setAutoClose(false);
     note->show();
     return note;
 
@@ -87,42 +88,6 @@ void Notifications::showGlobalNote(const QString& text, HbMessageBox::MessageBox
     showMessageBox(type, text, QString("Creator"), timeout);
 }
 
-// ---------------------------------------------------------------------------
-
-bool Notifications::directoryQueryDialog(const QString& text, QString& directory)
-{
-	bool err = false;
-    HbDialog *popup = new HbDialog();
-    popup->setDismissPolicy(HbPopup::TapOutside);
-    popup->setTimeout(HbPopup::NoTimeout);
-	
-	HbLabel *title = new HbLabel();
-    HbLineEdit *edit = new HbLineEdit();
-	HbAction *actionOk = new HbAction("Ok");
-	HbAction *actionCancel = new HbAction("Cancel");
-	
-	title->setPlainText(text);
-	popup->setHeadingWidget(title);
-	popup->setContentWidget(edit);
-	edit->setMaxLength(256);
-	edit->setText(directory);
-	edit->setSelection(0, directory.length());
-	
-	popup->setPrimaryAction(actionOk);
-    popup->setSecondaryAction(actionCancel);
-
-    // Launch popup syncronously
-    popup->setAttribute(Qt::WA_DeleteOnClose);
-    // TODO: handle dialog close & user input
-    popup->open();
-
-	// continue if ok selected and valid user input exists in line editor
-    /*if (action && action->text() == "Ok" && edit->text() != "") {
-		directory = edit->text();
-		err = true;
-	}*/
-	return err;
-}
 
 // ---------------------------------------------------------------------------
 
@@ -155,10 +120,19 @@ void CreatorYesNoDialog::DialogClosed(HbAction *action)
 CreatorInputDialog::CreatorInputDialog(int* value, MUIObserver* module, int userData) : 
     HbInputDialog(NULL),
     CreatorDialog(module, userData),
-    mValue(value)
+    mIntValue(value), 
+    mStrValue(mDummy)// will not be used
 {
     if(!value)
         throw std::invalid_argument("value cannot be the null!");
+}
+
+CreatorInputDialog::CreatorInputDialog(TDes& value, MUIObserver* module, int userData) : 
+    HbInputDialog(NULL),
+    CreatorDialog(module, userData),
+    mIntValue(NULL),
+    mStrValue(value)
+{
 }
 
 void CreatorInputDialog::launch(const QString& label, int* value, bool acceptsZero, MUIObserver* observer, int userData) throw( std::exception )
@@ -184,12 +158,29 @@ void CreatorInputDialog::launch(const QString& label, int* value, bool acceptsZe
     dlg->open(dlg, SLOT(DialogClosed(HbAction*)));
 }
 
+void CreatorInputDialog::launch(const QString& label, TDes& value, MUIObserver* observer, int userData) throw( std::exception )
+{
+    CreatorInputDialog* dlg = new CreatorInputDialog(value, observer, userData);
+    dlg->setPromptText(label);
+    dlg->lineEdit()->setMaxLength(value.MaxLength());
+    dlg->setValue(QString::fromUtf16(value.Ptr(), value.Length()));
+    dlg->lineEdit()->setSelection(0, dlg->value().toString().length());
+    dlg->setInputMode(TextInput);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->open(dlg, SLOT(DialogClosed(HbAction*)));
+}
+
 void CreatorInputDialog::DialogClosed(HbAction *action)
 {
     TBool PositiveAction(EFalse);
     if(action && (action->softKeyRole()==QAction::PositiveSoftKey || !action->text().compare("ok", Qt::CaseInsensitive))){
-        bool ok = false;
-        *mValue = value().toInt(&ok);
+        bool ok = true;
+        if( inputMode() == IntInput )
+            *mIntValue = value().toInt(&ok);
+        else if( inputMode() == TextInput && mStrValue.MaxLength() >= value().toString().length() )
+            mStrValue.Copy(value().toString().utf16());
+        else
+            ok = false;
         PositiveAction = ok ? ETrue : EFalse;
     }
     NotifyObserver(PositiveAction);

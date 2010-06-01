@@ -62,16 +62,17 @@ FileBrowserView::FileBrowserView(FileBrowserMainWindow &mainWindow)
     mToolBar(0),
     mNaviPane(0),
     mMainLayout(0),
-    mDirectory(),
-    mSelectedFilePath(),
     mFileBrowserModel(0),
-    mFileViewMenuActions(),
+    mOptionMenuActions(),
+    mContextMenuActions(),
+    mContextMenu(0),
     mToolbarBackAction(0),
     mItemHighlighted(false),
     mLocationChanged(false),
     mRemoveFileAfterCopied(false),
-    mClipBoardInUse(false),
+//    mClipBoardInUse(false),
     mFolderContentChanged(false),
+    mCurrentIndex(),
     mOldPassword(),
     mPanicCategory(),
     mAbsoluteFilePath(),
@@ -84,6 +85,7 @@ FileBrowserView::FileBrowserView(FileBrowserMainWindow &mainWindow)
     setTitle("File Browser");
 
     createMenu();
+    createContextMenu();
     createToolBar();
 }
 
@@ -108,6 +110,8 @@ void FileBrowserView::init(EngineWrapper *engineWrapper)
     mListView->setScrollingStyle(HbScrollArea::PanWithFollowOn);
 
     connect(mListView, SIGNAL(activated(QModelIndex)), this, SLOT(activated(QModelIndex)));
+    connect(mListView, SIGNAL(longPressed(HbAbstractViewItem*,QPointF)),
+            this, SLOT(onLongPressed(HbAbstractViewItem*, QPointF)));
 
     mNaviPane = new HbLabel(this);
     mNaviPane->setPlainText(QString(" ")); // TODO get from settings or default
@@ -130,10 +134,455 @@ FileBrowserView::~FileBrowserView()
 //    if (mEngineWrapper) {
 //        delete mEngineWrapper;
 //    }
+    if (mContextMenu) {
+        mContextMenu->deleteLater();
+    }
+
     delete mFileBrowserModel;
     delete mListView;
     delete mToolBar;
 }
+
+/**
+  Initial setup for options menu.
+  Dynamic menu update during the runtime is performed by updateOptionMenu() which
+  to menu's aboutToShow() signal.
+  */
+void FileBrowserView::createMenu()
+{
+    createFileMenu();
+    createEditMenu();
+    createViewMenu();
+    createToolsMenu();
+
+    createSelectionMenuItem();
+    createSettingsMenuItem();
+    createAboutMenuItem();
+    createExitMenuItem();
+
+    // menu dynamic update
+    connect(menu(), SIGNAL(aboutToShow()), this, SLOT(updateOptionMenu()));
+}
+
+/**
+  Initial setup for File submenu
+  */
+void FileBrowserView::createFileMenu()
+{
+    mOptionMenuActions.mFileMenu = menu()->addMenu("File");
+
+    mOptionMenuActions.mFileBackMoveUp = mOptionMenuActions.mFileMenu->addAction("Back/Move up (<-)", this, SLOT(fileBackMoveUp()));
+    mOptionMenuActions.mFileOpenDrive = mOptionMenuActions.mFileMenu->addAction("Open drive (->)", this, SLOT(fileOpenDrive()));
+    mOptionMenuActions.mFileOpenDirectory = mOptionMenuActions.mFileMenu->addAction("Open directory (->)", this, SLOT(fileOpenDirectory()));
+    mOptionMenuActions.mFileSearch = mOptionMenuActions.mFileMenu->addAction("Search...", this, SLOT(fileSearch()));
+    //mOptionMenuActions.mFileSearch->setVisible(false);
+
+    mOptionMenuActions.mFileNewMenu = mOptionMenuActions.mFileMenu->addMenu("New");
+    mOptionMenuActions.mFileNewFile = mOptionMenuActions.mFileNewMenu->addAction("File", this, SLOT(fileNewFile()));
+    mOptionMenuActions.mFileNewDirectory = mOptionMenuActions.mFileNewMenu->addAction("Directory", this, SLOT(fileNewDirectory()));
+
+    mOptionMenuActions.mFileDelete = mOptionMenuActions.mFileMenu->addAction("Delete", this, SLOT(fileDelete()));
+    mOptionMenuActions.mFileRename = mOptionMenuActions.mFileMenu->addAction("Rename", this, SLOT(fileRename()));
+    mOptionMenuActions.mFileTouch = mOptionMenuActions.mFileMenu->addAction("Touch", this, SLOT(fileTouch()));
+    mOptionMenuActions.mFileProperties = mOptionMenuActions.mFileMenu->addAction("Properties", this, SLOT(fileProperties()));
+
+//    mOptionMenuActions.mFileChecksumsMenu = mOptionMenuActions.mFileMenu->addMenu("Checksums");
+//    mOptionMenuActions.mFileChecksumsMD5 = mOptionMenuActions.mFileChecksumsMenu->addAction("MD5", this, SLOT(fileChecksumsMD5()));
+//    mOptionMenuActions.mFileChecksumsMD2 = mOptionMenuActions.mFileChecksumsMenu->addAction("MD2", this, SLOT(fileChecksumsMD2()));
+//    mOptionMenuActions.mFileChecksumsSHA1 = mOptionMenuActions.mFileChecksumsMenu->addAction("SHA-1", this, SLOT(fileChecksumsSHA1()));
+
+    mOptionMenuActions.mFileSetAttributes = mOptionMenuActions.mFileMenu->addAction("Set attributes...", this, SLOT(fileSetAttributes()));
+    mOptionMenuActions.mFileSetAttributes->setVisible(false);
+}
+
+/**
+  Initial setup for Edit submenu
+  */
+void FileBrowserView::createEditMenu()
+{
+    mOptionMenuActions.mEditMenu = menu()->addMenu("Edit");
+
+    mOptionMenuActions.mEditSnapShotToE = mOptionMenuActions.mEditMenu->addAction("Snap shot to E:", this, SLOT(editSnapShotToE()));
+    mOptionMenuActions.mEditSnapShotToE->setVisible(false);
+    mOptionMenuActions.mEditCut = mOptionMenuActions.mEditMenu->addAction("Cut", this, SLOT(editCut()));
+    mOptionMenuActions.mEditCopy = mOptionMenuActions.mEditMenu->addAction("Copy", this, SLOT(editCopy()));
+    mOptionMenuActions.mEditPaste = mOptionMenuActions.mEditMenu->addAction("Paste", this, SLOT(editPaste()));
+
+    mOptionMenuActions.mEditCopyToFolder = mOptionMenuActions.mEditMenu->addAction("Copy to folder...", this, SLOT(editCopyToFolder()));
+    mOptionMenuActions.mEditMoveToFolder = mOptionMenuActions.mEditMenu->addAction("Move to folder...", this, SLOT(editMoveToFolder()));
+
+    mOptionMenuActions.mEditSelect = mOptionMenuActions.mEditMenu->addAction("Select", this, SLOT(editSelect()));
+    mOptionMenuActions.mEditUnselect = mOptionMenuActions.mEditMenu->addAction("Unselect", this, SLOT(editUnselect()));
+    mOptionMenuActions.mEditSelectAll = mOptionMenuActions.mEditMenu->addAction("Select all", this, SLOT(editSelectAll()));
+    mOptionMenuActions.mEditUnselectAll = mOptionMenuActions.mEditMenu->addAction("Unselect all", this, SLOT(editUnselectAll()));
+}
+
+/**
+  Initial setup for View submenu
+  */
+void FileBrowserView::createViewMenu()
+{
+    mOptionMenuActions.mViewMenu = menu()->addMenu("View");
+    mOptionMenuActions.mViewMenu->menuAction()->setVisible(false);
+
+    mOptionMenuActions.mViewFilterEntries = mOptionMenuActions.mViewMenu->addAction("Filter entries", this, SLOT(viewFilterEntries()));
+    mOptionMenuActions.mViewRefresh = mOptionMenuActions.mViewMenu->addAction("Refresh", this, SLOT(viewRefresh()));
+}
+
+/**
+  Initial setup for Tools submenu
+  */
+void FileBrowserView::createToolsMenu()
+{
+    mOptionMenuActions.mToolsMenu = menu()->addMenu("Tools");
+
+    mOptionMenuActions.mToolsAllAppsToTextFile = mOptionMenuActions.mToolsMenu->addAction("All apps to a text file", this, SLOT(toolsAllAppsToTextFile()));
+    mOptionMenuActions.mToolsAllAppsToTextFile->setVisible(false);
+    mOptionMenuActions.mToolsAllFilesToTextFile = mOptionMenuActions.mToolsMenu->addAction("All files to a text file", this, SLOT(toolsAllFilesToTextFile()));
+    //mOptionMenuActions.mToolsAllFilesToTextFile->setVisible(false);
+
+    mOptionMenuActions.mToolsAvkonIconCacheMenu = mOptionMenuActions.mToolsMenu->addMenu("Avkon icon cache");
+    mOptionMenuActions.mToolsAvkonIconCacheMenu->menuAction()->setVisible(false);
+    mOptionMenuActions.mToolsAvkonIconCacheEnable = mOptionMenuActions.mToolsAvkonIconCacheMenu->addAction("Enable", this, SLOT(toolsAvkonIconCacheEnable()));
+    mOptionMenuActions.mToolsAvkonIconCacheDisable = mOptionMenuActions.mToolsAvkonIconCacheMenu->addAction("Clear and disable", this, SLOT(toolsAvkonIconCacheDisable()));
+
+    mOptionMenuActions.mToolsDisableExtendedErrors = mOptionMenuActions.mToolsMenu->addAction("Disable extended errors", this, SLOT(toolsDisableExtendedErrors()));
+    mOptionMenuActions.mToolsDumpMsgStoreWalk = mOptionMenuActions.mToolsMenu->addAction("Dump msg. store walk", this, SLOT(toolsDumpMsgStoreWalk()));
+    mOptionMenuActions.mToolsDumpMsgStoreWalk->setVisible(false);
+    mOptionMenuActions.mToolsEditDataTypes = mOptionMenuActions.mToolsMenu->addAction("Edit data types", this, SLOT(toolsEditDataTypes()));
+    mOptionMenuActions.mToolsEditDataTypes->setVisible(false);
+    mOptionMenuActions.mToolsEnableExtendedErrors = mOptionMenuActions.mToolsMenu->addAction("Enable extended errors", this, SLOT(toolsEnableExtendedErrors()));
+
+    mOptionMenuActions.mToolsErrorSimulateMenu = mOptionMenuActions.mToolsMenu->addMenu("Error simulate");
+    mOptionMenuActions.mToolsErrorSimulateLeave = mOptionMenuActions.mToolsErrorSimulateMenu->addAction("Leave", this, SLOT(toolsErrorSimulateLeave()));
+    mOptionMenuActions.mToolsErrorSimulatePanic = mOptionMenuActions.mToolsErrorSimulateMenu->addAction("Panic", this, SLOT(toolsErrorSimulatePanic()));
+    mOptionMenuActions.mToolsErrorSimulatePanic->setVisible(false);
+    mOptionMenuActions.mToolsErrorSimulateException = mOptionMenuActions.mToolsErrorSimulateMenu->addAction("Exception", this, SLOT(toolsErrorSimulateException()));
+
+//    mOptionMenuActions.mLocalConnectivityMenu = mOptionMenuActions.mToolsMenu->addMenu("Local connectivity");
+//    mOptionMenuActions.mToolsLocalConnectivityActivateInfrared = mOptionMenuActions.mLocalConnectivityMenu->addAction("Activate infrared", this, SLOT(toolsLocalConnectivityActivateInfrared()));
+//    mOptionMenuActions.mToolsLocalConnectivityLaunchBTUI = mOptionMenuActions.mLocalConnectivityMenu->addAction("Launch BT UI", this, SLOT(toolsLocalConnectivityLaunchBTUI()));
+//    mOptionMenuActions.mToolsLocalConnectivityLaunchUSBUI = mOptionMenuActions.mLocalConnectivityMenu->addAction("Launch USB UI", this, SLOT(toolsLocalConnectivityLaunchUSBUI()));
+
+    mOptionMenuActions.mToolsMessageAttachmentsMenu = mOptionMenuActions.mToolsMenu->addMenu("Message attachments");
+    mOptionMenuActions.mToolsMessageAttachmentsMenu->menuAction()->setVisible(false);
+    mOptionMenuActions.mToolsMessageInbox = mOptionMenuActions.mToolsMessageAttachmentsMenu->addAction("Inbox", this, SLOT(toolsMessageInbox()));
+    mOptionMenuActions.mToolsMessageDrafts = mOptionMenuActions.mToolsMessageAttachmentsMenu->addAction("Drafts", this, SLOT(toolsMessageDrafts()));
+    mOptionMenuActions.mToolsMessageSentItems = mOptionMenuActions.mToolsMessageAttachmentsMenu->addAction("Sent items", this, SLOT(toolsMessageSentItems()));
+    mOptionMenuActions.mToolsMessageOutbox = mOptionMenuActions.mToolsMessageAttachmentsMenu->addAction("Outbox", this, SLOT(toolsMessageOutbox()));
+
+    mOptionMenuActions.mToolsMemoryInfo = mOptionMenuActions.mToolsMenu->addAction("Memory info", this, SLOT(toolsMemoryInfo()));
+    mOptionMenuActions.mToolsMemoryInfo->setVisible(false);
+
+    mOptionMenuActions.mToolsSecureBackupMenu = mOptionMenuActions.mToolsMenu->addMenu("Secure backup");
+    mOptionMenuActions.mToolsSecureBackupMenu->menuAction()->setVisible(false);
+    mOptionMenuActions.mToolsSecureBackStart = mOptionMenuActions.mToolsSecureBackupMenu->addAction("Start backup", this, SLOT(toolsSecureBackStart()));
+    mOptionMenuActions.mToolsSecureBackRestore = mOptionMenuActions.mToolsSecureBackupMenu->addAction("Start restore", this, SLOT(toolsSecureBackRestore()));
+    mOptionMenuActions.mToolsSecureBackStop = mOptionMenuActions.mToolsSecureBackupMenu->addAction("Stop", this, SLOT(toolsSecureBackStop()));
+
+    mOptionMenuActions.mToolsSetDebugMask = mOptionMenuActions.mToolsMenu->addAction("Set debug mask", this, SLOT(toolsSetDebugMaskQuestion()));
+    mOptionMenuActions.mToolsShowOpenFilesHere = mOptionMenuActions.mToolsMenu->addAction("Show open files here", this, SLOT(toolsShowOpenFilesHere()));
+    mOptionMenuActions.mToolsShowOpenFilesHere->setVisible(false);
+}
+
+/**
+  Creates Selection mode menu item in option menu
+  */
+void FileBrowserView::createSelectionMenuItem()
+{
+    if (!mOptionMenuActions.mSelection) {
+        mOptionMenuActions.mSelection = menu()->addAction("Selection mode");
+        mOptionMenuActions.mSelection->setToolTip("Selection mode");
+        mOptionMenuActions.mSelection->setCheckable(true);
+        connect(mOptionMenuActions.mSelection, SIGNAL(triggered()), this, SLOT(selectionModeChanged()));
+    }
+}
+
+/**
+  Creates Setting menu item in option menu
+  */
+void FileBrowserView::createSettingsMenuItem()
+{
+    mOptionMenuActions.mSetting = menu()->addAction("Settings...");
+    connect(mOptionMenuActions.mSetting, SIGNAL(triggered()), this, SIGNAL(aboutToShowSettingsView()));
+}
+
+
+/**
+  Creates About menu item in option menu
+  */
+void FileBrowserView::createAboutMenuItem()
+{
+    // about note
+    mOptionMenuActions.mAbout = menu()->addAction("About");
+    connect(mOptionMenuActions.mAbout, SIGNAL(triggered()), this, SLOT(about()));
+}
+
+/**
+  Creates Exit menu item in option menu
+  */
+void FileBrowserView::createExitMenuItem()
+{
+    // application exit
+    mOptionMenuActions.mExit = menu()->addAction("Exit");
+    connect(mOptionMenuActions.mExit, SIGNAL(triggered()), qApp, SLOT(quit()));
+}
+
+/**
+  update menu: disk admin available only in device root view. edit available only in folder view
+  when file or folder content exist in current folder, or clipboard has copied item.
+  file and view menus updated every time regarding the folder content.
+  tools, settings, about, exit always available.
+  If there's remove and add operations at same time, always remove first
+  to keep to the correct menu items order.
+  */
+void FileBrowserView::updateOptionMenu()
+{
+    bool isFileItemListEmpty = mFileBrowserModel->rowCount() == 0;
+    bool isDriveListActive = mEngineWrapper->isDriveListViewActive();
+    bool isNormalModeActive = true;       //iModel->FileUtils()->IsNormalModeActive();
+    bool currentDriveReadOnly = mEngineWrapper->isCurrentDriveReadOnly();   //iModel->FileUtils()->IsCurrentDriveReadOnly();
+    bool currentItemDirectory = mEngineWrapper->getFileEntry(currentItemIndex()).isDir();
+    bool listBoxSelections = mListView->selectionModel()->selection().count() == 0;
+    bool isSelectionMode = mOptionMenuActions.mSelection && mOptionMenuActions.mSelection->isChecked();
+    bool emptyClipBoard = !mEngineWrapper->isClipBoardListInUse();
+    bool showSnapShot = false;           //iModel->FileUtils()->DriveSnapShotPossible();
+
+    bool showEditMenu(true);
+    if (isDriveListActive) {
+        if (!showSnapShot || isFileItemListEmpty && emptyClipBoard)
+            showEditMenu = false;
+        else
+            showEditMenu = true;
+    } else {
+        if (isFileItemListEmpty && emptyClipBoard)
+            showEditMenu = false;
+        else
+            showEditMenu = true;
+    }
+
+    mOptionMenuActions.mEditMenu->menuAction()->setVisible(showEditMenu);
+    // TODO mContextMenuActions.mDiskAdminMenu->menuAction()->setVisible(isDriveListActive);
+
+    mOptionMenuActions.mFileBackMoveUp->setVisible( !isDriveListActive);
+
+    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileOpen, isFileItemListEmpty || isDriveListActive || currentItemDirectory);
+    mOptionMenuActions.mFileOpenDrive->setVisible( !(isFileItemListEmpty || !isDriveListActive));
+    mOptionMenuActions.mFileOpenDirectory->setVisible( !(isFileItemListEmpty || isDriveListActive || !currentItemDirectory));
+
+    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileView, isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive);
+    //aMenuPane->SetItemDimmed(EFileBrowserCmd FileEdit, isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive);
+    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileSendTo, isFileItemListEmpty || driveListActive || currentItemDirectory);
+
+    mOptionMenuActions.mFileNewMenu->menuAction()->setVisible(!(isDriveListActive || currentDriveReadOnly));
+    mOptionMenuActions.mFileDelete->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly && isSelectionMode);
+    mOptionMenuActions.mFileRename->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly && !listBoxSelections && isSelectionMode);
+    mOptionMenuActions.mFileTouch->setVisible(!(isFileItemListEmpty || isDriveListActive || currentDriveReadOnly));
+    mOptionMenuActions.mFileProperties->setVisible(!(isFileItemListEmpty || listBoxSelections));
+    // TODO mOptionMenuActions.mFileChecksumsMenu->setVisible(!(isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive));
+    // TODO mOptionMenuActions.mFileSetAttributes->setVisible(!(isFileItemListEmpty || isDriveListActive || currentDriveReadOnly));
+    // TODO mOptionMenuActions.mFileCompress->setVisible(!(currentDriveReadOnly || isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive));
+    // TODO mOptionMenuActions.mFileDecompress->setVisible(!(currentDriveReadOnly || isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive));
+
+//    bool currentSelected = true;    //iContainer->ListBox()->View()->ItemIsSelected(iContainer->ListBox()->View()->CurrentItemIndex());
+    bool allSelected = mListView->selectionModel()->selection().count() == mFileBrowserModel->rowCount();
+    bool noneSelected = mListView->selectionModel()->selection().count() != 0;
+
+    //mOptionMenuActions.mEditSnapShotToE->setVisible(isDriveListActive); // TODO
+    mOptionMenuActions.mEditCut->setVisible(!isDriveListActive && !currentDriveReadOnly && !isFileItemListEmpty && !isSelectionMode);
+    mOptionMenuActions.mEditCopy->setVisible(!isDriveListActive && !isFileItemListEmpty);
+    mOptionMenuActions.mEditPaste->setVisible(!(isDriveListActive || emptyClipBoard || currentDriveReadOnly));
+    mOptionMenuActions.mEditCopyToFolder->setVisible(!(isDriveListActive || isFileItemListEmpty));
+    mOptionMenuActions.mEditMoveToFolder->setVisible(!(isDriveListActive || currentDriveReadOnly || isFileItemListEmpty));
+
+    mOptionMenuActions.mEditSelect->setVisible(false/*!isDriveListActive && !currentSelected && !isFileItemListEmpty*/);
+    mOptionMenuActions.mEditUnselect->setVisible(false/*!isDriveListActive && currentSelected && !isFileItemListEmpty*/);
+    mOptionMenuActions.mEditSelectAll->setVisible(!isDriveListActive && !allSelected && !isFileItemListEmpty);
+    mOptionMenuActions.mEditUnselectAll->setVisible(!isDriveListActive && !noneSelected && !isFileItemListEmpty);
+
+    // TODO mOptionMenuActions.mViewSort->setVisible(!(!isNormalModeActive || isDriveListActive || isFileItemListEmpty));
+    // TODO mOptionMenuActions.mViewOrder->setVisible(!(!isNormalModeActive || isDriveListActive || isFileItemListEmpty));
+    mOptionMenuActions.mViewRefresh->setVisible(isNormalModeActive);
+    mOptionMenuActions.mViewFilterEntries->setVisible(!isFileItemListEmpty);
+
+    // TODO R_FILEBROWSER_VIEW_SORT_SUBMENU
+    // aMenuPane->SetItemButtonState(iModel->FileUtils()->SortMode(), EEikMenuItemSymbolOn);
+
+    // TODO R_FILEBROWSER_VIEW_ORDER_SUBMENU
+    // aMenuPane->SetItemButtonState(iModel->FileUtils()->OrderMode(), EEikMenuItemSymbolOn);
+
+    // aResourceId == R_FILEBROWSER_TOOLS_SUBMENU
+    bool noExtendedErrorsAllowed = mEngineWrapper->ErrRdFileExists();
+    mOptionMenuActions.mToolsDisableExtendedErrors->setVisible(noExtendedErrorsAllowed);
+    mOptionMenuActions.mToolsEnableExtendedErrors->setVisible(!noExtendedErrorsAllowed);
+
+//    bool infraRedAllowed = mEngineWrapper->FileExists(KIRAppPath);
+//    bool bluetoothAllowed = mEngineWrapper->FileExists(KBTAppPath);
+//    bool usbAllowed = mEngineWrapper->FileExists(KUSBAppPath);
+//
+//    bool noLocalCon = !infraRedAllowed && !bluetoothAllowed && !usbAllowed;
+//    mOptionMenuActions.mToolsLocalConnectivityMenu->menuAction()->setVisible(!noLocalCon);
+//
+//    mOptionMenuActions.mToolsLocalConnectivityActivateInfrared->setVisible(infraRedAllowed);
+//    mOptionMenuActions.mToolsLocalConnectivityLaunchBTUI->setVisible(bluetoothAllowed);
+//    mOptionMenuActions.mToolsLocalConnectivityLaunchUSBUI->setVisible(usbAllowed);
+}
+
+void FileBrowserView::createContextMenu()
+{
+    mContextMenu = new HbMenu();
+    connect(mContextMenu, SIGNAL(aboutToShow()), this, SLOT(updateContextMenu()));
+
+    createFileContextMenu();
+    createEditContextMenu();
+    createViewContextMenu();
+    createDiskAdminContextMenu();
+}
+
+
+void FileBrowserView::createFileContextMenu()
+{
+    mContextMenuActions.mFileMenu = mContextMenu->addMenu("File");
+
+    mContextMenuActions.mFileBackMoveUp = mContextMenuActions.mFileMenu->addAction("Back/Move up (<-)", this, SLOT(fileBackMoveUp()));
+    mContextMenuActions.mFileOpenDrive = mContextMenuActions.mFileMenu->addAction("Open drive (->)", this, SLOT(fileOpenDrive()));
+    mContextMenuActions.mFileOpenDirectory = mContextMenuActions.mFileMenu->addAction("Open directory (->)", this, SLOT(fileOpenDirectory()));
+//    mContextMenuActions.mFileSearch = mContextMenuActions.mFileMenu->addAction("Search...", this, SLOT(fileSearch()));
+    //mContextMenuActions.mFileSearch->setVisible(false);
+
+//    mContextMenuActions.mFileNewMenu = mContextMenuActions.mFileMenu->addMenu("New");
+//    mContextMenuActions.mFileNewFile = mContextMenuActions.mFileNewMenu->addAction("File", this, SLOT(fileNewFile()));
+//    mContextMenuActions.mFileNewDirectory = mContextMenuActions.mFileNewMenu->addAction("Directory", this, SLOT(fileNewDirectory()));
+
+    mContextMenuActions.mFileDelete = mContextMenuActions.mFileMenu->addAction("Delete", this, SLOT(fileDelete()));
+    mContextMenuActions.mFileRename = mContextMenuActions.mFileMenu->addAction("Rename", this, SLOT(fileRename()));
+    mContextMenuActions.mFileTouch = mContextMenuActions.mFileMenu->addAction("Touch", this, SLOT(fileTouch()));
+    mContextMenuActions.mFileProperties = mContextMenuActions.mFileMenu->addAction("Properties", this, SLOT(fileProperties()));
+
+    mContextMenuActions.mFileChecksumsMenu = mContextMenuActions.mFileMenu->addMenu("Checksums");
+    mContextMenuActions.mFileChecksumsMD5 = mContextMenuActions.mFileChecksumsMenu->addAction("MD5", this, SLOT(fileChecksumsMD5()));
+    mContextMenuActions.mFileChecksumsMD2 = mContextMenuActions.mFileChecksumsMenu->addAction("MD2", this, SLOT(fileChecksumsMD2()));
+    mContextMenuActions.mFileChecksumsSHA1 = mContextMenuActions.mFileChecksumsMenu->addAction("SHA-1", this, SLOT(fileChecksumsSHA1()));
+
+//    mContextMenuActions.mFileSetAttributes = mContextMenuActions.mFileMenu->addAction("Set attributes...", this, SLOT(fileSetAttributes()));
+//    mContextMenuActions.mFileSetAttributes->setVisible(false);
+}
+
+void FileBrowserView::createEditContextMenu()
+{
+    mContextMenuActions.mEditMenu = mContextMenu->addMenu("Edit");
+
+    //mContextMenuActions.mEditSnapShotToE = mContextMenuActions.mEditMenu->addAction("Snap shot to E:", this, SLOT(editSnapShotToE()));
+//    mContextMenuActions.mEditSnapShotToE->setVisible(false);
+    mContextMenuActions.mEditCut = mContextMenuActions.mEditMenu->addAction("Cut", this, SLOT(editCut()));
+    mContextMenuActions.mEditCopy = mContextMenuActions.mEditMenu->addAction("Copy", this, SLOT(editCopy()));
+    mContextMenuActions.mEditPaste = mContextMenuActions.mEditMenu->addAction("Paste", this, SLOT(editPaste()));
+
+    mContextMenuActions.mEditCopyToFolder = mContextMenuActions.mEditMenu->addAction("Copy to folder...", this, SLOT(editCopyToFolder()));
+    mContextMenuActions.mEditMoveToFolder = mContextMenuActions.mEditMenu->addAction("Move to folder...", this, SLOT(editMoveToFolder()));
+}
+
+void FileBrowserView::createViewContextMenu()
+{
+
+}
+
+/**
+  Initial setup for Disk Admin submenu
+  */
+void FileBrowserView::createDiskAdminContextMenu()
+{
+    mContextMenuActions.mDiskAdminMenu = mContextMenu->addMenu("Disk admin");
+    //mContextMenuActions.mDiskAdminMenu->menuAction()->setVisible(false);
+
+    mContextMenuActions.mDiskAdminSetDrivePassword = mContextMenuActions.mDiskAdminMenu->addAction("Set drive password", this, SLOT(diskAdminSetDrivePassword()));
+    mContextMenuActions.mDiskAdminUnlockDrive = mContextMenuActions.mDiskAdminMenu->addAction("Unlock drive", this, SLOT(diskAdminUnlockDrive()));
+    mContextMenuActions.mDiskAdminClearDrivePassword = mContextMenuActions.mDiskAdminMenu->addAction("Clear drive password", this, SLOT(diskAdminClearDrivePassword()));
+    mContextMenuActions.mDiskAdminEraseDrivePassword = mContextMenuActions.mDiskAdminMenu->addAction("Erase drive password", this, SLOT(diskAdminEraseDrivePassword()));
+
+    mContextMenuActions.mDiskAdminFormatDrive = mContextMenuActions.mDiskAdminMenu->addAction("Format drive", this, SLOT(diskAdminFormatDrive()));
+    mContextMenuActions.mDiskAdminFormatDrive->setVisible(false);
+    mContextMenuActions.mDiskAdminQuickFormatDrive = mContextMenuActions.mDiskAdminMenu->addAction("Quick format drive", this, SLOT(diskAdminQuickFormatDrive()));
+    mContextMenuActions.mDiskAdminQuickFormatDrive->setVisible(false);
+
+    mContextMenuActions.mDiskAdminCheckDisk = mContextMenuActions.mDiskAdminMenu->addAction("Check disk", this, SLOT(diskAdminCheckDisk()));
+    mContextMenuActions.mDiskAdminScanDrive = mContextMenuActions.mDiskAdminMenu->addAction("Scan drive", this, SLOT(diskAdminScanDrive()));
+    mContextMenuActions.mDiskAdminSetDriveName = mContextMenuActions.mDiskAdminMenu->addAction("Set drive name", this, SLOT(diskAdminSetDriveName()));
+    mContextMenuActions.mDiskAdminSetDriveVolumeLabel = mContextMenuActions.mDiskAdminMenu->addAction("Set drive volume label", this, SLOT(diskAdminSetDriveVolumeLabel()));
+    mContextMenuActions.mDiskAdminEjectDrive = mContextMenuActions.mDiskAdminMenu->addAction("Eject drive", this, SLOT(diskAdminEjectDrive()));
+    mContextMenuActions.mDiskAdminDismountDrive = mContextMenuActions.mDiskAdminMenu->addAction("Dismount drive", this, SLOT(diskAdminDismountDrive()));
+    mContextMenuActions.mDiskAdminEraseMBR = mContextMenuActions.mDiskAdminMenu->addAction("Erase MBR", this, SLOT(diskAdminEraseMBR()));
+    mContextMenuActions.mDiskAdminPartitionDrive = mContextMenuActions.mDiskAdminMenu->addAction("Partition drive", this, SLOT(diskAdminPartitionDrive()));
+}
+
+void FileBrowserView::updateContextMenu()
+{
+    bool isFileItemListEmpty = mFileBrowserModel->rowCount() == 0;
+    bool isDriveListActive = mEngineWrapper->isDriveListViewActive();
+//    bool isNormalModeActive = true;       //iModel->FileUtils()->IsNormalModeActive();
+    bool currentDriveReadOnly = mEngineWrapper->isCurrentDriveReadOnly();
+    bool currentItemDirectory = mEngineWrapper->getFileEntry(mCurrentIndex /*currentItemIndex()*/).isDir();
+    bool listBoxSelections = mListView->selectionModel()->selection().count() == 0;
+    bool isSelectionMode = mOptionMenuActions.mSelection && mOptionMenuActions.mSelection->isChecked();
+    bool emptyClipBoard = !mEngineWrapper->isClipBoardListInUse();
+//    bool showSnapShot = false;           //iModel->FileUtils()->DriveSnapShotPossible();
+
+//    bool showEditMenu(true);
+//    if (isDriveListActive) {
+//        if (!showSnapShot || isFileItemListEmpty && emptyClipBoard)
+//            showEditMenu = false;
+//        else
+//            showEditMenu = true;
+//    } else {
+//        if (isFileItemListEmpty && emptyClipBoard)
+//            showEditMenu = false;
+//        else
+//            showEditMenu = true;
+//    }
+
+    // File submenu
+    mContextMenuActions.mFileBackMoveUp->setVisible( !isDriveListActive);
+    mContextMenuActions.mFileOpenDrive->setVisible( !isFileItemListEmpty && isDriveListActive);
+    mContextMenuActions.mFileOpenDirectory->setVisible( !isFileItemListEmpty && !isDriveListActive && currentItemDirectory);
+
+//    mContextMenuActions.mFileNewMenu->menuAction()->setVisible(!(isDriveListActive || currentDriveReadOnly));
+    mContextMenuActions.mFileDelete->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly);
+    mContextMenuActions.mFileRename->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly && !listBoxSelections);
+    mContextMenuActions.mFileTouch->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly);
+    mContextMenuActions.mFileProperties->setVisible(!isFileItemListEmpty && !listBoxSelections && !isSelectionMode);
+
+    mContextMenuActions.mFileChecksumsMenu->menuAction()->setVisible(!(isFileItemListEmpty || isSelectionMode /*|| listBoxSelections*/ || currentItemDirectory || isDriveListActive));
+    // Edit submenu
+    mContextMenuActions.mEditMenu->menuAction()->setVisible(!isDriveListActive);
+    mContextMenuActions.mEditCut->setVisible(!(isDriveListActive || currentDriveReadOnly || isFileItemListEmpty));
+    mContextMenuActions.mEditCopy->setVisible(!(isDriveListActive || isFileItemListEmpty));
+    mContextMenuActions.mEditPaste->setVisible(!isDriveListActive && !emptyClipBoard && !currentDriveReadOnly);
+    mContextMenuActions.mEditCopyToFolder->setVisible(!(isDriveListActive || isFileItemListEmpty));
+    mContextMenuActions.mEditMoveToFolder->setVisible(!(isDriveListActive || currentDriveReadOnly || isFileItemListEmpty));
+    //DiskAdmin submenu
+    mContextMenuActions.mDiskAdminMenu->menuAction()->setVisible(isDriveListActive);
+}
+
+// ---------------------------------------------------------------------------
+
+void FileBrowserView::onLongPressed(HbAbstractViewItem *listViewItem, QPointF coords)
+{
+    //Q_UNUSED(listViewItem);
+
+//    QItemSelectionModel *selectionIndexes = mListView->selectionModel();
+
+    // by default use selected items
+//    if (selectionIndexes && selectionIndexes->hasSelection()) {
+//        mSelectionIndexes = mListView->selectionModel()->selectedIndexes();
+//    } else {
+        mCurrentIndex = listViewItem->modelIndex();
+//        mSelectionIndexes.clear();
+//        mSelectionIndexes.append(mModelIndex);
+//    }
+    mContextMenu->setPreferredPos(coords);
+    mContextMenu->show();
+}
+
 
 /**
   Create a file browser tool bar
@@ -148,323 +597,11 @@ void FileBrowserView::createToolBar()
     connect(mToolbarBackAction, SIGNAL(triggered()), this, SLOT(fileBackMoveUp()));
     mToolBar->addAction(mToolbarBackAction);
 
-    if (mFileViewMenuActions.mSelection) {
-        mToolBar->addAction(mFileViewMenuActions.mSelection);
+    if (mOptionMenuActions.mSelection) {
+        mToolBar->addAction(mOptionMenuActions.mSelection);
     }
 
     setToolBar(mToolBar);
-}
-
-/**
-  Initial setup for options menu.
-  Dynamic menu update during the runtime is performed by updateMenu() which
-  to menu's aboutToShow() signal.
-  */
-void FileBrowserView::createMenu()
-{
-    createFileMenu();
-    createEditMenu();
-    createViewMenu();
-    createDiskAdminMenu();
-    createToolsMenu();
-
-    createSelectionMenuItem();
-    createSettingsMenuItem();
-    createAboutMenuItem();
-    createExitMenuItem();
-
-    // menu dynamic update
-    connect(menu(), SIGNAL(aboutToShow()), this, SLOT(updateMenu()));
-}
-
-/**
-  Initial setup for File submenu
-  */
-void FileBrowserView::createFileMenu()
-{
-    mFileViewMenuActions.mFileMenu = menu()->addMenu("File");
-
-    mFileViewMenuActions.mFileBackMoveUp = mFileViewMenuActions.mFileMenu->addAction("Back/Move up (<-)", this, SLOT(fileBackMoveUp()));
-    mFileViewMenuActions.mFileOpenDrive = mFileViewMenuActions.mFileMenu->addAction("Open drive (->)", this, SLOT(fileOpenDrive()));
-    mFileViewMenuActions.mFileOpenDirectory = mFileViewMenuActions.mFileMenu->addAction("Open directory (->)", this, SLOT(fileOpenDirectory()));
-    mFileViewMenuActions.mFileSearch = mFileViewMenuActions.mFileMenu->addAction("Search...", this, SLOT(fileSearch()));
-    //mFileViewMenuActions.mFileSearch->setVisible(false);
-
-    mFileViewMenuActions.mFileNewMenu = mFileViewMenuActions.mFileMenu->addMenu("New");
-    mFileViewMenuActions.mFileNewFile = mFileViewMenuActions.mFileNewMenu->addAction("File", this, SLOT(fileNewFile()));
-    mFileViewMenuActions.mFileNewDirectory = mFileViewMenuActions.mFileNewMenu->addAction("Directory", this, SLOT(fileNewDirectory()));
-
-    mFileViewMenuActions.mFileDelete = mFileViewMenuActions.mFileMenu->addAction("Delete", this, SLOT(fileDelete()));
-    mFileViewMenuActions.mFileRename = mFileViewMenuActions.mFileMenu->addAction("Rename", this, SLOT(fileRename()));
-    mFileViewMenuActions.mFileTouch = mFileViewMenuActions.mFileMenu->addAction("Touch", this, SLOT(fileTouch()));
-    mFileViewMenuActions.mFileProperties = mFileViewMenuActions.mFileMenu->addAction("Properties", this, SLOT(fileProperties()));
-
-    mFileViewMenuActions.mFileChecksumsMenu = mFileViewMenuActions.mFileMenu->addMenu("Checksums");
-    mFileViewMenuActions.mFileChecksumsMD5 = mFileViewMenuActions.mFileChecksumsMenu->addAction("MD5", this, SLOT(fileChecksumsMD5()));
-    mFileViewMenuActions.mFileChecksumsMD2 = mFileViewMenuActions.mFileChecksumsMenu->addAction("MD2", this, SLOT(fileChecksumsMD2()));
-    mFileViewMenuActions.mFileChecksumsSHA1 = mFileViewMenuActions.mFileChecksumsMenu->addAction("SHA-1", this, SLOT(fileChecksumsSHA1()));
-
-    mFileViewMenuActions.mFileSetAttributes = mFileViewMenuActions.mFileMenu->addAction("Set attributes...", this, SLOT(fileSetAttributes()));
-    mFileViewMenuActions.mFileSetAttributes->setVisible(false);
-}
-
-/**
-  Initial setup for Edit submenu
-  */
-void FileBrowserView::createEditMenu()
-{
-    mFileViewMenuActions.mEditMenu = menu()->addMenu("Edit");
-
-    mFileViewMenuActions.mEditSnapShotToE = mFileViewMenuActions.mEditMenu->addAction("Snap shot to E:", this, SLOT(editSnapShotToE()));
-    mFileViewMenuActions.mEditSnapShotToE->setVisible(false);
-    mFileViewMenuActions.mEditCut = mFileViewMenuActions.mEditMenu->addAction("Cut", this, SLOT(editCut()));
-    mFileViewMenuActions.mEditCopy = mFileViewMenuActions.mEditMenu->addAction("Copy", this, SLOT(editCopy()));
-    mFileViewMenuActions.mEditPaste = mFileViewMenuActions.mEditMenu->addAction("Paste", this, SLOT(editPaste()));
-
-    mFileViewMenuActions.mEditCopyToFolder = mFileViewMenuActions.mEditMenu->addAction("Copy to folder...", this, SLOT(editCopyToFolder()));
-    mFileViewMenuActions.mEditMoveToFolder = mFileViewMenuActions.mEditMenu->addAction("Move to folder...", this, SLOT(editMoveToFolder()));
-
-    mFileViewMenuActions.mEditSelect = mFileViewMenuActions.mEditMenu->addAction("Select", this, SLOT(editSelect()));
-    mFileViewMenuActions.mEditUnselect = mFileViewMenuActions.mEditMenu->addAction("Unselect", this, SLOT(editUnselect()));
-    mFileViewMenuActions.mEditSelectAll = mFileViewMenuActions.mEditMenu->addAction("Select all", this, SLOT(editSelectAll()));
-    mFileViewMenuActions.mEditUnselectAll = mFileViewMenuActions.mEditMenu->addAction("Unselect all", this, SLOT(editUnselectAll()));
-}
-
-/**
-  Initial setup for View submenu
-  */
-void FileBrowserView::createViewMenu()
-{
-    mFileViewMenuActions.mViewMenu = menu()->addMenu("View");
-    mFileViewMenuActions.mViewMenu->menuAction()->setVisible(false);
-
-    mFileViewMenuActions.mViewFilterEntries = mFileViewMenuActions.mViewMenu->addAction("Filter entries", this, SLOT(viewFilterEntries()));
-    mFileViewMenuActions.mViewRefresh = mFileViewMenuActions.mViewMenu->addAction("Refresh", this, SLOT(viewRefresh()));
-}
-
-/**
-  Initial setup for Disk Admin submenu
-  */
-void FileBrowserView::createDiskAdminMenu()
-{
-    mFileViewMenuActions.mDiskAdminMenu = menu()->addMenu("Disk admin");
-    mFileViewMenuActions.mDiskAdminMenu->menuAction()->setVisible(false);
-
-    mFileViewMenuActions.mDiskAdminSetDrivePassword = mFileViewMenuActions.mDiskAdminMenu->addAction("Set drive password", this, SLOT(diskAdminSetDrivePassword()));
-    mFileViewMenuActions.mDiskAdminUnlockDrive = mFileViewMenuActions.mDiskAdminMenu->addAction("Unlock drive", this, SLOT(diskAdminUnlockDrive()));
-    mFileViewMenuActions.mDiskAdminClearDrivePassword = mFileViewMenuActions.mDiskAdminMenu->addAction("Clear drive password", this, SLOT(diskAdminClearDrivePassword()));
-    mFileViewMenuActions.mDiskAdminEraseDrivePassword = mFileViewMenuActions.mDiskAdminMenu->addAction("Erase drive password", this, SLOT(diskAdminEraseDrivePassword()));
-
-    mFileViewMenuActions.mDiskAdminFormatDrive = mFileViewMenuActions.mDiskAdminMenu->addAction("Format drive", this, SLOT(diskAdminFormatDrive()));
-    mFileViewMenuActions.mDiskAdminFormatDrive->setVisible(false);
-    mFileViewMenuActions.mDiskAdminQuickFormatDrive = mFileViewMenuActions.mDiskAdminMenu->addAction("Quick format drive", this, SLOT(diskAdminQuickFormatDrive()));
-    mFileViewMenuActions.mDiskAdminQuickFormatDrive->setVisible(false);
-
-    mFileViewMenuActions.mDiskAdminCheckDisk = mFileViewMenuActions.mDiskAdminMenu->addAction("Check disk", this, SLOT(diskAdminCheckDisk()));
-    mFileViewMenuActions.mDiskAdminScanDrive = mFileViewMenuActions.mDiskAdminMenu->addAction("Scan drive", this, SLOT(diskAdminScanDrive()));
-    mFileViewMenuActions.mDiskAdminSetDriveName = mFileViewMenuActions.mDiskAdminMenu->addAction("Set drive name", this, SLOT(diskAdminSetDriveName()));
-    mFileViewMenuActions.mDiskAdminSetDriveVolumeLabel = mFileViewMenuActions.mDiskAdminMenu->addAction("Set drive volume label", this, SLOT(diskAdminSetDriveVolumeLabel()));
-    mFileViewMenuActions.mDiskAdminEjectDrive = mFileViewMenuActions.mDiskAdminMenu->addAction("Eject drive", this, SLOT(diskAdminEjectDrive()));
-    mFileViewMenuActions.mDiskAdminDismountDrive = mFileViewMenuActions.mDiskAdminMenu->addAction("Dismount drive", this, SLOT(diskAdminDismountDrive()));
-    mFileViewMenuActions.mDiskAdminEraseMBR = mFileViewMenuActions.mDiskAdminMenu->addAction("Erase MBR", this, SLOT(diskAdminEraseMBR()));
-    mFileViewMenuActions.mDiskAdminPartitionDrive = mFileViewMenuActions.mDiskAdminMenu->addAction("Partition drive", this, SLOT(diskAdminPartitionDrive()));
-}
-
-/**
-  Initial setup for Tools submenu
-  */
-void FileBrowserView::createToolsMenu()
-{
-    mFileViewMenuActions.mToolsMenu = menu()->addMenu("Tools");
-
-    mFileViewMenuActions.mToolsAllAppsToTextFile = mFileViewMenuActions.mToolsMenu->addAction("All apps to a text file", this, SLOT(toolsAllAppsToTextFile()));
-    mFileViewMenuActions.mToolsAllAppsToTextFile->setVisible(false);
-    mFileViewMenuActions.mToolsAllFilesToTextFile = mFileViewMenuActions.mToolsMenu->addAction("All files to a text file", this, SLOT(toolsAllFilesToTextFile()));
-    //mFileViewMenuActions.mToolsAllFilesToTextFile->setVisible(false);
-
-    mFileViewMenuActions.mToolsAvkonIconCacheMenu = mFileViewMenuActions.mToolsMenu->addMenu("Avkon icon cache");
-    mFileViewMenuActions.mToolsAvkonIconCacheMenu->menuAction()->setVisible(false);
-    mFileViewMenuActions.mToolsAvkonIconCacheEnable = mFileViewMenuActions.mToolsAvkonIconCacheMenu->addAction("Enable", this, SLOT(toolsAvkonIconCacheEnable()));
-    mFileViewMenuActions.mToolsAvkonIconCacheDisable = mFileViewMenuActions.mToolsAvkonIconCacheMenu->addAction("Clear and disable", this, SLOT(toolsAvkonIconCacheDisable()));
-
-    mFileViewMenuActions.mToolsDisableExtendedErrors = mFileViewMenuActions.mToolsMenu->addAction("Disable extended errors", this, SLOT(toolsDisableExtendedErrors()));
-    mFileViewMenuActions.mToolsDumpMsgStoreWalk = mFileViewMenuActions.mToolsMenu->addAction("Dump msg. store walk", this, SLOT(toolsDumpMsgStoreWalk()));
-    mFileViewMenuActions.mToolsDumpMsgStoreWalk->setVisible(false);
-    mFileViewMenuActions.mToolsEditDataTypes = mFileViewMenuActions.mToolsMenu->addAction("Edit data types", this, SLOT(toolsEditDataTypes()));
-    mFileViewMenuActions.mToolsEditDataTypes->setVisible(false);
-    mFileViewMenuActions.mToolsEnableExtendedErrors = mFileViewMenuActions.mToolsMenu->addAction("Enable extended errors", this, SLOT(toolsEnableExtendedErrors()));
-
-    mFileViewMenuActions.mToolsErrorSimulateMenu = mFileViewMenuActions.mToolsMenu->addMenu("Error simulate");
-    mFileViewMenuActions.mToolsErrorSimulateLeave = mFileViewMenuActions.mToolsErrorSimulateMenu->addAction("Leave", this, SLOT(toolsErrorSimulateLeave()));
-    mFileViewMenuActions.mToolsErrorSimulatePanic = mFileViewMenuActions.mToolsErrorSimulateMenu->addAction("Panic", this, SLOT(toolsErrorSimulatePanic()));
-    mFileViewMenuActions.mToolsErrorSimulatePanic->setVisible(false);
-    mFileViewMenuActions.mToolsErrorSimulateException = mFileViewMenuActions.mToolsErrorSimulateMenu->addAction("Exception", this, SLOT(toolsErrorSimulateException()));
-
-//    mFileViewMenuActions.mLocalConnectivityMenu = mFileViewMenuActions.mToolsMenu->addMenu("Local connectivity");
-//    mFileViewMenuActions.mToolsLocalConnectivityActivateInfrared = mFileViewMenuActions.mLocalConnectivityMenu->addAction("Activate infrared", this, SLOT(toolsLocalConnectivityActivateInfrared()));
-//    mFileViewMenuActions.mToolsLocalConnectivityLaunchBTUI = mFileViewMenuActions.mLocalConnectivityMenu->addAction("Launch BT UI", this, SLOT(toolsLocalConnectivityLaunchBTUI()));
-//    mFileViewMenuActions.mToolsLocalConnectivityLaunchUSBUI = mFileViewMenuActions.mLocalConnectivityMenu->addAction("Launch USB UI", this, SLOT(toolsLocalConnectivityLaunchUSBUI()));
-
-    mFileViewMenuActions.mToolsMessageAttachmentsMenu = mFileViewMenuActions.mToolsMenu->addMenu("Message attachments");
-    mFileViewMenuActions.mToolsMessageAttachmentsMenu->menuAction()->setVisible(false);
-    mFileViewMenuActions.mToolsMessageInbox = mFileViewMenuActions.mToolsMessageAttachmentsMenu->addAction("Inbox", this, SLOT(toolsMessageInbox()));
-    mFileViewMenuActions.mToolsMessageDrafts = mFileViewMenuActions.mToolsMessageAttachmentsMenu->addAction("Drafts", this, SLOT(toolsMessageDrafts()));
-    mFileViewMenuActions.mToolsMessageSentItems = mFileViewMenuActions.mToolsMessageAttachmentsMenu->addAction("Sent items", this, SLOT(toolsMessageSentItems()));
-    mFileViewMenuActions.mToolsMessageOutbox = mFileViewMenuActions.mToolsMessageAttachmentsMenu->addAction("Outbox", this, SLOT(toolsMessageOutbox()));
-
-    mFileViewMenuActions.mToolsMemoryInfo = mFileViewMenuActions.mToolsMenu->addAction("Memory info", this, SLOT(toolsMemoryInfo()));
-    mFileViewMenuActions.mToolsMemoryInfo->setVisible(false);
-
-    mFileViewMenuActions.mToolsSecureBackupMenu = mFileViewMenuActions.mToolsMenu->addMenu("Secure backup");
-    mFileViewMenuActions.mToolsSecureBackupMenu->menuAction()->setVisible(false);
-    mFileViewMenuActions.mToolsSecureBackStart = mFileViewMenuActions.mToolsSecureBackupMenu->addAction("Start backup", this, SLOT(toolsSecureBackStart()));
-    mFileViewMenuActions.mToolsSecureBackRestore = mFileViewMenuActions.mToolsSecureBackupMenu->addAction("Start restore", this, SLOT(toolsSecureBackRestore()));
-    mFileViewMenuActions.mToolsSecureBackStop = mFileViewMenuActions.mToolsSecureBackupMenu->addAction("Stop", this, SLOT(toolsSecureBackStop()));
-
-    mFileViewMenuActions.mToolsSetDebugMask = mFileViewMenuActions.mToolsMenu->addAction("Set debug mask", this, SLOT(toolsSetDebugMaskQuestion()));
-    mFileViewMenuActions.mToolsShowOpenFilesHere = mFileViewMenuActions.mToolsMenu->addAction("Show open files here", this, SLOT(toolsShowOpenFilesHere()));
-    mFileViewMenuActions.mToolsShowOpenFilesHere->setVisible(false);
-}
-
-/**
-  Creates Selection mode menu item in option menu
-  */
-void FileBrowserView::createSelectionMenuItem()
-{
-    if (!mFileViewMenuActions.mSelection) {
-        mFileViewMenuActions.mSelection = menu()->addAction("Selection mode");
-        mFileViewMenuActions.mSelection->setToolTip("Selection mode");
-        mFileViewMenuActions.mSelection->setCheckable(true);
-        connect(mFileViewMenuActions.mSelection, SIGNAL(triggered()), this, SLOT(selectionModeChanged()));
-    }
-}
-
-/**
-  Creates Setting menu item in option menu
-  */
-void FileBrowserView::createSettingsMenuItem()
-{
-    mFileViewMenuActions.mSetting = menu()->addAction("Settings...");
-    connect(mFileViewMenuActions.mSetting, SIGNAL(triggered()), this, SIGNAL(aboutToShowSettingsView()));
-}
-
-
-/**
-  Creates About menu item in option menu
-  */
-void FileBrowserView::createAboutMenuItem()
-{
-    // about note
-    mFileViewMenuActions.mAbout = menu()->addAction("About");
-    connect(mFileViewMenuActions.mAbout, SIGNAL(triggered()), this, SLOT(about()));
-}
-
-/**
-  Creates Exit menu item in option menu
-  */
-void FileBrowserView::createExitMenuItem()
-{
-    // application exit
-    mFileViewMenuActions.mExit = menu()->addAction("Exit");
-    connect(mFileViewMenuActions.mExit, SIGNAL(triggered()), qApp, SLOT(quit()));
-}
-
-/**
-  update menu: disk admin available only in device root view. edit available only in folder view
-  when file or folder content exist in current folder, or clipboard has copied item.
-  file and view menus updated every time regarding the folder content.
-  tools, settings, about, exit always available.
-  If there's remove and add operations at same time, always remove first
-  to keep to the correct menu items order.
-  */
-void FileBrowserView::updateMenu()
-{
-    bool emptyListBox = mFileBrowserModel->rowCount() == 0;           //iContainer->ListBoxNumberOfVisibleItems() == 0;
-    bool driveListActive = mEngineWrapper->isDriveListViewActive(); //iModel->FileUtils()->IsDriveListViewActive();
-    bool normalModeActive = true;       //iModel->FileUtils()->IsNormalModeActive();
-    bool currentDriveReadOnly = mEngineWrapper->isCurrentDriveReadOnly();   //iModel->FileUtils()->IsCurrentDriveReadOnly();
-    bool currentItemDirectory = mEngineWrapper->getFileEntry(currentItemIndex()).isDir();   //iModel->FileUtils()->IsCurrentItemDirectory();
-    bool listBoxSelections = mListView->selectionModel()->selection().count() == 0;      //iContainer->ListBoxSelectionIndexesCount() == 0;
-    bool emptyClipBoard = !mEngineWrapper->isClipBoardListInUse();
-    bool showSnapShot = false;           //iModel->FileUtils()->DriveSnapShotPossible();
-
-    bool showEditMenu(true);
-    if (driveListActive) {
-        if (!showSnapShot || emptyListBox && emptyClipBoard)
-            showEditMenu = false;
-        else
-            showEditMenu = true;
-    } else {
-        if (emptyListBox && emptyClipBoard)
-            showEditMenu = false;
-        else
-            showEditMenu = true;
-    }
-
-    mFileViewMenuActions.mEditMenu->menuAction()->setVisible(showEditMenu);
-    // TODO mFileViewMenuActions.mDiskAdminMenu->menuAction()->setVisible(driveListActive);
-
-    mFileViewMenuActions.mFileBackMoveUp->setVisible( !driveListActive);
-
-    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileOpen, emptyListBox || driveListActive || currentItemDirectory);
-    mFileViewMenuActions.mFileOpenDrive->setVisible( !(emptyListBox || !driveListActive));
-    mFileViewMenuActions.mFileOpenDirectory->setVisible( !(emptyListBox || driveListActive || !currentItemDirectory));
-
-    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileView, emptyListBox || listBoxSelections || currentItemDirectory || driveListActive);
-    //aMenuPane->SetItemDimmed(EFileBrowserCmd FileEdit, emptyListBox || listBoxSelections || currentItemDirectory || driveListActive);
-    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileSendTo, emptyListBox || driveListActive || currentItemDirectory);
-
-    mFileViewMenuActions.mFileNewMenu->menuAction()->setVisible(!(driveListActive || currentDriveReadOnly));
-    mFileViewMenuActions.mFileDelete->setVisible(!(emptyListBox || driveListActive || currentDriveReadOnly));
-    mFileViewMenuActions.mFileRename->setVisible(!(emptyListBox || driveListActive || currentDriveReadOnly || listBoxSelections));
-    mFileViewMenuActions.mFileTouch->setVisible(!(emptyListBox || driveListActive || currentDriveReadOnly));
-    mFileViewMenuActions.mFileProperties->setVisible(!(emptyListBox || listBoxSelections));
-    // TODO mFileViewMenuActions.mFileChecksums->setVisible(!(emptyListBox || listBoxSelections || currentItemDirectory || driveListActive));
-    // TODO mFileViewMenuActions.mFileSetAttributes->setVisible(!(emptyListBox || driveListActive || currentDriveReadOnly));
-    // TODO mFileViewMenuActions.mFileCompress->setVisible(!(currentDriveReadOnly || emptyListBox || listBoxSelections || currentItemDirectory || driveListActive));
-    // TODO mFileViewMenuActions.mFileDecompress->setVisible(!(currentDriveReadOnly || emptyListBox || listBoxSelections || currentItemDirectory || driveListActive));
-
-    bool currentSelected = true;    //iContainer->ListBox()->View()->ItemIsSelected(iContainer->ListBox()->View()->CurrentItemIndex());
-    bool allSelected = mListView->selectionModel()->selection().count() == mFileBrowserModel->rowCount();        //iContainer->ListBox()->SelectionIndexes()->Count() == iContainer->ListBox()->Model()->NumberOfItems();
-    bool noneSelected = mListView->selectionModel()->selection().count() != 0;       //iContainer->ListBox()->SelectionIndexes()->Count() == 0;
-
-    //mFileViewMenuActions.mEditSnapShotToE->setVisible(driveListActive); // TODO
-    mFileViewMenuActions.mEditCut->setVisible(!(driveListActive || currentDriveReadOnly || emptyListBox));
-    mFileViewMenuActions.mEditCopy->setVisible(!(driveListActive || emptyListBox));
-    mFileViewMenuActions.mEditPaste->setVisible(!(driveListActive || emptyClipBoard || currentDriveReadOnly));
-    mFileViewMenuActions.mEditCopyToFolder->setVisible(!(driveListActive || emptyListBox));
-    mFileViewMenuActions.mEditMoveToFolder->setVisible(!(driveListActive || currentDriveReadOnly || emptyListBox));
-    mFileViewMenuActions.mEditSelect->setVisible(!(driveListActive || currentSelected || emptyListBox));
-    mFileViewMenuActions.mEditUnselect->setVisible(!(driveListActive || !currentSelected || emptyListBox));
-    mFileViewMenuActions.mEditSelectAll->setVisible(!(driveListActive || allSelected || emptyListBox));
-    mFileViewMenuActions.mEditUnselectAll->setVisible(!(driveListActive || noneSelected || emptyListBox));
-
-    // TODO mFileViewMenuActions.mViewSort->setVisible(!(!normalModeActive || driveListActive || emptyListBox));
-    // TODO mFileViewMenuActions.mViewOrder->setVisible(!(!normalModeActive || driveListActive || emptyListBox));
-    mFileViewMenuActions.mViewRefresh->setVisible(normalModeActive);
-    mFileViewMenuActions.mViewFilterEntries->setVisible(!emptyListBox);
-
-    // TODO R_FILEBROWSER_VIEW_SORT_SUBMENU
-    // aMenuPane->SetItemButtonState(iModel->FileUtils()->SortMode(), EEikMenuItemSymbolOn);
-
-    // TODO R_FILEBROWSER_VIEW_ORDER_SUBMENU
-    // aMenuPane->SetItemButtonState(iModel->FileUtils()->OrderMode(), EEikMenuItemSymbolOn);
-
-    // aResourceId == R_FILEBROWSER_TOOLS_SUBMENU
-    bool noExtendedErrorsAllowed = mEngineWrapper->ErrRdFileExists();
-    mFileViewMenuActions.mToolsDisableExtendedErrors->setVisible(noExtendedErrorsAllowed);
-    mFileViewMenuActions.mToolsEnableExtendedErrors->setVisible(!noExtendedErrorsAllowed);
-
-//    bool infraRedAllowed = mEngineWrapper->FileExists(KIRAppPath);
-//    bool bluetoothAllowed = mEngineWrapper->FileExists(KBTAppPath);
-//    bool usbAllowed = mEngineWrapper->FileExists(KUSBAppPath);
-//
-//    bool noLocalCon = !infraRedAllowed && !bluetoothAllowed && !usbAllowed;
-//    mFileViewMenuActions.mToolsLocalConnectivityMenu->menuAction()->setVisible(!noLocalCon);
-//
-//    mFileViewMenuActions.mToolsLocalConnectivityActivateInfrared->setVisible(infraRedAllowed);
-//    mFileViewMenuActions.mToolsLocalConnectivityLaunchBTUI->setVisible(bluetoothAllowed);
-//    mFileViewMenuActions.mToolsLocalConnectivityLaunchUSBUI->setVisible(usbAllowed);
 }
 
 /**
@@ -473,10 +610,26 @@ void FileBrowserView::updateMenu()
 void FileBrowserView::refreshList()
 {
     mEngineWrapper->refreshView();
-    mNaviPane->setPlainText(QString(mEngineWrapper->currentPath()));
+//    mNaviPane->setPlainText(QString(mEngineWrapper->currentPath()));
     mListView->reset();
     mListView->setModel(mFileBrowserModel);
     mToolbarBackAction->setEnabled(!mEngineWrapper->isDriveListViewActive());
+
+    TListingMode listingMode = mEngineWrapper->listingMode();
+    if (listingMode == ENormalEntries)
+        mNaviPane->setPlainText(QString(mEngineWrapper->currentPath()));
+    else if (listingMode == ESearchResults)
+        mNaviPane->setPlainText(QString(tr("Search results")));
+    else if (listingMode == EOpenFiles)
+        mNaviPane->setPlainText(QString(tr("Open files")));
+    else if (listingMode == EMsgAttachmentsInbox)
+        mNaviPane->setPlainText(QString(tr("Attachments in Inbox")));
+    else if (listingMode == EMsgAttachmentsDrafts)
+        mNaviPane->setPlainText(QString(tr("Attachments in Drafts")));
+    else if (listingMode == EMsgAttachmentsSentItems)
+        mNaviPane->setPlainText(QString(tr("Attachments in Sent Items")));
+    else if (listingMode == EMsgAttachmentsOutbox)
+        mNaviPane->setPlainText(QString(tr("Attachments in Outbox")));
 }
 
 /**
@@ -626,16 +779,17 @@ void FileBrowserView::openPropertyDialog(const QStringList& propertyList, const 
     dialog->open();
 }
 
-QModelIndexList FileBrowserView::getSelectedItemsOrCurrentItem()
+void FileBrowserView::storeSelectedItemsOrCurrentItem()
 {
-    QModelIndexList modelIndexList;
     QItemSelectionModel *selectionIndexes = mListView->selectionModel();
 
     // by default use selected items
     if (selectionIndexes) {
         if (selectionIndexes->hasSelection()) {
-            modelIndexList = mListView->selectionModel()->selectedIndexes();
+            mSelectionIndexes = mListView->selectionModel()->selectedIndexes();
         } else { // or if none selected, use the current item index
+            mSelectionIndexes.clear();
+            mSelectionIndexes.append(mCurrentIndex);
 //            QModelIndex currentIndex = currentItemIndex();
 //            if (mFileBrowserModel->rowCount(currentItemIndex) > currentItemIndex && currentItemIndex >= 0)
 //            {
@@ -643,15 +797,14 @@ QModelIndexList FileBrowserView::getSelectedItemsOrCurrentItem()
 //            }
         }
     }
-    mClipBoardInUse = true;
-    return modelIndexList;
+//    mClipBoardInUse = true;
 }
 
 // ---------------------------------------------------------------------------
 
 QModelIndex FileBrowserView::currentItemIndex()
 {
-    return mListView->selectionModel()->currentIndex();
+    return mCurrentIndex;//mListView->selectionModel()->currentIndex();
 }
 
 // ---------------------------------------------------------------------------
@@ -694,13 +847,13 @@ void FileBrowserView::fileOpenDrive()
     mLocationChanged = true;
     // get selected drive or directory from list view model and open it:
     //if (mListView->selectionModel()->hasSelection()) {
-    if (mListView->selectionModel()->selection().count() != 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->moveDownToDirectory(currentIndex);
+//    if (mListView->selectionModel()->selection().count() != 0) {
+//        QModelIndex currentIndex = currentItemIndex();
+        mEngineWrapper->moveDownToDirectory(mCurrentIndex);
         populateFolderContent();
-    } else {
-        Notifications::showErrorNote("not selected item!");
-    }
+//    } else {
+//        Notifications::showErrorNote("not selected item!");
+//    }
 }
 
 void FileBrowserView::fileOpenDirectory()
@@ -708,13 +861,13 @@ void FileBrowserView::fileOpenDirectory()
     mLocationChanged = true;
     // get selected drive or directory from list view model and open it:
     //if (mListView->selectionModel()->hasSelection()) {
-    if (mListView->selectionModel()->selection().count() != 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->moveDownToDirectory(currentIndex);
+//    if (mListView->selectionModel()->selection().count() != 0) {
+//        QModelIndex currentIndex = currentItemIndex();
+        mEngineWrapper->moveDownToDirectory(mCurrentIndex);
         populateFolderContent();
-    } else {
-        Notifications::showErrorNote("not selected item!");
-    }
+//    } else {
+//        Notifications::showErrorNote("not selected item!");
+//    }
 }
 
 void FileBrowserView::fileSearch()
@@ -779,9 +932,9 @@ void FileBrowserView::doFileNewDirectory(HbAction *action)
   */
 void FileBrowserView::fileDelete()
 {
-    QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
+    storeSelectedItemsOrCurrentItem();
     const QString messageFormat = "Delete %1 entries?";
-    QString message = messageFormat.arg(currentSelection.count());
+    QString message = messageFormat.arg(mSelectionIndexes.count());
     HbMessageBox::question(message, this, SLOT(doFileDelete(HbAction*)));
 }
 
@@ -791,8 +944,8 @@ void FileBrowserView::fileDelete()
 void FileBrowserView::doFileDelete(HbAction* action)
 {
     if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
-        mEngineWrapper->deleteItems(currentSelection);
+        //storeSelectedItemsOrCurrentItem();
+        mEngineWrapper->deleteItems(mSelectionIndexes);
         refreshList();
     }
 }
@@ -802,12 +955,12 @@ void FileBrowserView::doFileDelete(HbAction* action)
   */
 void FileBrowserView::fileRename()
 {
-    QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
-    mEngineWrapper->setCurrentSelection(currentSelection);
+    storeSelectedItemsOrCurrentItem();
+    mEngineWrapper->setCurrentSelection(mSelectionIndexes);
 
-    for (int i(0), ie(currentSelection.count()); i < ie; ++i ) {
+    for (int i(0), ie(mSelectionIndexes.count()); i < ie; ++i ) {
         mProceed = (i == ie-1); // if the last item
-        mModelIndex = currentSelection.at(i);
+        mModelIndex = mSelectionIndexes.at(i);
         FileEntry entry = mEngineWrapper->getFileEntry(mModelIndex);
 
         QString heading = QString("Enter new name");
@@ -857,8 +1010,8 @@ void FileBrowserView::doFileRenameFileExist(HbAction *action)
   */
 void FileBrowserView::fileTouch()
 {
-    QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
-    mEngineWrapper->setCurrentSelection(currentSelection);
+    storeSelectedItemsOrCurrentItem();
+    mEngineWrapper->setCurrentSelection(mSelectionIndexes);
 
     if (mEngineWrapper->selectionHasDirs()) {
         const QString message = "Recurse touch for all selected dirs?";
@@ -900,8 +1053,8 @@ void FileBrowserView::fileChecksumsSHA1()
 
 void FileBrowserView::fileChecksums(TFileBrowserCmdFileChecksums checksumType)
 {
-    QModelIndex currentIndex = currentItemIndex();
-    mEngineWrapper->showFileCheckSums(currentIndex, checksumType);
+//    QModelIndex currentIndex = currentItemIndex();
+    mEngineWrapper->showFileCheckSums(mCurrentIndex, checksumType);
 }
 
 /**
@@ -933,11 +1086,12 @@ void FileBrowserView::editSnapShotToE()
   */
 void FileBrowserView::editCut()
 {
-    mClipboardIndices = getSelectedItemsOrCurrentItem();
+    storeSelectedItemsOrCurrentItem();
+    mClipboardIndexes = mSelectionIndexes;
 
-    mEngineWrapper->clipboardCut(mClipboardIndices);
+    mEngineWrapper->clipboardCut(mClipboardIndexes);
 
-    int operations = mClipboardIndices.count();
+    int operations = mClipboardIndexes.count();
     const QString message = QString ("%1 entries cut to clipboard");
     QString noteMsg = message.arg(operations);
 
@@ -950,11 +1104,12 @@ void FileBrowserView::editCut()
   */
 void FileBrowserView::editCopy()
 {
-    mClipboardIndices = getSelectedItemsOrCurrentItem();
+    storeSelectedItemsOrCurrentItem();
+    mClipboardIndexes = mSelectionIndexes;
 
-    mEngineWrapper->clipboardCopy(mClipboardIndices);
+    mEngineWrapper->clipboardCopy(mClipboardIndexes);
 
-    int operations = mClipboardIndices.count();
+    int operations = mClipboardIndexes.count();
 
     const QString message = QString ("%1 entries copied to clipboard");
     QString noteMsg = message.arg(operations);
@@ -972,7 +1127,7 @@ void FileBrowserView::editPaste()
 
     // TODO Set entry items here
 
-    someEntryExists = mEngineWrapper->isDestinationEntriesExists(mClipboardIndices, mEngineWrapper->currentPath());
+    someEntryExists = mEngineWrapper->isDestinationEntriesExists(mClipboardIndexes, mEngineWrapper->currentPath());
     if (someEntryExists) {
         fileOverwriteDialog();
     }
@@ -999,10 +1154,10 @@ void FileBrowserView::doEditCopyToFolder(HbAction *action)
         bool someEntryExists(false);
 
         // TODO Set entry items here
-        QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
-        mEngineWrapper->setCurrentSelection(currentSelection);
+        storeSelectedItemsOrCurrentItem();
+        mEngineWrapper->setCurrentSelection(mSelectionIndexes);
 
-        someEntryExists = mEngineWrapper->isDestinationEntriesExists(currentSelection, targetDir);
+        someEntryExists = mEngineWrapper->isDestinationEntriesExists(mSelectionIndexes, targetDir);
         if (someEntryExists) {
             fileOverwriteDialog();
         }
@@ -1031,10 +1186,10 @@ void FileBrowserView::doEditMoveToFolder(HbAction *action)
         bool someEntryExists(false);
 
         // TODO Set entry items here
-        QModelIndexList currentSelection = getSelectedItemsOrCurrentItem();
-        mEngineWrapper->setCurrentSelection(currentSelection);
+        storeSelectedItemsOrCurrentItem();
+        mEngineWrapper->setCurrentSelection(mSelectionIndexes);
 
-        someEntryExists = mEngineWrapper->isDestinationEntriesExists(currentSelection, targetDir);
+        someEntryExists = mEngineWrapper->isDestinationEntriesExists(mSelectionIndexes, targetDir);
         if (someEntryExists) {
             fileOverwriteDialog();
         }
@@ -1758,7 +1913,7 @@ void FileBrowserView::toolsShowOpenFilesHere()
 // ---------------------------------------------------------------------------
 void FileBrowserView::selectionModeChanged()
 {
-    if (mFileViewMenuActions.mSelection->isChecked()) {
+    if (mOptionMenuActions.mSelection->isChecked()) {
          activateSelectionMode();
      } else {
          deActivateSelectionMode();

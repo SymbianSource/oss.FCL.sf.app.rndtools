@@ -340,12 +340,14 @@ void CCreatorInterimCalendar::QueryDialogClosedL(TBool aPositiveAction, TInt aUs
         return;
         }
     
+    const TDesC* showText = &KSavingText;
     TBool finished(EFalse);
     TBool retval(ETrue);
     switch(aUserData)
         {
         case ECreatorCalendarDelete:
             iEntriesToBeCreated = 1;
+            showText = &KDeletingText;
             finished = ETrue;
             break;
         case ECreatorCalendarStart:
@@ -406,7 +408,7 @@ void CCreatorInterimCalendar::QueryDialogClosedL(TBool aPositiveAction, TInt aUs
         // add this command to command array
         iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
         // started exucuting commands
-        iEngine->ExecuteFirstCommandL( KSavingText );
+        iEngine->ExecuteFirstCommandL( *showText );
         }
     }
 

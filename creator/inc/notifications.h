@@ -56,31 +56,6 @@ public:
      */
 	static HbProgressDialog* showProgressBar(const QString& text, int max);
 	
-	/**
-	* Entries query dialog
-	*/
-	static bool entriesQueryDialog(int& numberOfEntries, const QString& text, bool acceptsZero);
-    
-	/**
-	* Time query dialog
-	*/
-    static bool timeQueryDialog(QDate& date, const QString& text);
-
-	/**
-	* Yes or No query dialog
-	*/    
-    static bool yesNoQueryDialog(const QString& text);
-	
-	/**
-	* popup list dialog for selecting one item from list
-	*/
-	static void popupListDialog(const QString& text, QStringList& items, HbAbstractItemView::SelectionMode mode, QObject* receiver = 0, const char* member = 0);
-	
-	/**
-	* directory query dialog
-	*/
-	static bool directoryQueryDialog(const QString& text, QString& directory);
-
     /**
      * shows global HbGlobalCommonNote type note
      */
@@ -129,12 +104,16 @@ class CreatorInputDialog : public HbInputDialog, public CreatorDialog
     Q_OBJECT
 public:
     static void launch(const QString& label, int* value, bool acceptZero,  MUIObserver* observer, int userData) throw( std::exception );
+    static void launch(const QString& label, TDes& value,  MUIObserver* observer, int userData) throw( std::exception );
 protected:
-    CreatorInputDialog(int*value, MUIObserver* observer, int userData);
+    CreatorInputDialog(int* value, MUIObserver* observer, int userData);
+    CreatorInputDialog(TDes& value, MUIObserver* observer, int userData);
 protected slots:
     void DialogClosed(HbAction*);
 private:
-    int *mValue;
+    int *mIntValue;
+    TDes& mStrValue;
+    TBuf<1> mDummy;
 };
 
 class CreatorSelectionDialog : public HbSelectionDialog, public CreatorDialog

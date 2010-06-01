@@ -24,7 +24,7 @@
 #include "creator_traces.h"
 
 #include <bautils.h> 
-#include <qpixmap>
+//#include <qpixmap>
 
 //#include <QDebug>
 _LIT(KTempPath, "C:\\Data\\Creator\\");
@@ -362,260 +362,7 @@ TBool CCreatorPhonebook::HasOtherThanGroupsL( /*MVPbkContactLinkArray* aContacts
     return result;
     }
 
-QContactDetail CCreatorPhonebook::CreateContactDetail(QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand )
-	{
-	QContactDetail contactDetail;
-	TPtrC contentData;
-	if( aDetail == QContactPhoneNumber::DefinitionName)
-		{
-		QContactPhoneNumber phoneNumber;// = contactDetail;
-		if(!aFieldContext.isEmpty())
-		   	{
-			phoneNumber.setContexts(aFieldContext);
-			}
-		phoneNumber.setSubTypes(aFieldString);
-		contentData.Set(iEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
-		QString number = QString::fromUtf16(contentData.Ptr(),contentData.Length());
-		phoneNumber.setNumber(number);
-		return phoneNumber;
-		}
-	else if( aDetail == QContactName::DefinitionName )			//--Contact NAME-----------------------------
-		{
-		QContactName contactName;
-		for(int i = 0 ; i < iParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
-			{
-			if(iParameters->iContactFields.at(i).definitionName() == QContactName::DefinitionName )
-				{
-				contactName = iParameters->iContactFields.at(i);
-				}
-			}
-		contentData.Set(iEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
-		QString name = QString::fromUtf16(contentData.Ptr(),contentData.Length());
-		if(aFieldString == QContactName::FieldFirstName)
-			{
-			if(contactName.firstName().isEmpty())
-				{
-				contactName.setFirstName( name );
-				}
-			}
-		else if(aFieldString == QContactName::FieldLastName)
-			{
-			if(contactName.lastName().isEmpty())
-				{
-				contactName.setLastName( name );
-				}
-			}
-		else if(aFieldString == QContactName::FieldMiddleName)
-			{
-			if(contactName.middleName().isEmpty())
-				{
-				contactName.setMiddleName( name );
-				}
-			}
-		else if(aFieldString == QContactName::FieldPrefix)
-			{
-			if(contactName.prefix().isEmpty())
-				{
-				contactName.setPrefix( name );
-				}
-			}
-		else if(aFieldString == QContactName::FieldSuffix)
-			{
-			if(contactName.suffix().isEmpty())
-				{
-				contactName.setSuffix( name );
-				}
-			}
-		else		//QContactName::FieldCustomLabel:
-			{
-			if(contactName.customLabel().isEmpty())
-				{
-				contactName.setCustomLabel( name );
-				}
-			}
-		return contactName;
-		}
-	else if( aDetail == QContactOrganization::DefinitionName )			//--Contact Company-----------------------------
-		{
-		QContactOrganization contactCompany;
-		
-		for(int i = 0 ; i < iParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
-			{
-			if(iParameters->iContactFields.at(i).definitionName() == QContactOrganization::DefinitionName )
-				{
-				contactCompany = iParameters->iContactFields.at(i);
-				}
-			}
-		contentData.Set(iEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
-		QString company = QString::fromUtf16(contentData.Ptr(),contentData.Length());
-		if(aFieldString == QContactOrganization::FieldName)
-			{
-			if(contactCompany.name().isEmpty())
-				{
-				contactCompany.setName( company );
-				}
-			}
-		if(aFieldString == QContactOrganization::FieldTitle)
-			{
-			if(contactCompany.title().isEmpty())
-				{
-				contactCompany.setTitle( company );
-				}
-			}
-		if(aFieldString == QContactOrganization::FieldDepartment)
-			{
-				QStringList depList = contactCompany.department();
-				depList.append(company);
-				contactCompany.setDepartment(depList);
-			}
-		if(aFieldString == QContactOrganization::FieldAssistantName)
-			{
-			if(contactCompany.assistantName().isEmpty())
-				{
-				contactCompany.setAssistantName( company );
-				}
-			}
-		return contactCompany;
-		}
-	else if( aDetail == QContactAddress::DefinitionName )			//--Contact Address-----------------------------
-			{
-			QContactAddress contactAddress;
-			
-			for(int i = 0 ; i < iParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
-				{
-				if(iParameters->iContactFields.at(i).definitionName() == QContactAddress::DefinitionName && iParameters->iContactFields.at(i).value(QContactDetail::FieldContext) == aFieldContext )
-					{
-					contactAddress = iParameters->iContactFields.at(i);
-					}
-				}
-			
-			contactAddress.setContexts( aFieldContext );
-			
-			contentData.Set(iEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
-			QString address = QString::fromUtf16(contentData.Ptr(),contentData.Length());
-			if(aFieldString == QContactAddress::FieldStreet )
-				{
-				if( contactAddress.street().isEmpty() )
-					{
-					contactAddress.setStreet( address );
-					}
-				}
-			else if(aFieldString == QContactAddress::FieldLocality )
-				{
-				if( contactAddress.locality().isEmpty() )
-					{
-					contactAddress.setLocality( address );
-					}
-				}
-			else if(aFieldString == QContactAddress::FieldRegion )
-				{
-				if( contactAddress.region().isEmpty() )
-					{
-					contactAddress.setRegion( address );
-					}
-				}
-			else if(aFieldString == QContactAddress::FieldPostcode )
-				{
-				if( contactAddress.postcode().isEmpty() )
-					{
-					contactAddress.setPostcode( address );
-					}
-				}
-			else if(aFieldString == QContactAddress::FieldCountry )
-				{
-				if( contactAddress.country().isEmpty() )
-					{
-					contactAddress.setCountry( address );
-					}
-				}
-			else 
-				{
-				return contactDetail;
-				}
-			return contactAddress;
-			}
-	else if( aDetail == QContactNote::DefinitionName )			//--Contact Note-----------------------------
-				{
-				QContactNote contactNote;
-				contentData.Set(iEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
-				QString note = QString::fromUtf16(contentData.Ptr(),contentData.Length());
-				contactNote.setNote(note);
-				return contactNote;
-				}
-	else if( aDetail == QContactFamily::DefinitionName )			//--Contact Family-----------------------------
-				{
-				QContactFamily contactFamily;
-				
-				for(int i = 0 ; i < iParameters->iContactFields.count() ; i++ ) //go through all contact details to check if there is already Contact Name to set other details
-					{
-					if(iParameters->iContactFields.at(i).definitionName() == QContactFamily::DefinitionName && iParameters->iContactFields.at(i).value(QContactDetail::FieldContext) == aFieldContext )
-						{
-						contactFamily = iParameters->iContactFields.at(i);
-						}
-					}
-				contentData.Set(iEngine->RandomString((CCreatorEngine::TRandomStringType) aRand));
-				QString familyData = QString::fromUtf16(contentData.Ptr(),contentData.Length());
-				if(aFieldString == QContactFamily::FieldSpouse )
-					{
-					if( contactFamily.spouse().isEmpty() )
-						{
-						contactFamily.setSpouse( familyData );
-						}
-					}
-				if(aFieldString == QContactFamily::FieldChildren )
-					{
-						QStringList children = contactFamily.children();
-						children.append( familyData );
-						contactFamily.setChildren( children );
-					}
-				
-				return contactFamily;
-				}
-	
-	if( aDetail == QContactAvatar::DefinitionName)						//--Contact Picture-----------------------------
-			{
-			RFs& fs = CCoeEnv::Static()->FsSession();
-			QContactAvatar contactAvatar;
-			TBuf<KMaxFileName> srcPath;
-			iEngine->RandomPictureFileL(srcPath);
-			TBuf<KMaxFileName> destPath(KTempPath);
-						
-			if(!BaflUtils::FolderExists( fs, destPath ))
-				{
-				BaflUtils::EnsurePathExistsL( fs, destPath );
-				}
-			
-			TInt err=BaflUtils::CopyFile( fs, srcPath, destPath );
 
-			TParse temp;
-			temp.Set( srcPath,NULL,NULL );
-			destPath.Append(temp.NameAndExt());
-			
-			QString avatarFile = QString::fromUtf16( destPath.Ptr(),destPath.Length() );
-			
-			QPixmap avatarPix(avatarFile);
-
-			contactAvatar.setAvatar(avatarFile);
-            contactAvatar.setPixmap(avatarPix);
-
-			return contactAvatar;
-			}
-	if( aDetail == QContactAnniversary::DefinitionName)
-			{
-			QContactAnniversary contactAnniversary;
-			QDate date;
-			TTime datetime = iEngine->RandomDate( CCreatorEngine::EDateFuture );
-			date.setDate( datetime.DateTime().Year(),(int) (datetime.DateTime().Month()+1), datetime.DateTime().Day() );
-			contactAnniversary.setOriginalDate( date );
-			return contactAnniversary;
-			}
-			
-
-
-	
-	
-	return contactDetail;
-	}
 //----------------------------------------------------------------------------
 
 
@@ -711,7 +458,7 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
     				
     				CCreatorContactField* field = CCreatorContactField::NewL();
 	                CleanupStack::PushL( field );
-	                QContactDetail cntDetail = field->CreateContactDetail(iEngine,iParameters,CreatorPbkMiscTextFields[tfIndex].iDetail, CreatorPbkMiscTextFields[tfIndex].iFieldContext, CreatorPbkMiscTextFields[tfIndex].iFieldString, CreatorPbkMiscTextFields[tfIndex].iRandomType );
+	                QContactDetail cntDetail = field->CreateContactDetailL(iEngine,iParameters,CreatorPbkMiscTextFields[tfIndex].iDetail, CreatorPbkMiscTextFields[tfIndex].iFieldContext, CreatorPbkMiscTextFields[tfIndex].iFieldString, CreatorPbkMiscTextFields[tfIndex].iRandomType );
   	                if(!cntDetail.isEmpty())
   	                	{
   						field->AddFieldToParam( iParameters, cntDetail ); //it will do "param->iContactFields.AppendL(field);"
@@ -722,7 +469,7 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
 		TPtrC emptyData;
 		CCreatorContactField* fieldPicture = CCreatorContactField::NewL();
 		CleanupStack::PushL( fieldPicture );
-		QContactDetail cntDetail = fieldPicture->CreateContactDetail(iEngine,iParameters,QContactAvatar::DefinitionName,"","",emptyData );
+		QContactDetail cntDetail = fieldPicture->CreateContactDetailL(iEngine,iParameters,QContactAvatar::DefinitionName,"","",emptyData );
 		if(!cntDetail.isEmpty())
 		  	{
 		fieldPicture->AddFieldToParam( iParameters, cntDetail ); //it will do "param->iContactFields.AppendL(field);"
@@ -732,7 +479,7 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
 		// Add date-time fields:
 		CCreatorContactField* fieldAnniv = CCreatorContactField::NewL();
 		CleanupStack::PushL( fieldAnniv );
-		QContactDetail cntDetAnniv = fieldAnniv->CreateContactDetail(iEngine,iParameters,QContactAnniversary::DefinitionName,"","",emptyData );
+		QContactDetail cntDetAnniv = fieldAnniv->CreateContactDetailL(iEngine,iParameters,QContactAnniversary::DefinitionName,"","",emptyData );
 		if(!cntDetAnniv .isEmpty())
 		  	{
 			fieldAnniv->AddFieldToParam( iParameters, cntDetAnniv ); //it will do "param->iContactFields.AppendL(field);"
@@ -782,7 +529,7 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
         {
     	CCreatorContactField* fieldUrl = CCreatorContactField::NewL();
     	CleanupStack::PushL( fieldUrl );
-    	QContactDetail cntDetUrl = fieldUrl->CreateContactDetail(iEngine,iParameters,QContactUrl::DefinitionName,"","",KErrNotFound );
+    	QContactDetail cntDetUrl = fieldUrl->CreateContactDetailL(iEngine,iParameters,QContactUrl::DefinitionName,"","",KErrNotFound );
     	if(!cntDetUrl.isEmpty())
     	  	{
 			fieldUrl->AddFieldToParam( iParameters, cntDetUrl ); //it will do "param->iContactFields.AppendL(field);"
@@ -796,7 +543,7 @@ void CCreatorPhonebook::InitializeContactParamsL(/*CCreatorModuleBaseParameters*
         	{
 			CCreatorContactField* fieldEmail = CCreatorContactField::NewL();
         	CleanupStack::PushL( fieldEmail );
-        	QContactDetail cntDetEmail = fieldEmail->CreateContactDetail(iEngine,iParameters,QContactEmailAddress::DefinitionName,"","",KErrNotFound );
+        	QContactDetail cntDetEmail = fieldEmail->CreateContactDetailL(iEngine,iParameters,QContactEmailAddress::DefinitionName,"","",KErrNotFound );
         	if(!cntDetEmail.isEmpty())
         	  	{
 				fieldEmail->AddFieldToParam( iParameters, cntDetEmail ); //it will do "param->iContactFields.AppendL(field);"
@@ -980,7 +727,7 @@ void CCreatorContactField::ConstructL()
     {
     //pImpl = CCreatorContactTextField::NewL(aFieldType, aData); 
     }
-QContactDetail CCreatorContactField::CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand )
+QContactDetail CCreatorContactField::CreateContactDetailL(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand )
     {
 	QContactDetail emptyDet;
     TPtrC contentData;
@@ -1022,7 +769,7 @@ QContactDetail CCreatorContactField::CreateContactDetail(CCreatorEngine* aEngine
 			return emptyDet;
 			}
     	}
-    emptyDet = CreateContactDetail( aEngine, aParameters, aDetail, aFieldContext, aFieldString, contentData );
+    emptyDet = CreateContactDetailL( aEngine, aParameters, aDetail, aFieldContext, aFieldString, contentData );
     if( tempData )
     	{
 		CleanupStack::PopAndDestroy( tempData );
@@ -1030,7 +777,7 @@ QContactDetail CCreatorContactField::CreateContactDetail(CCreatorEngine* aEngine
     return emptyDet;
     }
 
-QContactDetail CCreatorContactField::CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TPtrC aData )
+QContactDetail CCreatorContactField::CreateContactDetailL(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TPtrC aData )
     {
     QContactDetail contactDetail;
         
@@ -1258,10 +1005,10 @@ QContactDetail CCreatorContactField::CreateContactDetail(CCreatorEngine* aEngine
                 
                 QString avatarFile = QString::fromUtf16( destPath.Ptr(),destPath.Length() );
                 
-                QPixmap avatarPix(avatarFile);
+                //QPixmap avatarPix(avatarFile);
 
                 contactAvatar.setAvatar(avatarFile);
-                contactAvatar.setPixmap(avatarPix);
+                //contactAvatar.setPixmap(avatarPix);
 
                 return contactAvatar;
                 }

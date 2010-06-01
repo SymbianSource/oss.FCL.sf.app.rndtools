@@ -48,6 +48,7 @@ class MCreatorModuleBaseParameters;
 class CCommandParser;
 
 _LIT(KSavingText, "Saving");
+_LIT(KDeletingText, "Deleting");
 
 class MCreatorModuleBase
     {
@@ -77,7 +78,10 @@ public:
         ECreatorModuleStart
         };
     
-    CCreatorModuleBase(){ }
+    CCreatorModuleBase()
+        {
+        iEntriesToBeCreated = 1; 
+        }
     
     virtual TBool AskDataFromUserL(TInt aCommand)
         {
@@ -94,12 +98,13 @@ public:
             iEngine->ShutDownEnginesL();
             return;
             }
-        
+        const TDesC* showText = &KSavingText;
         TBool finished(EFalse);
         TBool retval(ETrue);
         switch(aUserData)
             {
             case ECreatorModuleDelete:
+                showText = &KDeletingText;
                 iEntriesToBeCreated = 1;
                 finished = ETrue;
                 break;
@@ -120,7 +125,7 @@ public:
             // add this command to command array
             iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
             // started exucuting commands
-            iEngine->ExecuteFirstCommandL( KSavingText );
+            iEngine->ExecuteFirstCommandL( *showText );
             }
         }
 

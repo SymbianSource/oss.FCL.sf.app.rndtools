@@ -71,8 +71,8 @@ void CCreatorNotepad::ConstructL(CCreatorEngine* aEngine)
     LOGSTRING("Creator: CCreatorNotepad::ConstructL");
 
     iEngine = aEngine;
-
-    iNotepadApi = new NotesEditor();
+    iAgendaUtil = new AgendaUtil();
+    iNotepadApi = new NotesEditor(iAgendaUtil);
     //iNotepadApi = CNotepadApi::NewL();
     }
 
@@ -80,11 +80,23 @@ CCreatorNotepad::~CCreatorNotepad()
     {
     LOGSTRING("Creator: CCreatorNotepad::~CCreatorNotepad");
     
-    // TODO DELETE!!!
-    //delete iNotepadApi;
+    if(iNotepadApi)
+        {
+        delete iNotepadApi;
+        iNotepadApi = NULL;
+        }
+    
+    if(iAgendaUtil)
+        {
+        delete iAgendaUtil;
+        iAgendaUtil = NULL;
+        }
     
     if (iParameters)
+        {
         delete iParameters;
+        iParameters;
+        }
     }
 
 //----------------------------------------------------------------------------
@@ -144,13 +156,12 @@ void CCreatorNotepad::DeleteAllL()
     QList<AgendaEntry> ael;
     AgendaUtil::FilterFlags filter = AgendaUtil::FilterFlags(AgendaUtil::IncludeNotes);
 
-    iAgendaUtil = new AgendaUtil();
     ael = iAgendaUtil->fetchAllEntries(filter);
     for(int i=0 ; i<ael.count() ; i++)
     	{
         iAgendaUtil->deleteEntry(ael[i].id());
     	}
-    delete iAgendaUtil;
+    
     // Open Notes db
  /*   RDbs dbs;
     User::LeaveIfError( dbs.Connect() );

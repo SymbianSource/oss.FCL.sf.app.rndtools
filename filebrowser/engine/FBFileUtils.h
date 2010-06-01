@@ -28,6 +28,7 @@
 #include <msvapi.h>
 #include <AknProgressDialog.h>
 #include <tz.h>
+#include "FB.hrh"
 
 _LIT(KIRAppPath, "z:\\sys\\bin\\irapp.exe");
 _LIT(KBTAppPath, "z:\\sys\\bin\\btui.exe");
@@ -181,7 +182,7 @@ typedef CArrayFixSeg<TCommand> CCommandArray;
 
 
 
-class CFileBrowserFileUtils : public CActive, public MAknServerAppExitObserver, public MMsvSessionObserver, public MProgressDialogCallback 
+class CFileBrowserFileUtils : public CActive, public MAknServerAppExitObserver, public MMsvSessionObserver//, public MProgressDialogCallback
 	{
 private:
     enum TState // active object states
@@ -195,17 +196,6 @@ private:
     	EClipBoardModeCopy
     	};
 
-    enum TListingMode
-    	{
-    	ENormalEntries = 0,
-    	ESearchResults,
-    	EOpenFiles,
-    	EMsgAttachmentsInbox,
-    	EMsgAttachmentsDrafts,
-    	EMsgAttachmentsSentItems,
-    	EMsgAttachmentsOutbox
-    	};
-    	    	
 public:
 	static CFileBrowserFileUtils* NewL(CEngine* aEngine);
 	~CFileBrowserFileUtils();
@@ -216,7 +206,7 @@ private:
 
 private: // from CActive
 	void RunL();
-    TInt RunError(TInt aError);
+        TInt RunError(TInt aError);
 	void DoCancel();
 
 private: // from MAknServerAppExitObserver
@@ -225,8 +215,8 @@ private: // from MAknServerAppExitObserver
 private: // from MMsvSessionObserver
     void HandleSessionEventL(TMsvSessionEvent aEvent, TAny* aArg1, TAny* aArg2, TAny* aArg3);
 
-private:  //from MProgressDialogCallback
-    void DialogDismissedL(TInt aButtonId);  
+public:  //from MProgressDialogCallback
+    void DialogDismissedL(/*TInt aButtonId*/);
     
 public: // command handling
     void StartExecutingCommandsL(const TDesC& aLabel);
@@ -343,6 +333,7 @@ public:
     inline CFileEntryList* CurrentSelectionList() { return iCurrentSelectionList; }
     inline TBool IsDriveListViewActive() { return iCurrentPath==KNullDesC && iListingMode==ENormalEntries; }
     inline TBool IsNormalModeActive() { return iListingMode==ENormalEntries; }
+    inline TListingMode ListingMode() { return iListingMode; }
     inline TFileName CurrentPath() { return iCurrentPath; }
 	
     inline TSearchAttributes GetSearchAttributes(){ return iSearchAttributes; };
@@ -356,6 +347,8 @@ private:
     CEngine*                        iEngine;
     CFileBrowserFileOps*            iFileOps;
 //    CAknWaitDialog*                 iWaitDialog;
+    TBool                           isWaitDialog;
+    TBool                           isProgressDialog;
 //    CAknProgressDialog*             iProgressDialog;
     CEikProgressInfo*               iProgressInfo;
     CCommandArray*                  iCommandArray;

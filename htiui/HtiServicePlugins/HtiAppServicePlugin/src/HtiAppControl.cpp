@@ -631,7 +631,7 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
                         TInt language = iInstOpts.iLang;
                         if (parameters.Length() == offset+2)
                             {
-                            language = parameters[offset] + parameters[offset+1]<<8;
+                            language = parameters[offset] + (parameters[offset+1]<<8);
                             }
                         if (parameters.Length() == offset+1)
                             {
