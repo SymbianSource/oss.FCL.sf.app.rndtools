@@ -21,6 +21,8 @@
 #define HTISYSINFOPLUGIN_H
 
 // INCLUDES
+#include "../../../symbian_version.hrh"
+
 #include <e32property.h>
 #include <f32file.h>
 #include <HtiServicePluginInterface.h>
@@ -48,7 +50,9 @@ class CHtiSysInfoServicePlugin : public CHTIServicePluginInterface
 
         void NotifyMemoryChange( TInt aAvailableMemory );
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
         static TInt HandleAllowSSPropertyChange( TAny* aPtr );
+#endif
 
     protected:
 
@@ -106,10 +110,12 @@ class CHtiSysInfoServicePlugin : public CHTIServicePluginInterface
         HBufC8* iMemEater;
         HBufC8* iReply;
         CHtiLightsController* iLightsController;
-        TInt iAllowSSValue;
         CHtiPropertySubscriber* iAllowSSSubscriber;
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
+        TInt iAllowSSValue;
         RProperty iAllowSSProperty;
         TBool iAllowSSPropertyAttached;
+#endif
         TBool iGalleryUpdateSupported;
     };
 

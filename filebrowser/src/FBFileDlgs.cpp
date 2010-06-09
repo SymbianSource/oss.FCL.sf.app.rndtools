@@ -465,7 +465,7 @@ void CFileBrowserDestinationFolderSelectionDlg::RefreshViewL()
     ListBox()->HandleItemAdditionL();
     Layout();
     ListBox()->SetCurrentItemIndex(0);
-    DrawNow();
+    DrawDeferred();
     }
 
 // --------------------------------------------------------------------------------------------

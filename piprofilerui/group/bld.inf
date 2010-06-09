@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). 
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies). 
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -11,17 +11,16 @@
 *
 * Contributors:
 *
-* Description:  A startup control file to add HtiFramework.exe to startup list.
+* Description:   
 *
 */
 
-#include <StartupItem.rh>
-
-RESOURCE STARTUP_ITEM_INFO hti_framework
-    {
-    executable_name = "!:\\sys\\bin\\HtiFramework.exe";
-    recovery = EStartupItemExPolicyNone;
-    }
 
 
-// End of file
+#include <platform_paths.hrh>
+
+#include "bld_generic.inf"
+#include "../ui/avkon/group/bld.inf"
+
+
+

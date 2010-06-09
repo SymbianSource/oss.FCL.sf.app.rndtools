@@ -25,14 +25,14 @@
 #include <cmdestination.h>
 #include <cmmanager.h>
 
-#include <favouritesitem.h>
-#include <favouritesitemlist.h>
+#include <FavouritesItem.h>
+#include <FavouritesItemList.h>
 #include <FavouritesDb.h>
 #include <FavouritesFile.h>
 #include <FavouritesWapAp.h>
 
 #include <HtiDispatcherInterface.h>
-#include <HTILogging.h>
+#include <HtiLogging.h>
 
 // EXTERNAL DATA STRUCTURES
 

@@ -21,16 +21,26 @@
 #include <QList>
 #include "version.h"
 #include <QCursor>
+#include <QDesktopWidget>
 
 const QString SELECTITEMHEADER = " * ";
 const QString UNSELECTITEMHEADER = "   ";
 
-frmMain::frmMain()
+FrmMain::FrmMain()
     {
     uiSetting = new UiSetting();
     createMenus();
     load();
     LoadSubMenu();
+    
+    QFile file(uiSetting->ReadSetting(KStyleSheet));
+    bool rst = file.open(QFile::ReadOnly);    
+    if(rst)
+        {
+        QString styleSheet = QLatin1String(file.readAll());    
+        qApp->setStyleSheet(styleSheet);    
+        }
+        
     model = new StfQtUIModel();
     model->AddStifModelEventListener(this);
     controller = new StfQtUIController(model);
@@ -40,7 +50,7 @@ frmMain::frmMain()
     setSetting();
     }
 
-frmMain::~frmMain()
+FrmMain::~FrmMain()
     {
     model->AbortCase();
     controller->RemoveStfEventListener(this);
@@ -52,17 +62,57 @@ frmMain::~frmMain()
     delete model;
     }
 
-void frmMain::setSetting()
+void FrmMain::paintEvent(QPaintEvent* event)
     {
-    controller->SetShowOutput(uiSetting->ReadSetting("showoutput") == "true");    
+    
+    if(mainLayout != NULL)
+        {
+        QDesktopWidget* desktop = QApplication::desktop();
+        QRect rect = desktop->screenGeometry(0);
+        bool temp = false;
+        if(rect.height() > rect.width())
+            {
+            temp = true;
+            }
+        
+        if(temp != layoutType)
+            {
+            mainLayout->removeWidget(tabWidget);
+            mainLayout->removeWidget(groupBox);
+            if(temp)
+                {
+                mainLayout->addWidget(tabWidget, 0, 0);
+                mainLayout->addWidget(groupBox, 1, 0, Qt::AlignBottom);
+                mainLayout->setRowStretch(0,4);
+                mainLayout->setRowStretch(1,1);
+                }
+            else
+                {
+                mainLayout->addWidget(tabWidget, 0, 0);
+                mainLayout->addWidget(groupBox, 0, 1);//Qt::AlignRight
+                //groupBox->setFixedSize(60,0);
+                mainLayout->setColumnStretch(0,1);
+                mainLayout->setColumnStretch(1,1);
+                }
+            layoutType = temp;
+            
+            }
+        
+        }
+    event->accept();
     }
 
-void frmMain::OnGetMessage(const QString& aMessage)
+void FrmMain::setSetting()
+    {
+    controller->SetShowOutput(uiSetting->ReadSetting(KShowOutput) == "true");    
+    }
+
+void FrmMain::OnGetMessage(const QString& aMessage)
     {
     txtOutput->appendPlainText(aMessage);
     }
 
-void frmMain::OnRunningCaseChanged()
+void FrmMain::OnRunningCaseChanged()
     {
     QList<CSTFCase> caseList = controller->GetCasesByStatus(EStatusRunning);
     lstStartedCases->clear();
@@ -74,34 +124,38 @@ void frmMain::OnRunningCaseChanged()
         {
         btnPauseCase->setEnabled(true);
         btnAbortCase->setEnabled(true);
+        btnShowOutput->setEnabled(true);
         actPause->setEnabled(true);
         actAbort->setEnabled(true);
+        actOutput->setEnabled(true);
         }
     else
         {
         btnPauseCase->setEnabled(false);
         btnAbortCase->setEnabled(false);
+        btnShowOutput->setEnabled(false);
         actPause->setEnabled(false);
         actAbort->setEnabled(false);
+        actOutput->setEnabled(false);
         }
     }
 
-void frmMain::OnCaseOutputChanged(const IStfEventListener::CaseOutputCommand& /*cmd*/, const QString& /*index*/, const QString& /*msg*/)
+void FrmMain::OnCaseOutputChanged(const IStfEventListener::CaseOutputCommand& /*cmd*/, const QString& /*index*/, const QString& /*msg*/)
     {
     //nothing to do.
     }
 
-void frmMain::OnSetListChanged()
+void FrmMain::OnSetListChanged()
     {
     loadSetList();
     }
 
-void frmMain::OnCaseStatisticChanged()
+void FrmMain::OnCaseStatisticChanged()
     {
     loadStatistic();
     }
 
-void frmMain::createMenus()
+void FrmMain::createMenus()
     {
     //operateMenu = menuBar()->addMenu(tr("&Operation"));
     actAbout = new QAction(tr("&About"), this);
@@ -115,11 +169,13 @@ void frmMain::createMenus()
     connect(actOpenFile, SIGNAL(triggered()), this,
             SLOT(on_actOpenFile_triggered()));
 
-    actRunCaseSeq = new QAction(tr("Run Case Sequentially"), this);
+    menuRunCase = new QMenu(tr("Run Selected Case(s)"), this->menuBar());
+    
+    actRunCaseSeq = new QAction(tr("Sequentially"), this);
     connect(actRunCaseSeq, SIGNAL(triggered()), this,
             SLOT(on_actRunCaseSeq_triggered()));
 
-    actRunCasePar = new QAction(tr("Run Case Parallel"), this);
+    actRunCasePar = new QAction(tr("Parallel"), this);
     connect(actRunCasePar, SIGNAL(triggered()), this,
             SLOT(on_actRunCasePar_triggered()));
 
@@ -139,15 +195,17 @@ void frmMain::createMenus()
     connect(actCollapseAll, SIGNAL(triggered()), this,
             SLOT(on_actCollapseAll_triggered()));
 
-    actSetting = new QAction(tr("Setting"), this);
+    actSetting = new QAction(tr("Settings"), this);
     connect(actSetting, SIGNAL(triggered()), this,
             SLOT(on_actSetting_triggered()));
 
-    actRunSetSeq = new QAction(tr("Run Set Sequentially"), this);
+    menuRunSet = new QMenu(tr("Run Case(s) in Selected Set"), this->menuBar());
+    
+    actRunSetSeq = new QAction(tr("Sequentially"), this);
     connect(actRunSetSeq, SIGNAL(triggered()), this,
             SLOT(on_actRunSetSeq_triggered()));
 
-    actRunSetPar = new QAction(tr("Run Set Parallel"), this);
+    actRunSetPar = new QAction(tr("Parallel"), this);
     connect(actRunSetPar, SIGNAL(triggered()), this,
             SLOT(on_actRunSetPar_triggered()));
 
@@ -168,6 +226,11 @@ void frmMain::createMenus()
     actAbort->setEnabled(false);
     connect(actAbort, SIGNAL(triggered()), this,
             SLOT(on_actAbort_triggered()));
+    
+    actOutput = new QAction(tr("Output"), this);
+    actOutput->setEnabled(false);
+    connect(actAbort, SIGNAL(triggered()), this,
+            SLOT(on_actOutput_triggered()));
 
     actClearStatistics = new QAction(tr("Clear Statistics"), this);
     connect(actClearStatistics, SIGNAL(triggered()), this,
@@ -175,19 +238,22 @@ void frmMain::createMenus()
 
     }
 
-void frmMain::load()
+void FrmMain::load()
     {
     this->setContextMenuPolicy(Qt::NoContextMenu);
-    QSize btnSize(100,35);
-    QGridLayout *mainLayout = new QGridLayout(this);
+    
+    this->setWindowTitle(QtUIName);
+    centerWidget = new QWidget(this);
+    this->setCentralWidget(centerWidget);
+    
+    mainLayout = new QGridLayout(this);
     mainLayout->setVerticalSpacing(2);
     mainLayout->setHorizontalSpacing(2);
     mainLayout->setSpacing(2);
     mainLayout->setMargin(2);
-
-    MainWidget = new QWidget(this);
-    MainWidget->setContextMenuPolicy(Qt::NoContextMenu);
-
+    
+    this->centralWidget()->setContextMenuPolicy(Qt::NoContextMenu);
+    
     //tab control
     tabWidget = new QTabWidget(this);
     tabWidget->setContextMenuPolicy(Qt::NoContextMenu);
@@ -207,13 +273,11 @@ void frmMain::load()
             SLOT(onTabWidgetSelectIndexChanged()));
 
     //output panel
-    QGroupBox *groupBox = new QGroupBox(this);
-    groupBox->setFixedHeight(150);
+    groupBox = new QGroupBox(this);
+    //groupBox->setFixedHeight(150);
     groupBox->setContextMenuPolicy(Qt::NoContextMenu);
     groupBox->setTitle(tr("Information"));
-    QFont serifFont("Times", 5, QFont::Normal);
     txtOutput = new QPlainTextEdit(groupBox);
-    txtOutput->setFont(serifFont);
     txtOutput->setContextMenuPolicy(Qt::NoContextMenu);
     txtOutput->setReadOnly(true);
     txtOutput->setFocusPolicy(Qt::NoFocus);
@@ -226,10 +290,32 @@ void frmMain::load()
     groupBoxLayout->addWidget(txtOutput, 0, 0);
     groupBox->setLayout(groupBoxLayout);
 
+    QDesktopWidget* desktop = QApplication::desktop();
+    QRect rect = desktop->screenGeometry(0);
+    if(rect.height() > rect.width())
+        {
+        mainLayout->addWidget(tabWidget, 0, 0);
+        mainLayout->addWidget(groupBox, 1, 0, Qt::AlignBottom);
+        mainLayout->setRowStretch(0,4);
+        mainLayout->setRowStretch(1,1); 
+        layoutType = true;
+        }
+    else
+        {
+        mainLayout->addWidget(tabWidget, 0, 0);
+        mainLayout->addWidget(groupBox, 0, 1);//Qt::AlignRight
+        //groupBox->setFixedSize(60,0);
+        mainLayout->setColumnStretch(0,1);
+        mainLayout->setColumnStretch(1,1);    
+        layoutType = false;
+        }
+    
     //Create MainLayout and MainWidget
+    this->centralWidget()->setLayout(mainLayout);
     mainLayout->addWidget(tabWidget, 0, 0);
     mainLayout->addWidget(groupBox, 1, 0, Qt::AlignBottom);
-    MainWidget->setLayout(mainLayout);
+    mainLayout->setRowStretch(0,4);
+    mainLayout->setRowStretch(1,1);
     
 
     //Tab page: Case
@@ -249,23 +335,20 @@ void frmMain::load()
 
     QWidget *caseToolWidget = new QWidget(tabCase);
     caseToolWidget->setContextMenuPolicy(Qt::NoContextMenu);
-    QGridLayout *caseToolWidgetLayout = new QGridLayout;
+    QGridLayout *caseToolWidgetLayout = new QGridLayout(this);
     QPushButton *btnRunCase = new QPushButton(tr("Run"), caseToolWidget);
     btnRunCase->setContextMenuPolicy(Qt::NoContextMenu);
-    btnRunCase->setFixedSize(btnSize);
     connect(btnRunCase, SIGNAL(clicked()), this,
             SLOT(on_actRunCaseSeq_triggered()));
     QPushButton *btnExpandAll = new QPushButton(tr("Expand"), caseToolWidget);
     btnExpandAll->setContextMenuPolicy(Qt::NoContextMenu);
-    btnExpandAll->setFixedSize(btnSize);
     connect(btnExpandAll, SIGNAL(clicked()), this,
-            SLOT(on_actExpandAll_triggered()));
+            SLOT(on_actExpand_triggered()));
     QPushButton *btnCollapseAll = new QPushButton(tr("Collapse"),
             caseToolWidget);
     btnCollapseAll->setContextMenuPolicy(Qt::NoContextMenu);
-    btnCollapseAll->setFixedSize(btnSize);
     connect(btnCollapseAll, SIGNAL(clicked()), this,
-            SLOT(on_actCollapseAll_triggered()));
+            SLOT(on_actCollapse_triggered()));
 
     caseToolWidgetLayout->addWidget(btnRunCase, 0, 0);
     caseToolWidgetLayout->addWidget(btnExpandAll, 0, 1);
@@ -318,17 +401,14 @@ void frmMain::load()
     setToolWidgetLayout->setMargin(2);     
     QPushButton *btnRunSetCase = new QPushButton(tr("Run"), setToolWidget);
     btnRunSetCase->setContextMenuPolicy(Qt::NoContextMenu);
-    btnRunSetCase->setFixedSize(btnSize);
     connect(btnRunSetCase, SIGNAL(clicked()), this,
             SLOT(on_actRunSetSeq_triggered()));
     QPushButton *btnNewSet = new QPushButton(tr("New Set"), setToolWidget);
     btnNewSet->setContextMenuPolicy(Qt::NoContextMenu);
-    btnNewSet->setFixedSize(btnSize);
     connect(btnNewSet, SIGNAL(clicked()), this,
             SLOT(on_actNewSet_triggered()));
     QPushButton *btnDelSet = new QPushButton(tr("Delete Set"), setToolWidget);
     btnDelSet->setContextMenuPolicy(Qt::NoContextMenu);
-    btnDelSet->setFixedSize(btnSize);
     connect(btnDelSet, SIGNAL(clicked()), this,
             SLOT(on_actDelSet_triggered()));
 
@@ -358,26 +438,25 @@ void frmMain::load()
     startedToolWidgetLayout->setMargin(2);
     btnPauseCase = new QPushButton(tr("Pause"), startedToolWidget);
     btnPauseCase->setContextMenuPolicy(Qt::NoContextMenu);
-    btnPauseCase->setFixedSize(btnSize);
     connect(btnPauseCase, SIGNAL(clicked()), this,
             SLOT(on_actPause_triggered()));
     btnPauseCase->setEnabled(false);
 
     btnAbortCase = new QPushButton(tr("Abort"), startedToolWidget);
     btnAbortCase->setContextMenuPolicy(Qt::NoContextMenu);
-    btnAbortCase->setFixedSize(btnSize);
     connect(btnAbortCase, SIGNAL(clicked()), this,
             SLOT(on_actAbort_triggered()));
     btnAbortCase->setEnabled(false);
-    //    
-    //    QPushButton *btnShowOutput = new QPushButton(tr("Output"), startedToolWidget);
-    //    connect(btnShowOutput, SIGNAL(clicked()), this,
-    //                SLOT(on_btnShowOutput_clicked()));
+        
+    btnShowOutput = new QPushButton(tr("Output"), startedToolWidget);
+    connect(btnShowOutput, SIGNAL(clicked()), this,
+                SLOT(on_actOutput_triggered()));
+    btnShowOutput->setEnabled(false);
 
 
     startedToolWidgetLayout->addWidget(btnPauseCase, 0, 0);
     startedToolWidgetLayout->addWidget(btnAbortCase, 0, 1);
-    //startedToolWidgetLayout->addWidget(btnShowOutput, 0, 2);
+    startedToolWidgetLayout->addWidget(btnShowOutput, 0, 2);
     startedToolWidget->setLayout(startedToolWidgetLayout);
 
     tabStartedLayout->addWidget(lstStartedCases, 0, 0);
@@ -408,12 +487,14 @@ void frmMain::load()
     abortedItems = new QTreeWidgetItem(treeStatistic);
     abortedItems->setText(0, tr("Aborted Cases(0)"));
     
-    
-    setCentralWidget(MainWidget);
+    //this->repaint();
+
 
     }
 
-void frmMain::LoadSubMenu()
+
+
+void FrmMain::LoadSubMenu()
     {
     menuBar()->clear();
     menuBar()->setContextMenuPolicy(Qt::NoContextMenu);
@@ -421,8 +502,9 @@ void frmMain::LoadSubMenu()
         {
         //Cases Tab
         menuBar()->addAction(actOpenFile);
-        menuBar()->addAction(actRunCaseSeq);
-        menuBar()->addAction(actRunCasePar);
+        menuBar()->addMenu(menuRunCase);
+        menuRunCase->addAction(actRunCaseSeq);
+        menuRunCase->addAction(actRunCasePar);
         menuBar()->addSeparator();
         menuBar()->addAction(actAddtoSet);
         menuBar()->addSeparator();
@@ -433,8 +515,9 @@ void frmMain::LoadSubMenu()
     else if (tabWidget->currentIndex() == 1)
         {
         //Set Tab
-        menuBar()->addAction(actRunSetSeq);
-        menuBar()->addAction(actRunSetPar);
+        menuBar()->addMenu(menuRunSet);
+        menuRunSet->addAction(actRunSetSeq);
+        menuRunSet->addAction(actRunSetPar);
         menuBar()->addSeparator();
         menuBar()->addAction(actNewSet);
         menuBar()->addAction(actDelSet);
@@ -444,6 +527,7 @@ void frmMain::LoadSubMenu()
         //Started Tab
         menuBar()->addAction(actPause);
         menuBar()->addAction(actAbort);
+        menuBar()->addAction(actOutput);
         
         }
     else
@@ -458,12 +542,12 @@ void frmMain::LoadSubMenu()
 
     }
 
-void frmMain::onTabWidgetSelectIndexChanged()
+void FrmMain::onTabWidgetSelectIndexChanged()
     {
     LoadSubMenu();
     }
 
-void frmMain::loadContent()
+void FrmMain::loadContent()
     {
     //Load ModuleList
     loadModuleList();
@@ -473,7 +557,7 @@ void frmMain::loadContent()
     loadStatistic();
     }
 
-void frmMain::loadModuleList()
+void FrmMain::loadModuleList()
     {
     treeModuleList->clear();
     
@@ -498,7 +582,7 @@ void frmMain::loadModuleList()
         }
     }
 
-void frmMain::reloadStatisticItem(QString name, QTreeWidgetItem* item,
+void FrmMain::reloadStatisticItem(QString name, QTreeWidgetItem* item,
         TSTFCaseStatusType type)
     {
     QList<CSTFCase> caseList = controller->GetCasesByStatus(type);
@@ -514,7 +598,7 @@ void frmMain::reloadStatisticItem(QString name, QTreeWidgetItem* item,
             }
     }
 
-void frmMain::loadStatistic()
+void FrmMain::loadStatistic()
     {
     //executedItems;
     reloadStatisticItem("Executed Cases", executedItems, EStatusExecuted);
@@ -533,7 +617,7 @@ void frmMain::loadStatistic()
 
     }
 
-void frmMain::loadSetList()
+void FrmMain::loadSetList()
     {
     cboSetList->clear();
 
@@ -549,7 +633,7 @@ void frmMain::loadSetList()
 //        }
     }
 
-QList<CSTFCase> frmMain::getSelectedCases()
+QList<CSTFCase> FrmMain::getSelectedCases()
     {
     int index = 0;
     QTreeWidgetItem* item = treeModuleList->topLevelItem(index);
@@ -574,7 +658,7 @@ QList<CSTFCase> frmMain::getSelectedCases()
     return caseList;
     }
 
-void frmMain::on_cboSetList_currentIndexChanged(QString item)
+void FrmMain::on_cboSetList_currentIndexChanged(QString item)
     {
     lstSetCases->clear();
     QList<QString> list = controller->GetCaseListBySet(item);
@@ -584,48 +668,97 @@ void frmMain::on_cboSetList_currentIndexChanged(QString item)
             }
     }
 
-void frmMain::on_actRunCaseSeq_triggered()
+void FrmMain::startRunning()
+    {
+    setSetting();
+    tabWidget->setCurrentWidget(tabStarted);    
+    }
+
+void FrmMain::on_actRunCaseSeq_triggered()
     {
     //run case seq
+    startRunning();
     controller->RunCases(getSelectedCases(), Sequentially);
     }
 
-void frmMain::on_actRunCasePar_triggered()
+void FrmMain::on_actRunCasePar_triggered()
     {
+    startRunning();
     controller->RunCases(getSelectedCases(), Parallel);
     }
 
-void frmMain::on_actAddtoSet_triggered()
+void FrmMain::on_actAddtoSet_triggered()
     {
 
     QList<CSTFCase> list = getSelectedCases();
     if (list.size() == 0)
         {
         QErrorMessage *errorMessageDialog = new QErrorMessage(this);
+        errorMessageDialog->setAutoFillBackground(true);
         errorMessageDialog->showMessage(tr(
-                "Please select cases you want to added to set."));
+                "<font color =black>Please select cases you want to added to set.</font>"));
         return;
         }
 
     QList<QString> setList = controller->GetSetList();
 
-    /*    
-     bool ok;
-     QString setName = QInputDialog::getItem(this, tr(
-     "Add select cases to Set"), tr("Sets:"), setList, 0, false, &ok);
-     if (ok && !setName.isEmpty())
-     {
-     controller->AddCaseToSet(list, setName);
-     }
-     */
-
-    //temp code, because UIStore()->AddCaseToSet() is not support to define a set name.
-    controller->AddCaseToSet(list, "");
+    DlgSetSelector dlgSet(setList, this);
+    int result = dlgSet.exec();
+    QString setName;
+    if(result == QDialog::Accepted)
+        {
+        setName = dlgSet.SelectName();
+        }
+    else
+        {
+        return;
+        }
+    bool rst = false;
+    if(setName == "")
+        {
+        setName = "temp.set";
+        rst = controller->CreateSet(setName);
+        if(!rst)
+            {
+            return;
+            }
+        }
+    controller->AddCaseToSet(list, setName);
+//
+//     bool ok;
+//     QString setName = QInputDialog::getItem(this, tr(
+//     "\r\nAdd select cases to Set"), tr("\r\n\r\nSets:"), setList, 0, false, &ok, Qt::Dialog);
+//     if (ok && !setName.isEmpty())
+//     {
+//     if(setName == newSet)
+//         {
+//         ok = controller->CreateSet(setName);
+//         if(!ok)
+//             {
+//             return;
+//             }
+//         }
+//     controller->AddCaseToSet(list, setName);
+//     }
     tabWidget->setCurrentIndex(1);
+    int index = -1;
+    for(int i=0;i<cboSetList->count();i++)
+        {
+        if(cboSetList->itemText(i) == setName)
+            {
+            index = i;
+            break;
+            }
+        }
+    if(index != -1)
+        {
+        cboSetList->setCurrentIndex(index);
+        }
 
+    
     }
 
-void frmMain::on_actSelectAll_triggered()
+void FrmMain::on_actSelectAll_triggered()
     {
     QString header = UNSELECTITEMHEADER;
     if(actSelectAll->text() == "Select All")
@@ -653,17 +786,36 @@ void frmMain::on_actSelectAll_triggered()
         }
     }
 
-void frmMain::on_actExpandAll_triggered()
+void FrmMain::on_actExpandAll_triggered()
     {
+    QTreeWidgetItem* item = treeModuleList->currentItem();
     treeModuleList->expandAll();
+    if(item != NULL)
+        {
+        treeModuleList->setCurrentItem(item);
+        }
+        
     }
 
-void frmMain::on_actCollapseAll_triggered()
+void FrmMain::on_actCollapseAll_triggered()
     {
+    QTreeWidgetItem* item = treeModuleList->currentItem();
+    if(item != NULL)
+        {
+        if(item->parent() != NULL)
+            {
+            item = item->parent();
+            }
+        }
     treeModuleList->collapseAll();
+    if(item != NULL)
+        {
+        treeModuleList->setCurrentItem(item);
+        }
+    
     }
 
-void frmMain::on_actSetting_triggered()
+void FrmMain::on_actSetting_triggered()
     {
     DlgSetting dlgSet(uiSetting);
     int result = dlgSet.exec();
@@ -673,75 +825,71 @@ void frmMain::on_actSetting_triggered()
         }
     }
 
-void frmMain::on_actRunSetSeq_triggered()
+void FrmMain::on_actRunSetSeq_triggered()
     {
+    startRunning();
     QString setName = cboSetList->currentText();
     controller->RunSets(setName, Sequentially);
     }
 
-void frmMain::on_actRunSetPar_triggered()
+void FrmMain::on_actRunSetPar_triggered()
     {
+    startRunning();
     QString setName = cboSetList->currentText();
     controller->RunSets(setName, Parallel);
     }
 
-void frmMain::on_actNewSet_triggered()
+void FrmMain::on_actNewSet_triggered()
     {
-    //not supported.
-    QErrorMessage *errorMessageDialog = new QErrorMessage(this);
-    errorMessageDialog->showMessage(
-            tr(
-                    "The feature is not supported in this version.\r\n    \
-            If you want to Add test set.\r\n           \
-            Please switch to \"Case\" tab, Select case(s) and perform \"Add case to set\"."));
-    return;
-    /*
-     * These function is not supported in this version.
-     * Unless this function has been impelemented:
-     * UIStore()->AddSet(setName);
-     * 
-     bool ok;
-     QString text = QInputDialog::getText(this, tr("Create a new Set"), tr(
-     "Input a set name:"), QLineEdit::Normal, QDir::home().dirName(),
-     &ok);
-     if (ok && !text.isEmpty())
-     {
-     controller->CreateSet(text);
-     }
-     */
+    QString name;
+    bool rst = controller->CreateSet(name);
+    if(rst)
+        {
+        QMessageBox::information(this, 
+                tr("Create Set Successfully"), 
+                "Create a new test set, named: " + name);
+
+        int index = -1;
+        for(int i=0;i<cboSetList->count();i++)
+            {
+            if(cboSetList->itemText(i) == name)
+                {
+                index = i;
+                break;
+                }
+            }
+        if(index != -1)
+            {
+            cboSetList->setCurrentIndex(index);
+            }
+
+        
+        }
+    else
+        {
+        QMessageBox::information(this, 
+                tr("Create Set Failed"), 
+                tr("Please check the log for more information."));
+    
+        }
+    
     }
 
-void frmMain::on_actDelSet_triggered()
+void FrmMain::on_actDelSet_triggered()
     {
-    //not supported.
-    QErrorMessage *errorMessageDialog = new QErrorMessage(this);
-    errorMessageDialog->showMessage(
-            tr(
-                    "The feature is not supported in this version.\r\n    \
-            If you want to remove test set.\r\n           \
-            Please delete them under {epoc root}\\winscw\\c\\TestFramework  \
-            And restart Application"));
-    return;
-    /*
-     * These function is not supported in this version.
-     * Unless this function has been impelemented:
-     * UIStore()->RemoveSet(setName);
-     * 
-     QString setName = cboSetList->currentText();
-     QMessageBox msgBox(QMessageBox::Warning, tr("Delete a Set"), tr(
-     "Do you really want to delete the set?"), 0, this);
-     msgBox.addButton(tr("&Delete"), QMessageBox::AcceptRole);
-     msgBox.addButton(tr("&Cancel"), QMessageBox::RejectRole);
-     if (msgBox.exec() == QMessageBox::AcceptRole)
-     {
-     controller->DeleteSet(setName);
-     }
-     
-     
-     */
+        QString setName = cboSetList->currentText();
+        QMessageBox msgBox(QMessageBox::Warning, tr("Delete a Set"), tr(
+        "Do you really want to delete the set?"), 0, this);
+        msgBox.addButton(tr("&Delete"), QMessageBox::AcceptRole);
+        msgBox.addButton(tr("&Cancel"), QMessageBox::RejectRole);
+        if (msgBox.exec() == QMessageBox::AcceptRole)
+        {
+        controller->DeleteSet(setName);
+        }
+
     }
 
-void frmMain::on_actPause_triggered()
+void FrmMain::on_actPause_triggered()
     {
     if (btnPauseCase->text() == "Pause")
         {
@@ -757,12 +905,12 @@ void frmMain::on_actPause_triggered()
         }
     }
 
-void frmMain::on_actAbort_triggered()
+void FrmMain::on_actAbort_triggered()
     {
     controller->AbortCase();
     }
 
-void frmMain::on_treeModuleList_itemClicked(QTreeWidgetItem* item, int /*column*/)
+void FrmMain::on_treeModuleList_itemClicked(QTreeWidgetItem* item, int /*column*/)
     {
     QString header = UNSELECTITEMHEADER;
     if(item->text(0).startsWith(UNSELECTITEMHEADER))
@@ -776,34 +924,72 @@ void frmMain::on_treeModuleList_itemClicked(QTreeWidgetItem* item, int /*column*
         }
     }
 
-void frmMain::on_actAbout_triggered()
+void FrmMain::on_actAbout_triggered()
     {
-    QString str = QtUIVersion;
-    str.append("\r\n").append("STF version:");
+    QString str = QtUIName + "<&nbsp;>" + QtUIVersion;
+    str.append("<br>").append("engine version:");
     
     str.append(QString::number(STIF_MAJOR_VERSION, 10)).append(".");
     str.append(QString::number(STIF_MINOR_VERSION, 10)).append(".");
     str.append(QString::number(STIF_BUILD_VERSION, 10));
-    str.append("  --").append(STIF_REL_DATE).append("\r\n");
+    str.append("  --").append(STIF_REL_DATE).append("<br>");
     str.append("---");
-    str.append("\r\nCopyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. ");
+    str.append("Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. ");
 
-    QMessageBox::information(this, tr("About"), str);
+    QErrorMessage *errorMessageDialog = new QErrorMessage(this);
+    errorMessageDialog->showMessage("<font color =black size=12px><b>" + str + "</b></font>");
+    
     }
 
-void frmMain::on_actOpenFile_triggered()
+void FrmMain::on_actOpenFile_triggered()
     {
     QString fileName = QFileDialog::getOpenFileName(this, tr(
             "Select ini file"), tr("c:\\"), tr(
             "Ini Files (*.ini);;All Files (*)"));
     if (!fileName.isEmpty())
         {
-        controller->OpenEngineIniFile(fileName);
-        this->loadModuleList();
+        bool result = controller->OpenEngineIniFile(fileName);
+        if(result)
+            {
+            this->loadModuleList();   
+            QMessageBox::information(this, tr("Open INI File"), "Load Engine INI file successfully!");
+            }
+        else
+            {
+            QMessageBox::warning(this, tr("Open INI File"),"Failed to Load Engine INI file. Please check the file format and its path.");
+            }
+        
         }
     }
 
-void frmMain::on_actClearStatistics_triggered()
+void FrmMain::on_actClearStatistics_triggered()
     {
     model->ClearCasesStatus();
     }
+
+
+void FrmMain::on_actExpand_triggered()
+    {
+    QTreeWidgetItem* item = treeModuleList->currentItem();
+    if(item != NULL)
+        {
+        item->setExpanded(true);
+        }
+    }
+
+void FrmMain::on_actCollapse_triggered()
+    {
+
+    QTreeWidgetItem* item = treeModuleList->currentItem();
+    if(item != NULL)
+        {
+        item->setExpanded(false);
+        }
+    }
+
+void FrmMain::on_actOutput_triggered()
+    {
+    controller->SetShowOutput(true);
+    }
+
+

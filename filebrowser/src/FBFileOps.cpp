@@ -332,7 +332,11 @@ TInt CFileBrowserFileOps::DoFindEntriesRecursiveL(const TDesC& aFileName, const 
                     {
                     path.Append(entry.iName);
                     path.Append(_L("\\"));
-                    DoFindEntries(aFileName, path);
+                    // test path.Left(iBuf2.Length()).Compare(iBuf2) - to prevent never ending recursive copy (in case of copy folder under itself)
+                    if( iRecursiveState == EFileOpCopy && path.Left(iBuf2.Length()).Compare(iBuf2) )
+                        {
+                        DoFindEntries(aFileName, path);
+                        }
                     }
                 }
             if ( iFileManObserverResult == MFileManObserver::ECancel )

@@ -20,8 +20,9 @@
 
 int main(int argc, char* argv[])
 {
+    Q_INIT_RESOURCE(StfQtUI);
     QApplication app(argc, argv);
-    frmMain win;
+    FrmMain win;
     win.showMaximized();
     return app.exec();
 }

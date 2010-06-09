@@ -57,11 +57,6 @@ HEADER
 TARGETPATH      /private/10003a3f/apps
 END
 
-START RESOURCE  1020DEB6.rss
-HEADER
-TARGETPATH      /private/101f875a/import
-END
-
 LIBRARY         apparc.lib
 LIBRARY         avkon.lib
 LIBRARY         cone.lib

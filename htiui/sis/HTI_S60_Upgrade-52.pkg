@@ -18,7 +18,7 @@
 &EN
 
 ; Using UID of HtiFramework project
-#{"HTI"},(0x1020DEB6),2,21,0,TYPE=SA,RU
+#{"HTI"},(0x1020DEB6),2,23,0,TYPE=SA,RU
 
 ; Series60 product id for S60 5.2
 [0x20022E6D], 0, 0, 0, {"Series60ProductID"}
@@ -84,6 +84,8 @@
 "\epoc32\data\Z\Resource\Plugins\HtiPIMServicePlugin.rsc"        - "!:\Resource\Plugins\HtiPIMServicePlugin.rsc"
 "\epoc32\release\armv5\urel\HtiIpProxyServicePlugin.dll"         - "!:\sys\bin\HtiIpProxyServicePlugin.dll"
 "\epoc32\data\Z\Resource\Plugins\HtiIpProxyServicePlugin.rsc"    - "!:\Resource\Plugins\HtiIpProxyServicePlugin.rsc"
+"\epoc32\release\armv5\urel\HtiCameraServicePlugin.dll"          - "!:\sys\bin\HtiCameraServicePlugin.dll"
+"\epoc32\data\Z\Resource\Plugins\HtiCameraServicePlugin.rsc"     - "!:\Resource\Plugins\HtiCameraServicePlugin.rsc"
 
 ; Helper to add notepad memos
 "\epoc32\release\armv5\urel\HtiNpdHlp.exe"                       - "!:\sys\bin\HtiNpdHlp.exe"
@@ -111,4 +113,4 @@
 "\epoc32\release\armv5\urel\HtiStartupWait.dll"                  - "!:\sys\bin\HtiStartupWait.dll"
 
 ; Startup list resource file for starting HTIFramework.exe in device boot
-"\epoc32\data\Z\private\101f875a\import\1020deb6.rsc"            - "c:\private\101f875a\import\[1020deb6].rsc"
+;"\epoc32\data\Z\private\101f875a\import\1020deb6.rsc"            - "c:\private\101f875a\import\[1020deb6].rsc"

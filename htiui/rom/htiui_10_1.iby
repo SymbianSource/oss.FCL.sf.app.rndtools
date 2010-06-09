@@ -27,6 +27,7 @@ data=ZPRIVATE\10003a3f\import\apps\HtiAdmin_reg.rsc         private\10003a3f\imp
 
 // Test service plug-ins
 ECOM_PLUGIN(HtiAudioServicePlugin.dll,HtiAudioServicePlugin.rsc)
+ECOM_PLUGIN(HtiCameraServicePlugin.dll,HtiCameraServicePlugin.rsc)
 ECOM_PLUGIN(HtiKeyEventServicePlugin.dll,HtiKeyEventServicePlugin.rsc)
 ECOM_PLUGIN(HtiMessagesServicePlugin.dll,HtiMessagesServicePlugin.rsc)
 ECOM_PLUGIN(HtiPIMServicePlugin.dll,HtiPIMServicePlugin.rsc)
