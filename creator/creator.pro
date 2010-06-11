@@ -17,7 +17,7 @@ SOURCES += main.cpp \
 	src/notifications.cpp
 
 symbian: {
-
+        INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 	HEADERS += engine/inc/creator.hrh \
 			engine/inc/creator_accesspoint.h \
 			engine/inc/creator_browser.h \

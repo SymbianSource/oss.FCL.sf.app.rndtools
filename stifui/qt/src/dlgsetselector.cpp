@@ -19,7 +19,7 @@
 #include <QtGui>
 
 DlgSetSelector::DlgSetSelector(QList<QString> list, QWidget* parent):
-        QDialog(parent), setList(list), selectName("")
+        QDialog(parent), selectName(""), setList(list)
     {
     SetupUI();
     }
@@ -72,7 +72,7 @@ void DlgSetSelector::SetupUI()
      this->showMaximized();
      
     }
-void DlgSetSelector::on_radio1Selection_Changed(bool checked)
+void DlgSetSelector::on_radio1Selection_Changed(bool /* checked */)
     {
     lstSet->setEnabled(false);
     }

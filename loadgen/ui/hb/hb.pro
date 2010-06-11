@@ -23,18 +23,6 @@ DEPENDPATH += .
 INCLUDEPATH += . /inc
 INCLUDEPATH += ./inc \
 			   ../../engine/inc \
-			   /epoc32/include \
-				 /epoc32/include/mw \
-				 /epoc32/include/platform/mw \
-				 /epoc32/include/platform \
-				 /epoc32/include/app \
-				 /epoc32/include/platform/app \
-				 /epoc32/include/platform/loc \
-				 /epoc32/include/platform/mw/loc \
-				 /epoc32/include/platform/app/loc \
-				 /epoc32/include/platform/loc/sc \
-				 /epoc32/include/platform/mw/loc/sc \
-				 /epoc32/include/platform/app/loc/sc
 
 load(hb.prf)
 symbian:CONFIG -= symbian_i18n
@@ -44,10 +32,15 @@ SOURCES += src/main.cpp src/mainview.cpp src/settingsview.cpp src/notifications.
 RESOURCES += loadgen.qrc
 
 symbian: {
+		MMP_RULES -= PAGED
+		MMP_RULES *= UNPAGED
+		
 		BLD_INF_RULES.prj_exports += "./rom/loadgen.iby CORE_IBY_EXPORT_PATH(tools,loadgen.iby)"
-
-		HEADERS += inc/engine.h \ 
-		           inc/enginewrapper.h 
+        
+        INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
+		
+        HEADERS += inc/engine.h \ 
+                   inc/enginewrapper.h 
 		SOURCES += src/engine.cpp \
 		           src/enginewrapper.cpp \
 				   ../../engine/src/loadgen_utils.cpp  \

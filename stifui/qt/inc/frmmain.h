@@ -28,6 +28,7 @@
 #include "dlgsetting.h"
 #include "dlgsetselector.h"
 #include "uiversion.h"
+#include "dlgrepeatrun.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -86,6 +87,7 @@ private:
     void reloadStatisticItem(QString name, QTreeWidgetItem* item, TSTFCaseStatusType type);
     void setSetting();
     void startRunning();
+    void setItemClicked(QTreeWidgetItem* item);
     
 private:
     IStfQtUIController* controller;
@@ -93,6 +95,7 @@ private:
     DlgOutput* dlgOutput;
     UiSetting* uiSetting; 
     bool layoutType;
+    QTreeWidgetItem* lastItemSelected;
 
 private: //UI Components
     QWidget* centerWidget;
@@ -140,6 +143,7 @@ private: //UI Components
     QAction *actOpenFile;
     QAction *actRunCaseSeq;
     QAction *actRunCasePar;
+    QAction *actReapeatRunSeq;
     QAction *actAddtoSet;
     QAction *actSelectAll;
     QAction *actExpandAll;
@@ -167,6 +171,7 @@ private slots:
     void on_actOpenFile_triggered();
     void on_actRunCaseSeq_triggered();
     void on_actRunCasePar_triggered();
+    void on_actReapeatRunSeq_triggered();
     void on_actAddtoSet_triggered();
     void on_actSelectAll_triggered();
     void on_actExpandAll_triggered();

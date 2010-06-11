@@ -11,19 +11,23 @@
 *
 * Contributors:
 * 
-* Description: This file contains STIF UI version declaration.
+* Description: Stifui.iby file specifies needed STIF and STIF UI 
+* and UITetsServerstarter components for ROM image
 *
 */
 
-#ifndef VERSION_H_
-#define VERSION_H_
+#ifndef __STIF_UI_IBY__
+#define __STIF_UI_IBY__
 
-#define STIFUI_MAJOR_VERSION 7
-#define STIFUI_MINOR_VERSION 3
-#define STIFUI_BUILD_VERSION 34
+S60_APP_EXE(Stifqtui)
 
-#define STIFUI_REL_DATE "1st June 2010"
+#ifdef S60_UPGRADABLE_APP_REG_RSC
+  S60_UPGRADABLE_APP_REG_RSC(Stifqtui)
+#else
+  S60_APP_AIF_RSC(Stifqtui)
+#endif
 
-#define TO_UNICODE(text) _L(text) 
+S60_APP_RESOURCE(Stifqtui)
 
-#endif /*VERSION_H_*/
+#endif
+// End of File

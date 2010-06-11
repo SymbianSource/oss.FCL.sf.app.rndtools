@@ -23,7 +23,7 @@
 #include <hblabel.h>
 #include <hbinputdialog.h>
 #include <qgraphicslinearlayout.h>
-//#include <HbListDialog.h>
+#include <hbselectiondialog.h>
 #include <hbmessagebox.h>
 
 
@@ -260,200 +260,231 @@ void MainView::stopHti()
 	mEngineWrapper.stopHti();
 }
 
+
 // ---------------------------------------------------------------------------
 void MainView::enableComm()
 {
     //Get current selection
-//	QString currentComm;
-//	mEngineWrapper.getSelectedComm(currentComm);
-//	int curSelection = mPluginList.indexOf(currentComm, 0);
-//	
-//	QStringList selection;
-//	bool ok = false;
-//	selection = HbListDialog::getStringItems("Select Comm", mPluginList, curSelection, &ok, HbAbstractItemView::SingleSelection);
-//		
-//	if(ok){
-//			if(selection[0] == QString("Bt serial comm")){
-//				enableBTComm();
-//			}
-//			else if(selection[0] == QString("IP comm")){
-//				enableIPComm();
-//			}
-//			else if(selection[0] == QString("SERIAL comm")){
-//				enableSerialComm();
-//			}
-//			else{
-//				//All other comm plugins
-//				mEngineWrapper.enableOtherComm(selection[0]);
-//			}	
-//		}
+	QString currentComm;
+	mEngineWrapper.getSelectedComm(currentComm);
+	int curSelection = mPluginList.indexOf(currentComm, 0);
+	openListDialog(mPluginList, curSelection, QString("Select Comm"), this, SLOT(doSelectComm(HbAction*)));
 }
 
+void MainView::doSelectComm(HbAction* action)
+{
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(dlg && dlg->selectedModelIndexes().count() &&
+            (!action || action == dlg->actions().at(0)))
+    {
+        int selectionIndex = dlg->selectedModelIndexes().at(0).row();
+
+        if (mPluginList[selectionIndex] == QString("Bt serial comm"))
+        {
+            enableBTComm();
+        }
+        else if (mPluginList[selectionIndex] == QString("IP comm"))
+        {
+            enableIPComm();
+        }
+        else if (mPluginList[selectionIndex] == QString("SERIAL comm"))
+        {
+            enableSerialComm();
+        }
+        else
+        {
+            //All other comm plugins
+            mEngineWrapper.enableOtherComm(mPluginList[selectionIndex]);
+        }   
+    }    
+}
 // ---------------------------------------------------------------------------
 void MainView::enableSerialComm()
 {
-//	bool ok = false;
-//    QString str = HbInputDialog::getText(
-//					"Set Comm Port number ",
-//					"",
-//					&ok);
-//    
-//    if(ok){
-//    	mEngineWrapper.enableSerial(str);
-//    }
+    QString heading = QString("Set Comm Port number");
+    HbInputDialog::getInteger(heading, this, SLOT(doEnableSerialComm(HbAction*)), 0, scene());
 }
 
-
+void MainView::doEnableSerialComm(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString strPortNumber = dlg->value().toString();
+        mEngineWrapper.enableSerial(strPortNumber);
+    }
+}
 // ---------------------------------------------------------------------------
 void MainView::enableIPComm()
 {
     // Get IAPs list
-//    QStringList iapsList;
-//    mEngineWrapper.listIAPs(iapsList); 
-//    if(iapsList.count() == 0)
-//    {
-//        HbMessageBox msg("No IAPs for selection!", HbMessageBox::MessageTypeWarning);
-//        msg.exec();
-//        return;
-//    }
-//    
-//    // Get current selection
-//    QString curIapName;
-//    QString param = "IAPName";
-//    mEngineWrapper.getIPCfgParam(param, curIapName);
-//    int curSelction = iapsList.indexOf(curIapName, 0);
-//    
-//    QString iap;
-//	QStringList selection;
-//	bool ok = false;
-//	selection = HbListDialog::getStringItems("Select IAP:", iapsList, curSelction, &ok, HbAbstractItemView::SingleSelection);
-//	
-//	if(ok)
-//	{
-//        iap = selection[0];
-//	}
-//	else
-//	{
-//        return;
-//	}
-//	
-//	QStringList srcList;
-//	srcList <<"Listen" <<"Connect";
-//	
-//	selection = HbListDialog::getStringItems("Select IP Comm", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-//	
-//	if(ok){
-//		if(selection[0] == srcList[0]){
-//			QString port = HbInputDialog::getText(
-//								"Local port",
-//								"",
-//								&ok);	
-//		
-//			if(ok){
-//				mEngineWrapper.ipListen(port, iap);
-//			}
-//			
-//		}
-//		else{
-//			QString host = HbInputDialog::getText(
-//								"Remote Host",
-//								"",
-//								&ok);	
-//					
-//			if(ok){
-//				QString port = HbInputDialog::getText(
-//												"Remote port",
-//												"",
-//												&ok);	
-//			
-//				if(ok){
-//					mEngineWrapper.ipConnect(host, port, iap);
-//				}
-//			}
-//		}
-//			
-//	}
+    QStringList iapsList;
+    mEngineWrapper.listIAPs(iapsList); 
+    if(iapsList.count() == 0)
+    {
+        HbMessageBox::warning(QString("No IAPs for selection!"));
+        return;
+    }
+    
+    // Get current selection
+    QString curIapName;
+    QString param = "IAPName";
+    mEngineWrapper.getIPCfgParam(param, curIapName);
+    int curSelection = iapsList.indexOf(curIapName, 0);
+    
+    openListDialog(iapsList, curSelection, QString("Select IAP:"), this, SLOT(doSelectIAP(HbAction*)));
+}
+
+void MainView::doSelectIAP(HbAction* action)
+{
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(dlg && dlg->selectedModelIndexes().count() &&
+            (!action || action == dlg->actions().at(0)))
+    {
+        int selectionIndex = dlg->selectedModelIndexes().at(0).row();
+        mIapSelection = dlg->stringItems()[selectionIndex];
+        
+        QStringList items;
+        items <<"Listen" <<"Connect";
+        openListDialog(items, 0, QString("Select IP Comm"), this, SLOT(doSelectIpComm(HbAction*)));
+    }  
+}
+
+void MainView::doSelectIpComm(HbAction* action)
+{
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(dlg && dlg->selectedModelIndexes().count() &&
+            (!action || action == dlg->actions().at(0)))
+    {
+        int selectionIndex = dlg->selectedModelIndexes().at(0).row();
+        if(selectionIndex == 0) //Listen
+        {
+            HbInputDialog::getInteger(QString("Local port"), this, SLOT(doListenOnPort(HbAction*)), 0, scene());
+        }
+        else //Connect
+        {
+            openIPAddressDialog(QString("Remote Host"), this, SLOT(doConnectRemoteHost(HbAction*)));
+        }
+    }
+}
+
+void MainView::doListenOnPort(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString port = dlg->value().toString();
+        mEngineWrapper.ipListen(port, mIapSelection);
+    }
+}
+
+void MainView::doConnectRemoteHost(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString host = dlg->value(0).toString();
+        QString port = dlg->value(1).toString();
+        mEngineWrapper.ipConnect(host, port, mIapSelection);
+    }
 }
 
 // ---------------------------------------------------------------------------
 void MainView::enableBTComm()
 {
-//	QStringList srcList;
-//	QStringList selection;
-//	 
-//	srcList <<"BT address" <<"BT name" <<"Search when starting" ;
-//	
-//	bool ok = false;
-//	selection = HbListDialog::getStringItems("", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-//	
-//	if(ok){
-//		if(selection[0] == srcList[0]){
-//			QString address = HbInputDialog::getText(
-//						"BT address",
-//						"",
-//						&ok);
-//		
-//			if(ok){
-//				mEngineWrapper.enableBtByAddress(address);	
-//			}
-//		}
-//		else if(selection[0] == srcList[1]){
-//			QString name = HbInputDialog::getText(
-//								"BT name",
-//								"",
-//								&ok);
-//				
-//					if(ok){
-//						mEngineWrapper.enableBtByName(name);	
-//					}
-//		}
-//		else if(selection[0] == srcList[2]){
-//			mEngineWrapper.btSearch();
-//		}
-//	}
+	QStringList items;
+	items <<"BT address" <<"BT name" <<"Search when starting" ;
+	openListDialog(items, 0, QString("Bluetooth Comm"), this, SLOT(doSelectBTComm(HbAction*)));
 }
 
+void MainView::doSelectBTComm(HbAction* action)
+{
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(dlg && dlg->selectedModelIndexes().count() &&
+            (!action || action == dlg->actions().at(0)))
+    {
+        int selectionIndex = dlg->selectedModelIndexes().at(0).row();
+        if(selectionIndex == 0)
+        {
+            HbInputDialog::getText(QString("BT address"), this, SLOT(doEnableByBTAddress(HbAction*)));
+        }
+        else if(selectionIndex == 1)
+        {
+            HbInputDialog::getText(QString("BT name"), this, SLOT(doEnableByBTName(HbAction*)));
+        }
+        else if(selectionIndex == 2)
+        {
+            mEngineWrapper.btSearch();
+        }
+    }
+}
+
+void MainView::doEnableByBTAddress(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString address = dlg->value().toString();
+        mEngineWrapper.enableBtByAddress(address);
+    }
+}
+void MainView::doEnableByBTName(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString name = dlg->value().toString();
+        mEngineWrapper.enableBtByName(name);
+    }
+}
 
 // ---------------------------------------------------------------------------
 void MainView::setPriority()
 {
     // Get current priority
-//    bool ok = false;
-//    QString curPriority;
-//    QString param = "Priority";
-//    mEngineWrapper.getHtiCfgParam(param, curPriority);
-//    int curSelection = curPriority.toInt(&ok);
-//    if(ok){
-//        curSelection--;
-//    }
-//    else{
-//    curSelection = 2;
-//    }
-//    
-//	QStringList srcList;
-//	QStringList selection;
-//	 
-//	srcList <<"Backgroung" <<"Foregound" <<"High" << "Absolute High";
-//	
-//	
-//	selection = HbListDialog::getStringItems("Select Hti Priority", srcList, curSelection, &ok, HbAbstractItemView::SingleSelection);
-//	
-//	if(ok){
-//		if(selection[0] == srcList[0]){
-//			mEngineWrapper.setPriorityBackground();
-//		}
-//		else if(selection[0] == srcList[1]){
-//					mEngineWrapper.setPriorityForeground();
-//		}
-//		else if(selection[0] == srcList[2]){
-//			mEngineWrapper.setPriorityHigh();
-//		}
-//		else{
-//			mEngineWrapper.setPriorityAbsoluteHigh();
-//		}	
-//	}
+    bool ok = false;
+    QString curPriority;
+    QString param = "Priority";
+    mEngineWrapper.getHtiCfgParam(param, curPriority);
+    int curSelection = curPriority.toInt(&ok);
+    if(ok){
+        curSelection--;
+    }
+    else{
+    curSelection = 2;
+    }
+    
+	QStringList items;
+	items <<"Backgroung" <<"Foregound" <<"High" << "Absolute High";
+	openListDialog(items, curSelection, QString("Select Hti Priority"), 
+	        this, SLOT(doSetPriority(HbAction*)));
 }
 
+void MainView::doSetPriority(HbAction* action)
+{
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(dlg && dlg->selectedModelIndexes().count() &&
+            (!action || action == dlg->actions().at(0)))
+    {
+        int selectionIndex = dlg->selectedModelIndexes().at(0).row();
+        if(selectionIndex == 0)
+        {
+            mEngineWrapper.setPriorityBackground();
+        }
+        else if(selectionIndex == 1)
+        {
+            mEngineWrapper.setPriorityForeground();
+        }
+        else if(selectionIndex == 2)
+        {
+            mEngineWrapper.setPriorityHigh();
+        }
+        else
+        {
+            mEngineWrapper.setPriorityAbsoluteHigh();
+        }
+    }
+}
 // ---------------------------------------------------------------------------
 void MainView::enableAutoStart()
 {
@@ -493,62 +524,203 @@ void MainView::disableConsole()
 // ---------------------------------------------------------------------------
 void MainView::showParamList()
 {
-//	QStringList srcList;
-//	QStringList selection;
-//	QString value;
-//	QString name;
-//	QString cfgSelection;
-//	QString paramSelection;
-//	QString cfgHti = "Hti.cfg";
-//	QString cfgBtComm ="HtiBtComm.cfg";
-//	QString cfgSerialComm = "HtiSerialComm.cfg";
-//	QString cfgIPComm = "HtiIPComm.cfg";
-//	 
-//	srcList <<cfgHti <<cfgBtComm <<cfgSerialComm << cfgIPComm;
-//	
-//	bool ok = false;
-//	selection = HbListDialog::getStringItems("Select cfg file to modify", srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-//	
-//	if(ok){
-//        cfgSelection = selection[0];
-//        srcList.clear();
-//	    if(cfgSelection == cfgHti){
-//	    srcList <<"CommPlugin" <<"MaxMsgSize" <<"MaxQueueSize" <<"MaxHeapSize"<<"Priority"
-//	            <<"ShowConsole"<<"MaxWaitTime"<<"StartUpDelay"<<"EnableHtiWatchDog"
-//	            <<"EnableHtiAutoStart"<<"ShowErrorDialogs"<<"ReconnectDelay";
-//	    }
-//	    else if(cfgSelection == cfgBtComm){
-//	        srcList <<"BtDeviceName" <<"BtDeviceName";
-//	    }
-//	    else if(cfgSelection == cfgSerialComm){
-//            srcList <<"CommPort" <<"DataRate"<<"Parity"<<"DataBits"<<"StopBits"<<"SendDelay"<<"Handshake";
-//	    }
-//	    else{
-//	    srcList <<"IAPName"<<"LocalPort"<<"RemoteHost"<<"RemotePort"<<"ConnectTimeout";
-//	    }
-//	    
-//	    selection = HbListDialog::getStringItems("Select a parameter name in" + cfgSelection, srcList, 0, &ok, HbAbstractItemView::SingleSelection);
-//	}
-//    
-//    if(ok){
-//        name = selection[0];
-//        value = HbInputDialog::getText("Value for paramater " + name, "", &ok);
-//    }
-//    
-//    if(ok){
-//       if(cfgSelection == cfgHti){
-//            mEngineWrapper.setHtiCfgParam(name, value);
-//        }
-//        else if(cfgSelection == cfgBtComm){
-//            mEngineWrapper.setBtCfgParam(name, value);
-//        }
-//        else if(cfgSelection == cfgSerialComm){
-//            mEngineWrapper.setSerialCfgParam(name, value);
-//        }
-//        else{
-//            mEngineWrapper.setIPCfgParam(name, value);
-//        }   
-//    }
+    QStringList items;
+    items << "Hti.cfg" << "HtiBtComm.cfg" << "HtiSerialComm.cfg" << "HtiIPComm.cfg";
+    openListDialog(items, 0, QString("Select cfg file to modify"), 
+            this, SLOT(doSelectCfgFile(HbAction*)));
 }
 
+void MainView::doSelectCfgFile(HbAction* action)
+{
+    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
+    if(dlg && dlg->selectedModelIndexes().count() &&
+            (!action || action == dlg->actions().at(0)))
+    {
+        int selectionIndex = dlg->selectedModelIndexes().at(0).row();
+        QStringList items;
+        if(selectionIndex == 0)
+        {
+            items <<"CommPlugin" <<"MaxMsgSize" <<"MaxQueueSize" <<"MaxHeapSize"<<"Priority"
+                    <<"ShowConsole"<<"MaxWaitTime"<<"StartUpDelay"<<"EnableHtiWatchDog"
+                    <<"EnableHtiAutoStart"<<"ShowErrorDialogs"<<"ReconnectDelay";
+            openListDialog(items, 0, QString("Hti.cfg"), this, SLOT(doModifyHtiCfgFile(HbAction*)));
+        }
+        else if(selectionIndex == 1)
+        {
+            items <<"BtDeviceName" <<"BtDeviceName";
+            openListDialog(items, 0, QString("HtiBtComm.cfg"), this, SLOT(doModifyBtCfgFile(HbAction*)));
+        }
+        else if(selectionIndex == 2)
+        {
+            items <<"CommPort" <<"DataRate"<<"Parity"<<"DataBits"<<"StopBits"<<"SendDelay"<<"Handshake";
+            openListDialog(items, 0, QString("HtiSerialComm.cfg"), this, SLOT(doModifySerialCfgFile(HbAction*)));
+        }
+        else
+        {
+            items <<"IAPName"<<"LocalPort"<<"RemoteHost"<<"RemotePort"<<"ConnectTimeout";
+            openListDialog(items, 0, QString("HtiIPComm.cfg"), this, SLOT(doModifyIPCfgFile(HbAction*)));
+        }
+    }
+}
 
+void MainView::doModifyHtiCfgFile(HbAction* action)
+{
+    HbSelectionDialog *dlgSelection = static_cast<HbSelectionDialog*>(sender());
+    if(dlgSelection && dlgSelection->selectedModelIndexes().count() &&
+            (!action || action == dlgSelection->actions().at(0)))
+    {
+        int selectionIndex = dlgSelection->selectedModelIndexes().at(0).row();
+        HbInputDialog* dlgInput = new HbInputDialog();
+        dlgInput->setAttribute(Qt::WA_DeleteOnClose);
+        dlgInput->setPromptText(dlgSelection->stringItems()[selectionIndex]);
+        dlgInput->setInputMode(HbInputDialog::TextInput);
+        
+        HbLabel *title = new HbLabel(dlgInput);
+        title->setPlainText(QString("Set parameter value"));
+        dlgInput->setHeadingWidget(title);
+        
+        dlgInput->open(this, SLOT(doSetHtiCfgParameter(HbAction*)));
+    }
+}
+
+void MainView::doSetHtiCfgParameter(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString parameter = dlg->promptText();
+        QString value = dlg->value().toString();
+        mEngineWrapper.setHtiCfgParam(parameter, value);
+    }
+}
+
+void MainView::doModifyBtCfgFile(HbAction* action)
+{
+    HbSelectionDialog *dlgSelection = static_cast<HbSelectionDialog*>(sender());
+    if(dlgSelection && dlgSelection->selectedModelIndexes().count() &&
+            (!action || action == dlgSelection->actions().at(0)))
+    {
+        int selectionIndex = dlgSelection->selectedModelIndexes().at(0).row();
+        HbInputDialog* dlgInput = new HbInputDialog();
+        dlgInput->setAttribute(Qt::WA_DeleteOnClose);
+        dlgInput->setPromptText(dlgSelection->stringItems()[selectionIndex]);
+        dlgInput->setInputMode(HbInputDialog::TextInput);
+        
+        HbLabel *title = new HbLabel(dlgInput);
+        title->setPlainText(QString("Set parameter value"));
+        dlgInput->setHeadingWidget(title);
+        
+        dlgInput->open(this, SLOT(doSetBtCfgParameter(HbAction*)));
+    }
+}
+
+void MainView::doSetBtCfgParameter(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString parameter = dlg->promptText();
+        QString value = dlg->value().toString();
+        mEngineWrapper.setBtCfgParam(parameter, value);
+    }
+}
+
+void MainView::doModifySerialCfgFile(HbAction* action)
+{
+    HbSelectionDialog *dlgSelection = static_cast<HbSelectionDialog*>(sender());
+    if(dlgSelection && dlgSelection->selectedModelIndexes().count() &&
+            (!action || action == dlgSelection->actions().at(0)))
+    {
+        int selectionIndex = dlgSelection->selectedModelIndexes().at(0).row();
+        HbInputDialog* dlgInput = new HbInputDialog();
+        dlgInput->setAttribute(Qt::WA_DeleteOnClose);
+        dlgInput->setPromptText(dlgSelection->stringItems()[selectionIndex]);
+        dlgInput->setInputMode(HbInputDialog::TextInput);
+        
+        HbLabel *title = new HbLabel(dlgInput);
+        title->setPlainText(QString("Set parameter value"));
+        dlgInput->setHeadingWidget(title);
+        
+        dlgInput->open(this, SLOT(doSetSerialCfgParameter(HbAction*)));
+    }
+}
+
+void MainView::doSetSerialCfgParameter(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString parameter = dlg->promptText();
+        QString value = dlg->value().toString();
+        mEngineWrapper.setSerialCfgParam(parameter, value);
+    }
+}
+
+void MainView::doModifyIPCfgFile(HbAction* action)
+{
+    HbSelectionDialog *dlgSelection = static_cast<HbSelectionDialog*>(sender());
+    if(dlgSelection && dlgSelection->selectedModelIndexes().count() &&
+            (!action || action == dlgSelection->actions().at(0)))
+    {
+        int selectionIndex = dlgSelection->selectedModelIndexes().at(0).row();
+        HbInputDialog* dlgInput = new HbInputDialog();
+        dlgInput->setAttribute(Qt::WA_DeleteOnClose);
+        dlgInput->setPromptText(dlgSelection->stringItems()[selectionIndex]);
+        dlgInput->setInputMode(HbInputDialog::TextInput);
+        
+        HbLabel *title = new HbLabel(dlgInput);
+        title->setPlainText(QString("Set parameter value"));
+        dlgInput->setHeadingWidget(title);
+        
+        dlgInput->open(this, SLOT(doSetIPCfgParameter(HbAction*)));
+    }
+}
+
+void MainView::doSetIPCfgParameter(HbAction* action)
+{
+    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
+    if (action == dlg->actions().at(0))
+    {
+        QString parameter = dlg->promptText();
+        QString value = dlg->value().toString();
+        mEngineWrapper.setIPCfgParam(parameter, value);
+    }
+}
+
+void MainView::openListDialog(const QStringList& items, const int currentSelection,
+        const QString &titleText, QObject* receiver, const char* member)
+{
+    // Create a list and some simple content for it
+    HbSelectionDialog *dlg = new HbSelectionDialog();
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    // Set items to be popup's content
+    dlg->setStringItems(items);
+    dlg->setSelectionMode(HbAbstractItemView::SingleSelection);
+    QList<QVariant> current;
+    current.append(QVariant(currentSelection));
+    dlg->setSelectedItems(current);
+    
+    HbLabel *title = new HbLabel(dlg);
+    title->setPlainText(titleText);
+    dlg->setHeadingWidget(title);
+
+    // Launch popup and handle the user response:
+    dlg->open(receiver, member);
+}
+
+void MainView::openIPAddressDialog(const QString &titleText, QObject* receiver, const char* member)
+{
+    HbInputDialog* dlg = new HbInputDialog();
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setAdditionalRowVisible(true);
+    dlg->setPromptText(QString("IP Address:"), 0);
+    dlg->setInputMode(HbInputDialog::IpInput, 0);
+    dlg->setPromptText(QString("Port:"), 1);
+    dlg->setInputMode(HbInputDialog::IntInput, 1);
+    
+    HbLabel *title = new HbLabel(dlg);
+    title->setPlainText(titleText);
+    dlg->setHeadingWidget(title);
+    
+    dlg->open(receiver, member);
+}

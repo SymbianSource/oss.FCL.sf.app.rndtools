@@ -48,6 +48,7 @@ public:
     virtual QList<QString> GetCaseListByModule(const QString& moduleName) = 0;
     virtual CSTFCase GetCase(const QString& moduleName, const int index) = 0;
     virtual void RunCases(const QList<CSTFCase>& caseList, const TSTFCaseRunningType& type) = 0;
+    virtual void RepeatRunCases(const QList<CSTFCase>& aCaseList, const bool aIsLoopInfinitely, const int aLoopTimes = 1) = 0;
     virtual bool AddCaseToSet(const QList<CSTFCase>& aCase, const QString& setName) = 0;
     
     //for set
@@ -72,6 +73,9 @@ public:
     virtual void AddStfEventListener(IStfEventListener* listener) = 0;
     virtual void RemoveStfEventListener(IStfEventListener* listener) = 0;
     
+    //for repeat execution setting
+    virtual void InitRepeatSetting(const bool aIsLoopInfinitely, const int aLoopTimes) = 0;
+    virtual void ResetRepeatSetting() = 0;
 
 };
 

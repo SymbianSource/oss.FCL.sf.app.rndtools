@@ -23,6 +23,7 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <f32file.h>
+#include <e32hal.h>
 
 #include "loadgen_loadbase.h"
 #include "loadgen_loadattributes.h"

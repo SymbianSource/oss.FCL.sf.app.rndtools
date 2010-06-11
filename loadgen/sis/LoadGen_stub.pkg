@@ -29,6 +29,7 @@
 
 ; normal stuff:
 ""-"z:\sys\bin\LoadGen.exe"
+""-"z:\Resource\Apps\LoadGen.mif"
 ""-"z:\Resource\Apps\LoadGen_aif.mif"
 ""-"z:\Resource\Apps\LoadGen_ExtraIcons.mif"
 ""-"z:\Resource\Apps\LoadGen.rsc"

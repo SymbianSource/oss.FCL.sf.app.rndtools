@@ -178,7 +178,6 @@ private:
     CEngine();
     void ConstructL(MFileBrowserUI *aFileBrowserUI);
     void LoadSettingsL();
-    void GetHashKeySelectionStatus();
     void LoadDFSValueL(CDictionaryFileStore* aDicFS, const TUid& aUid, TInt& aValue);
     void LoadDFSValueL(CDictionaryFileStore* aDicFS, const TUid& aUid, TDes& aValue);
     void SaveDFSValueL(CDictionaryFileStore* aDicFS, const TUid& aUid, const TInt& aValue);
@@ -188,7 +187,6 @@ public:
     void ActivateEngineL();
     void DeActivateEngineL();
     void SaveSettingsL(TBool aNotifyModules=ETrue);
-//    void SetFileListContainer(CFileBrowserFileListContainer* aFileListContainer);
     TInt LaunchSettingsDialogL();
     inline TFileBrowserSettings& Settings() { return iSettings; }
     inline CEikonEnv* EikonEnv() { return iEnv; }
@@ -196,13 +194,10 @@ public:
     inline CFileBrowserScreenCapture* ScreenCapture() { return iScreenCapture; }
     inline CFileBrowserFileUtils* FileUtils() { return iFileUtils; }
     inline MFileBrowserUI* FileBrowserUI() { return iFileBrowserUI; }
-    inline CFileBrowserFileListContainer* FileListContainer() { return iFileListContainer; }
-    inline TBool IsHashKeySelectionInUse() { return iIsHashKeySelectionInUse; }
 
     void OpenWithApparcL(TFileName aFileName);
     void OpenWithDocHandlerL(TFileName aFileName, TBool aEmbed);
 //    TInt QueryCurrentItemIndex();
-//    CArrayFix<TInt> *GetSelectedIndices();
     TSearchAttributes GetSearchAttributes();
     void ChangeAttributes(TSearchAttributes attributes);
     TSearchResults SearchResults();
@@ -211,7 +206,6 @@ public:
 
 private:
     MFileBrowserUI                  *iFileBrowserUI;
-    CFileBrowserFileListContainer   *iFileListContainer;
     CFileBrowserScreenCapture       *iScreenCapture;
     CFileBrowserFileUtils           *iFileUtils;
     CEikonEnv*                      iEnv;

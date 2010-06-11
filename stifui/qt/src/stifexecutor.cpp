@@ -268,7 +268,7 @@ bool CStifExecutor::SaveSet(QString& setName)
     TPtrC name = QString2TPtrC(setName);
     TFileName testSetName;
     testSetName.Copy(name);
-    TInt ret = UIStore().SaveTestSet2(testSetName);
+    TInt ret = UIStore().SaveTestSet(testSetName);
     setName = TDesC2QString(testSetName);
     return LogResult(ret, "SaveSet");
     }

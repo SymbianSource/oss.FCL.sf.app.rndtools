@@ -34,7 +34,7 @@
 				<unit unitID="tools.piprofilerui" mrp="" bldFile="&layer_real_source_path;/piprofilerui" name="piprofilerui" proFile="piprofilerui.pro" />
 			</module>
 			<module name="stifui">
-				<unit unitID="tools.stifui" mrp="" bldFile="&layer_real_source_path;/stifui/avkon/group" name="stifui"/>
+				<unit unitID="tools.stifui" mrp="" bldFile="&layer_real_source_path;/stifui/qt/" name="stifui" proFile="stifqtui.pro"/>
 			</module>
     </layer>
   </systemModel>

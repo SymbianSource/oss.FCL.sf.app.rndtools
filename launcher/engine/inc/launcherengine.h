@@ -21,7 +21,8 @@
 #include <e32base.h>
 #include <apgcli.h>
 #include <w32std.h>
-#include <e32std.h> 
+#include <e32std.h>
+#include <e32hal.h>
 
 #include "launcherparserobserver.h"
 

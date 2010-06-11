@@ -22,11 +22,17 @@
 #define HTIAPPSERVICEPLUGIN_H__
 
 //  INCLUDES
+#include "../../../symbian_version.hrh"
+
 #include <e32base.h>
 #include <apgcli.h>
 #include <w32std.h>
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 #include <SWInstDefs.h>
 #include <swi/sisregistryentry.h>
+#else
+#include <usif/usifcommon.h>
+#endif
 #include <HtiServicePluginInterface.h>
 
 // CONSTANTS
@@ -155,8 +161,14 @@ protected:
     TInt OpenProcessL( RProcess& aProcess, const TDesC& aMatch );
     TInt OpenProcessL( RProcess& aProcess, const TUint32 aProcessId );
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     SwiUI::TPolicy ConvertToPolicy( const TInt8 aValue );
     TInt GetPackageUidL( const TDesC& aPackageName, TInt aMimeIndex );
+#else
+    Usif::TSifPolicy ConvertToSifPolicy( const TInt8 aValue );
+    TInt GetComponentIdFromUid(const TInt32 aUid);
+    TInt GetComponentIdFromPackageName(const TDesC& aPackageName);
+#endif
 
     TBool ValidateInstallParams( const TDesC8& aParams, TBool aIsUnicode );
 
@@ -199,12 +211,14 @@ protected:
     // possible mimetypes for silent software uninstallation
     CDesC8ArrayFlat* iMimeTypes;
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     SwiUI::TInstallOptions iInstOpts;
     SwiUI::TInstallOptionsPckg iInstOptsPckg;
     SwiUI::TUninstallOptions iUnInstOpts;
     SwiUI::TUninstallOptionsPckg iUnInstOptsPckg;
     RPointerArray<Swi::CSisRegistryPackage> iAugmentations;
     TInt iAugmentationIndex;
+#endif
     };
 
 #endif

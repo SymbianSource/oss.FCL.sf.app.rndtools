@@ -9,7 +9,8 @@
 # Contributors:
 # Description: QT project file.
 TARGET = STFUI
-HEADERS += inc/dlgsetselector.h \
+HEADERS += inc/dlgrepeatrun.h \
+    inc/dlgsetselector.h \
     inc\version.h \
     inc\frmmain.h \
     inc\istfqtuicontroller.h \
@@ -22,7 +23,8 @@ HEADERS += inc/dlgsetselector.h \
     inc\uisetting.h \
     inc\dlgsetting.h \
     inc\uiversion.h
-SOURCES += src\dlgsetselector.cpp \
+SOURCES += src/dlgrepeatrun.cpp \
+    src\dlgsetselector.cpp \
     src\frmmain.cpp \
     src\main.cpp \
     src\stfqtuimodel.cpp \
@@ -49,8 +51,4 @@ symbian {
     
     # Export headers to SDK Epoc32/include directory
     deploy.path = $$EPOCROOT
-    #exportheaders.sources = $$PUBLIC_HEADERS
-    #exportheaders.path = epoc32/include
-    #for(header, exportheaders.sources)
-    #:BLD_INF_RULES.prj_exports += "$$header $$deploy.path$$exportheaders.path/$$basename(header)"
 }

@@ -46,6 +46,7 @@ SOURCES += src/main.cpp \
 RESOURCES +=
 
 symbian: {
+		INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
     INCLUDEPATH += ../../../engine/inc
     HEADERS += ../../../engine/inc/perfmon_engine.h
 
