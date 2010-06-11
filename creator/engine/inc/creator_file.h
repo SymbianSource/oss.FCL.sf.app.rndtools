@@ -40,6 +40,14 @@ class CDRMConstraint;
 
 class CCreatorFiles : public CCreatorModuleBase
     {
+enum TCreatorFilesState{
+    ECreatorFilesDelete,
+    ECreatorFilesStart,
+    ECreatorFilesGetDirectory,
+    ECreatorFilesAskDRMData,
+    ECreatorFilesAskDRM_CD_Counts,
+    ECreatorFilesAskDRM_CD_Minutes
+};
 public: 
     static CCreatorFiles* NewL(CCreatorEngine* aEngine);
     static CCreatorFiles* NewLC(CCreatorEngine* aEngine);
@@ -51,8 +59,7 @@ private:
 
 public:
     TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
-//    void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData); //from MUIObserver
-    void QueryDialogClosedL(TBool, TInt){/*TODO: DialogClosed*/};
+    void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData); //from MUIObserver
     TInt CreateFileEntryL(CFilesParameters *aParameters, TInt aCommand);    
     void DeleteAllL();
     void DeleteAllCreatedByCreatorL();
@@ -63,14 +70,13 @@ private:
     void SetPermissionsL( CMetaDataArray* aMetaData, const TDesC& aOutFileName, CFilesParameters *aParameters );
     void SetMimeTypeL( const TDesC& aFileName, TDes8& aMime, CFilesParameters *aParameters );
     TBool AskDRMDataFromUserL();
-    TBool AskDRMCDDataFromUserL();
     void StorePathsForDeleteL( CDesCArray& aPaths );
     void GenerateFileNameL( TFileName& aRootName );
     
 private:
     CFilesParameters* iParameters;
     CFilesParameters* iUserParameters;
-    HBufC* iDirectoryQueriedFromUser;
+    TFileName iDirectoryQueriedFromUser;
     RFs& iFs;
     RApaLsSession iApaLs;
     CDesCArray* iFilePaths;

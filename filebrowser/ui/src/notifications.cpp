@@ -38,7 +38,7 @@ void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QStr
 void Notifications::showAboutNote()
 {
     showMessageBox(HbMessageBox::MessageTypeInformation,
-                   "Version 5.0.0 - 23h April 2010. Copyright © 2010 Nokia Corporation"
+                   "Version 5.0.1 - 21st May 2010. Copyright © 2010 Nokia Corporation"
                         "and/or its subsidiary(-ies). All rights reserved."
                         "Licensed under Eclipse Public License v1.0.",
                    "About File Browser"

@@ -116,6 +116,10 @@ void EngineWrapper::ShowNote(const TDesC& aNoteMessage, TInt /*aResourceId*/)
 void EngineWrapper::ShowProgressBar(const TDesC& aPrompt, int aMax)
 {
 	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
+	if(iProgressDialog){
+        delete iProgressDialog;
+        iProgressDialog = NULL;
+	}
     iProgressDialog = Notifications::showProgressBar(text, aMax);
 	connect(iProgressDialog, SIGNAL(cancelled()), this, SLOT(ProgressDialogCancelled()));
 }
@@ -124,7 +128,8 @@ void EngineWrapper::ShowProgressBar(const TDesC& aPrompt, int aMax)
 
 void EngineWrapper::IncrementProgressbarValue()
 {
-    iProgressDialog->setProgressValue(iProgressDialog->progressValue() + 1);
+    if(iProgressDialog)
+        iProgressDialog->setProgressValue(iProgressDialog->progressValue() + 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -132,8 +137,9 @@ void EngineWrapper::IncrementProgressbarValue()
 void EngineWrapper::CloseProgressbar()
 {
     if(iProgressDialog){
+        disconnect(iProgressDialog, SIGNAL(cancelled()), this, SLOT(ProgressDialogCancelled()));
         delete iProgressDialog;
-        iProgressDialog = 0;
+        iProgressDialog = NULL;
     }
 }
 
@@ -226,7 +232,6 @@ TBool EngineWrapper::PopupListDialog(const TDesC& aPrompt, const CDesCArray* aFi
 				  aFileNameArray->MdcaPoint(i).Ptr(),
 				  aFileNameArray->MdcaPoint(i).Length()));
 	}
-	// TODO: HbSelectionDialog handle close & user choice
 	TBool success(EFalse);
     try{
         CreatorSelectionDialog::launch(text, itemList, aIndex, aObserver, aUserData);
@@ -241,16 +246,19 @@ TBool EngineWrapper::PopupListDialog(const TDesC& aPrompt, const CDesCArray* aFi
 
 // ---------------------------------------------------------------------------	
 
-bool EngineWrapper::DirectoryQueryDialog(const TDesC& aPrompt, TFileName& aDirectory)
+TBool EngineWrapper::DirectoryQueryDialog(const TDesC& aPrompt, TDes& aDirectory, MUIObserver* aObserver, TInt aUserData)
 {
 	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
-	QString directory = QString((QChar*)aDirectory.Ptr(), aDirectory.Length());
-	bool ret = Notifications::directoryQueryDialog(text, directory);
-	if (ret == true) {
-		aDirectory = TFileName(directory.utf16());
-	}
-	return ret;
-
+	TBool success(EFalse);
+    try{
+        CreatorInputDialog::launch(text, aDirectory, aObserver, aUserData);
+        success = ETrue;
+    }
+    catch (std::exception& e)
+        {
+        Notifications::error( QString("exception: ")+e.what() );
+        }
+    return success;
 }
 
 
@@ -314,7 +322,6 @@ TBool EngineWrapper::ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TIn
 			return ret;
 		}
 	}
-    // TODO: HbSelectionDialog handle close & user choice
 	TBool success(EFalse);
     try{
         CreatorSelectionDialog::launch(text, itemList, aIndex, aObserver, aUserData);

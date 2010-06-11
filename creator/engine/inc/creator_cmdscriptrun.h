@@ -21,7 +21,7 @@
 
 #include "engine.h"
 
-class CCreatorCmdScriptRun : public MBeating
+class CCreatorCmdScriptRun : public CBase, public MBeating
     {
 public:
 
@@ -39,7 +39,7 @@ public:
 private:
     CCreatorCmdScriptRun();
     void ConstructL(CCreatorEngine* aEngine);
-	void Tick();
+	void TickL();
 	
 private:
     CCreatorEngine* iEngine;

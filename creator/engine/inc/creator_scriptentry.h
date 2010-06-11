@@ -81,7 +81,7 @@ public:
 public:
     void OpenScriptL();
     TBool OpenScriptL(MCommandParserObserver* aObserver);
-    TBool GetRandomDataFilenameL(TDes& aFilename);
+    TBool GetRandomDataFilenameL(MCommandParserObserver* aObserver);
 
 private:
     CCreatorEngine* iEngine;

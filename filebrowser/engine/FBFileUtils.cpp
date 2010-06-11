@@ -204,7 +204,7 @@ void CFileBrowserFileUtils::DoCancel()
 
 // --------------------------------------------------------------------------------------------
 
-void CFileBrowserFileUtils::StartExecutingCommandsL(const TDesC& /*aLabel*/)
+void CFileBrowserFileUtils::StartExecutingCommandsL(const TDesC& aLabel)
     {
     if (iCommandArray->Count() >= 2)
         {
@@ -217,6 +217,8 @@ void CFileBrowserFileUtils::StartExecutingCommandsL(const TDesC& /*aLabel*/)
 //        iProgressInfo->SetFinalValue( CommandArrayCount() );
 //        iProgressDialog->RunLD();
 //        iProgressDialog->MakeVisible( ETrue );        
+        iEngine->FileBrowserUI()->ShowProgressDialog(aLabel, 0, CommandArrayCount());
+        isProgressDialog = ETrue;
         }
     else if (iCommandArray->Count() >= 1)
         {
@@ -226,6 +228,8 @@ void CFileBrowserFileUtils::StartExecutingCommandsL(const TDesC& /*aLabel*/)
 //        iWaitDialog->PrepareLC(R_GENERAL_WAIT_NOTE);
 //        iWaitDialog->SetTextL( aLabel );
 //        iWaitDialog->RunLD();
+        iEngine->FileBrowserUI()->ShowWaitDialog(aLabel);
+        isWaitDialog = ETrue;
         }
     else
         {
@@ -251,6 +255,15 @@ void CFileBrowserFileUtils::ExecuteCommand()
     __ASSERT_ALWAYS(!IsActive(), User::Panic(_L("FileUtils:IsActive"), 333));
 
     // execute a command after a very short delay (25ms)
+    if (isWaitDialog)
+        {
+        iEngine->FileBrowserUI()->ProcessEvents();
+        }
+    if (isProgressDialog)
+        {
+        TInt newValue = iCurrentEntry;
+        iEngine->FileBrowserUI()->SetProgressValue(newValue);
+        }
     iTimer.After(iStatus, 25);
     SetActive();
     }
@@ -365,6 +378,16 @@ void CFileBrowserFileUtils::CheckForMoreCommandsL()
         iFileOps->DeActivateSecureBackUpViaFileOp();
 
         // dismiss any wait/progress dialogs        
+        if (isWaitDialog)
+            {
+            iEngine->FileBrowserUI()->CancelWaitDialog();
+            isWaitDialog = EFalse;
+            }
+        if (isProgressDialog)
+            {
+            iEngine->FileBrowserUI()->CancelProgressDialog();
+            isProgressDialog = EFalse;
+            }
 //        if (iWaitDialog)
 //            {
 //            TRAP_IGNORE(iWaitDialog->ProcessFinishedL()); 
@@ -422,29 +445,29 @@ void CFileBrowserFileUtils::CheckForMoreCommandsL()
 
         RefreshViewL();
 
-		}
+            }
 	else
-		{
-		// maintain requests
-		iCurrentEntry++;
+            {
+            // maintain requests
+            iCurrentEntry++;
 
-        //LOGSTRING2("Creator: CCreatorEngine::CheckForMoreCommandsL iCurrentEntry=%d", iCurrentEntry);
+            //LOGSTRING2("Creator: CCreatorEngine::CheckForMoreCommandsL iCurrentEntry=%d", iCurrentEntry);
 
-        ExecuteCommand();
-		}
+            ExecuteCommand();
+            }
     }    
 // --------------------------------------------------------------------------------------------
 
 // This callback function is called when cancel button of the progress bar was pressed
-void CFileBrowserFileUtils::DialogDismissedL(TInt aButtonId)
+void CFileBrowserFileUtils::DialogDismissedL(/*TInt aButtonId*/)
     {
 //    iProgressDialog = NULL;
 //    iProgressInfo = NULL;
 //    iWaitDialog = NULL;
     
     // check if cancel button was pressed
-    if (aButtonId == EAknSoftkeyCancel)
-        {
+//    if (aButtonId == EAknSoftkeyCancel)
+//        {
         // cancel the active object, command executer 
         Cancel();
         
@@ -452,8 +475,10 @@ void CFileBrowserFileUtils::DialogDismissedL(TInt aButtonId)
         
         ResetCommandArray();
 
+        isProgressDialog = EFalse;
+
         iEngine->FileBrowserUI()->ShowInformationNote(_L("Cancelled"), _L(""));
-        }
+//        }
     }
     
 // --------------------------------------------------------------------------------------------

@@ -21,6 +21,7 @@
 #include <shareuidialog.h>
 #include <eikenv.h>
 #include <hbprogressdialog.h>
+#include <hbaction.h>
 #include <QDebug>
 
 #include "launchermainwindow.h"
@@ -207,7 +208,7 @@ bool EngineWrapper::sendListOfDlls()
 void EngineWrapper::doCompareDlls(HbAction* action)
     {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
-    if(action == dlg->primaryAction())
+    if( action && !action->text().compare("ok", Qt::CaseInsensitive) )
         {
         TFileName fileName( dlg->value().toString().utf16() );
         TRAPD(error,  mEngine->AnalyseDLLsL( fileName ) );

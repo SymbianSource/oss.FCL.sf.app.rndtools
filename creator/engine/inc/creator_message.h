@@ -131,8 +131,8 @@ private:
                                 TInt aNumOfExistingAddresses );
     
     void GetAllRecipientsL(RPointerArray<HBufC>& aRecipientArray, const CMessagesParameters& aParameters, TBool aUseEmailAddress );
-    void SetSenderToEntryDetails(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress);
-    void SetRecipientToEntryDetails(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress);
+    void SetSenderToEntryDetailsL(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress);
+    void SetRecipientToEntryDetailsL(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress);
     void AddSenderToMtmAddresseeL(CBaseMtm& aMtm, const CMessagesParameters& aParameters, TBool aUseEmailAddress );
     void AddMtmSenderL(CMmsClientMtm& aMtm, const CMessagesParameters& aParameters, TBool aUseEmailAddress );
     void GetSendersL(RPointerArray<HBufC>& aSenderArray, const CMessagesParameters& aParameters, TBool aUseEmailAddress, TInt aMaxNum );

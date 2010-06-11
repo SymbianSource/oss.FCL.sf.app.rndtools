@@ -117,15 +117,15 @@ void  CCreatorCmdScriptRun::RunScriptDone()
 
 void  CCreatorCmdScriptRun::Beat()
 	{
-	Tick();
+	TRAP_IGNORE( TickL() );
 	}
 
 void  CCreatorCmdScriptRun::Synchronize()
 	{
-	Tick();
+    TRAP_IGNORE( TickL() );
 	}
 
-void  CCreatorCmdScriptRun::Tick()
+void  CCreatorCmdScriptRun::TickL()
 	{
 	iTickCount++;
 	if (iTickCount > KCommandLineDelay)

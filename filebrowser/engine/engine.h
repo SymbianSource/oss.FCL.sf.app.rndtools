@@ -78,10 +78,10 @@ public:
 class MFileBrowserUI
 {
 public:
-    /**
-      * Method from getting current index
-      * @return current index.
-      */
+//    /**
+//      * Method from getting current index
+//      * @return current index.
+//      */
 //    virtual TInt QueryCurrentItemIndex() = 0;
 
     /**
@@ -106,14 +106,26 @@ public:
      */
     virtual void ShowConfirmationNote(const TDesC& aText, TBool aNoTimeout = EFalse) = 0;
 
-//    /**
-//     * Shows progress bar with text
-//     * @param aText A text to be shown at top of the progress bar.
-//     * @param aMinimum A minimum progress bar value.
-//     * @param aMaximum A maximum progress bar value.
-//     * @return None.
-//     */
-//    virtual void ShowProgressBar(const TDesC& aText, TInt aMinimum, TInt aMaximum ) = 0;
+    /**
+     * Shows progress bar with text
+     * @param aText A text to be shown at top of the progress bar.
+     * @param aMinimum A minimum progress bar value.
+     * @param aMaximum A maximum progress bar value.
+     * @return None.
+     */
+    virtual void ShowProgressDialog(const TDesC& aDescText, TInt aMinimum, TInt aMaximum ) = 0;
+
+    /**
+     * Cancel progress dialog
+     * @return None.
+     */
+    virtual void CancelProgressDialog() = 0;
+
+    /**
+      * Set progress dialog value
+      * @param aValue A vaule to be shown at top of the progress dialog.
+      */
+    virtual void SetProgressValue(TInt aValue) = 0;
 //
 //    /**
 //     * Sets progress bar value

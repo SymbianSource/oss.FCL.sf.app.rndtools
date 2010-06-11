@@ -42,7 +42,10 @@ void ValueDataContainer::paint (QPainter *painter,
     // set proper font and prepare font metrics for text height calculation
     painter->setFont(mFont);
 
-    painter->setPen(HbColorScheme::color("foreground"));
+    QColor col = HbColorScheme::color("qtc_textedit_normal");
+    if(col.isValid())
+        painter->setPen(col);
+    
     QFontMetricsF metrics(mFont);
 
     QList<SampleEntry> entries = engine().sampleEntries();

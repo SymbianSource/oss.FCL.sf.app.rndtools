@@ -133,11 +133,13 @@ void CCreatorMessages::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
         return;
         }
     
+    const TDesC* showText = &KSavingText;
     TBool finished(EFalse);
     TBool retval(ETrue);
     switch(aUserData)
         {
         case ECreatorMessagesDelete:
+            showText = &KDeletingText;
             iEntriesToBeCreated = 1;
             finished = ETrue;
             break;
@@ -225,7 +227,7 @@ void CCreatorMessages::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
         // add this command to command array
         iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
         // started exucuting commands
-        iEngine->ExecuteFirstCommandL( KSavingText );
+        iEngine->ExecuteFirstCommandL( *showText );
         }
     }
 //----------------------------------------------------------------------------
@@ -455,10 +457,11 @@ TInt CCreatorMessages::CreateSMSEntryL(const CMessagesParameters& parameters)
     clientMtm->CreateMessageL(defaultServiceId);
 
     // set the from field to sms header
-    if (parameters.iFolderType == EInbox)
+    // !!! This will cause CRASH
+    /*if (parameters.iFolderType == EInbox)
         {
         CSmsHeader* smsHeader = &clientMtm->SmsHeader();
-        delete smsHeader;
+        delete smsHeader; // <-- This will cause CRASH
         smsHeader = NULL;
         smsHeader = CSmsHeader::NewL(CSmsPDU::ESmsDeliver, clientMtm->Body());        
         if( parameters.iSenderAddress )
@@ -469,7 +472,7 @@ TInt CCreatorMessages::CreateSMSEntryL(const CMessagesParameters& parameters)
             {
             smsHeader->SetFromAddressL(KEmpty);
             }
-        }       
+        }       */
 
     // set body
     clientMtm->Body().Reset();
@@ -481,11 +484,11 @@ TInt CCreatorMessages::CreateSMSEntryL(const CMessagesParameters& parameters)
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         // Add all recipients to clientMtm
         // iRecipientArray is up-to-date so don't call AddRecipientsL here 
         for( TInt i = 0; i < iRecipientArray.Count(); i++ )
@@ -664,11 +667,11 @@ TInt CCreatorMessages::CreateMMSEntryL(const CMessagesParameters& parameters)
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }    
 
     // set the description field same as the message subject
@@ -923,11 +926,11 @@ TInt CCreatorMessages::CreateAMSEntryL(const CMessagesParameters& parameters)
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }  
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }
 
     // set the description field same as the message subject
@@ -1088,14 +1091,14 @@ TInt CCreatorMessages::CreateEmailEntryL(const CMessagesParameters& parameters)
     if (parameters.iFolderType == EInbox)
         {
         AddSenderToMtmAddresseeL(*clientMtm, parameters, ETrue );
-        SetSenderToEntryDetails(messageEntry, parameters, ETrue);
+        SetSenderToEntryDetailsL(messageEntry, parameters, ETrue);
         messageEntry.iMtm = KUidMsgTypeIMAP4;  // or any other than KUidMsgTypeSMTP to display 'from' field instead of 'to' field 
         }
     else
         {
         // Add all recipients to clientMtm
         AddRecipientsL( *clientMtm, parameters, ETrue );
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);        
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);        
         }
 
     // set the description field same as the message subject
@@ -1319,11 +1322,11 @@ TInt CCreatorMessages::CreateSmartMessageEntryL(const CMessagesParameters& param
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }        
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }
 
     // set the subject line
@@ -1430,11 +1433,11 @@ TInt CCreatorMessages::CreateObexEntryL(TUid aMtm, const CMessagesParameters& pa
     // set the details field and
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);
         }        
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }
     
     // set mtm
@@ -1520,7 +1523,7 @@ void CCreatorMessages::HandleSessionEventL(TMsvSessionEvent /*aEvent*/, TAny* /*
     }
 
 //----------------------------------------------------------------------------
-void CCreatorMessages::SetSenderToEntryDetails(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
+void CCreatorMessages::SetSenderToEntryDetailsL(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
     {        
     // Only one sender allowed:
     if( iSenderArray.Count() == 0 )
@@ -1538,7 +1541,7 @@ void CCreatorMessages::SetSenderToEntryDetails(TMsvEntry& aMsgEntry, const CMess
     }
 
 //----------------------------------------------------------------------------
-void CCreatorMessages::SetRecipientToEntryDetails(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
+void CCreatorMessages::SetRecipientToEntryDetailsL(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
     {        
     // Only one sender allowed:
     GetAllRecipientsL(iRecipientArray, aParameters, aUseEmailAddress);

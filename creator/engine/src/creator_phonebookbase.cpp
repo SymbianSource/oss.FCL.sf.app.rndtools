@@ -30,11 +30,13 @@ void CCreatorPhonebookBase::QueryDialogClosedL(TBool aPositiveAction, TInt aUser
         return;
         }
     
+    const TDesC* showText = &KSavingText;
     TBool finished(EFalse);
     TBool retval(ETrue);
     switch(aUserData)
         {
         case ECreatorPhonebookDelete:
+            showText = &KDeletingText;
             finished = ETrue;
             iEntriesToBeCreated = 1;
             break;
@@ -44,25 +46,17 @@ void CCreatorPhonebookBase::QueryDialogClosedL(TBool aPositiveAction, TInt aUser
                 );
             break;
         case ECreatorPhonebookGetContactFields:
-            if(!iDefaultFieldsSelected)
+            if(iDummy==0)// first item, use default fields
+                    
                 {
-                if(iDummy==0)// first item, use default fields
-                        
-                    {
-                    iDefaultFieldsSelected = ETrue;
-                    retval = iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Add all the other fields to contacts?"), this, ECreatorPhonebookGetContactFields);
-                    }
-                else
-                    {
-                    retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iNumberOfPhoneNumberFields, _L("Amount of phone number fields in one contact?"), 
-                        ETrue, this, ECreatorPhonebookGetPhoneNumbersCount 
-                        );
-                    }
+                iDefaultFieldsSelected = ETrue;
+                finished = ETrue;
                 }
             else
                 {
-                iAddAllFields = aPositiveAction;
-                finished = ETrue;
+                retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iNumberOfPhoneNumberFields, _L("Amount of phone number fields in one contact?"), 
+                    ETrue, this, ECreatorPhonebookGetPhoneNumbersCount 
+                    );
                 }
             break;
         case ECreatorPhonebookGetPhoneNumbersCount:
@@ -76,6 +70,10 @@ void CCreatorPhonebookBase::QueryDialogClosedL(TBool aPositiveAction, TInt aUser
                 );
             break;
         case ECreatorPhonebookGetEmailsCount:
+            retval = iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Add all the other fields to contacts?"), this, ECreatorPhonebookContactsAllFields);
+            break;
+        case ECreatorPhonebookContactsAllFields:
+            iAddAllFields = aPositiveAction;
             // finaly we have all informations from user, start engine
             finished = ETrue;
             break;
@@ -109,7 +107,7 @@ void CCreatorPhonebookBase::QueryDialogClosedL(TBool aPositiveAction, TInt aUser
         // add this command to command array
         iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
         // started exucuting commands
-        iEngine->ExecuteFirstCommandL( KSavingText );
+        iEngine->ExecuteFirstCommandL( *showText );
         }
     }
     

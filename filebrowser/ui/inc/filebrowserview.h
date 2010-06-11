@@ -25,7 +25,7 @@
 #include <HbMainWindow>
 #include <HbApplication>
 
-#include <QDir>
+#include <QModelIndexList>
 
 // Forward declarations
 class QFileInfo;
@@ -39,6 +39,8 @@ class HbListWidget;
 class HbToolBar;
 class HbLabel;
 class HbDialog;
+class HbAbstractViewItem;
+class HbMenu;
 
 class FileBrowserMainWindow;
 class EditorView;
@@ -55,31 +57,37 @@ public:
     explicit FileBrowserView(FileBrowserMainWindow &mainWindow);
     virtual ~FileBrowserView();
     void init(EngineWrapper *engineWrapper);
-    QModelIndex currentItemIndex();
-    QModelIndexList getSelectedItemsOrCurrentItem();
 
 public slots:
     void refreshList();
 
 private:
     void fileOverwriteDialog();
-    void openListDialog(const QStringList& items, const QString &titleText, QObject* receiver, const char* member);
+    void openListDialog(const QStringList &items, const QString &titleText, QObject *receiver, const char *member);
 
-    void openPropertyDialog(const QStringList& propertyList, const QString& title);
+    void openPropertyDialog(const QStringList &propertyList, const QString &title);
 
-    void createToolBar();
+    QModelIndex currentItemIndex();
+    void storeSelectedItemsOrCurrentItem();
+
     // Menu related methods
     void createMenu();
     void createFileMenu();
     void createEditMenu();
     void createViewMenu();
-    void createDiskAdminMenu();
     void createToolsMenu();
 
     void createSelectionMenuItem();
     void createSettingsMenuItem();
     void createAboutMenuItem();
     void createExitMenuItem();
+
+    void createContextMenu();
+    void createFileContextMenu();
+    void createEditContextMenu();
+    void createViewContextMenu();
+    void createDiskAdminContextMenu();
+    void createToolBar();
 
 //    void refreshList();
     void populateFolderContent();
@@ -143,10 +151,10 @@ private slots:
     void doDiskAdminSetDrivePassword(HbAction *);
 
     void diskAdminUnlockDrive();
-    void doDiskAdminUnlockDrive(HbAction *action);
+    void doDiskAdminUnlockDrive(HbAction *);
 
     void diskAdminClearDrivePassword();
-    void doDiskAdminClearDrivePassword(HbAction *action);
+    void doDiskAdminClearDrivePassword(HbAction *);
 
     void diskAdminEraseDrivePassword();
     void doDiskAdminEraseDrivePassword(HbAction *);
@@ -163,10 +171,10 @@ private slots:
     void doDiskAdminScanDrive(HbAction *);
 
     void diskAdminSetDriveName();
-    void doDiskAdminSetDriveName(HbAction *action);
+    void doDiskAdminSetDriveName(HbAction *);
 
     void diskAdminSetDriveVolumeLabel();
-    void doDiskAdminSetDriveVolumeLabel(HbAction*);
+    void doDiskAdminSetDriveVolumeLabel(HbAction *);
 
     void diskAdminEjectDrive();
     void diskAdminDismountDrive();
@@ -193,14 +201,14 @@ private slots:
     void toolsDisableExtendedErrors();
     void toolsDumpMsgStoreWalk();
     void toolsEditDataTypes();
-    void toolsEnableExtendedErrors ();
+    void toolsEnableExtendedErrors();
 
     void toolsErrorSimulateLeave();
-    void doToolsErrorSimulateLeave(HbAction *action);
+    void doToolsErrorSimulateLeave(HbAction *);
 
     void toolsErrorSimulatePanic();
-    void doToolsErrorSimulatePanicCode(HbAction *action);
-    void doToolsErrorSimulatePanic(HbAction *action);
+    void doToolsErrorSimulatePanicCode(HbAction *);
+    void doToolsErrorSimulatePanic(HbAction *);
 
     void toolsErrorSimulateException();
     void doToolsErrorSimulateException(HbAction *);
@@ -233,11 +241,13 @@ signals:
 private slots:
     void itemHighlighted(const QModelIndex &index);
     //void itemSelected(const QModelIndex &index);
-    void updateMenu();
-    void selectionChanged(const QItemSelection &/*selected*/, const QItemSelection &/*deselected*/);
+    void updateOptionMenu();
+    void updateContextMenu();
+    void selectionChanged(const QItemSelection &, const QItemSelection &);
     void activated(const QModelIndex& index);
     void activateSelectionMode();
     void deActivateSelectionMode();
+    void onLongPressed(HbAbstractViewItem *, QPointF);
 
     void fileOpen(HbAction *);
     void fileOverwrite(HbAction *);
@@ -252,15 +262,14 @@ private:
     HbLabel *mNaviPane;
     QGraphicsLinearLayout *mMainLayout;
 
-    QString mDirectory;
-    // selected path
-    QString mSelectedFilePath;
-    // initial path
-    //QDir mInitDirPath;
     // file info contains all needed information of selected file from file model
-    QModelIndexList mClipboardIndices;
+    QModelIndexList mClipboardIndexes;
+    QModelIndexList mSelectionIndexes;
+
     FileBrowserModel *mFileBrowserModel;
-    MenuAction mFileViewMenuActions;
+    OptionMenuActions mOptionMenuActions;
+    ContextMenuActions mContextMenuActions;
+    HbMenu *mContextMenu;
     HbAction *mToolbarBackAction;
 
     // flags
@@ -270,6 +279,7 @@ private:
     bool mRemoveFileAfterCopied;
     bool mClipBoardInUse;
     bool mFolderContentChanged;
+    QModelIndex mCurrentIndex;
 
     // temporarily storage
     QString mOldPassword;

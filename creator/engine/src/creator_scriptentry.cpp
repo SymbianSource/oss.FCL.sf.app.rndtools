@@ -84,14 +84,23 @@ void CCommandParser::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
     {
     User::LeaveIfNull(iSearchArray);
     
-    if( aUserData == EGetingScript && aPositiveAction && iSearchArray->Count() )
+    if( aUserData == EGetingScript )
         {
-        iObserver->FileChosenL( ETrue, iSearchArray->MdcaPoint(iSelectedItem) );
+        if(aPositiveAction)
+            {
+            iObserver->ScriptChosenL( ETrue, iSearchArray->MdcaPoint(iSelectedItem) );
+            }
+        else
+            {
+            iObserver->ScriptChosenL( EFalse );
+            }
         }
     else if( aUserData == EGetingRandomDataFile && aPositiveAction && iSearchArray->Count() )
         {
-        TFileName fileName;
-        if (iSelectedItem == (iSearchArray->Count() - 1))
+        if(aPositiveAction)
+            {
+            TFileName fileName;
+            if (iSelectedItem == (iSearchArray->Count() - 1))
                 {
                 // "default" (resource file) selected
                 fileName.Copy(KNullDesC);
@@ -101,15 +110,13 @@ void CCommandParser::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
                 // xml file selected
                 fileName.Copy(iSearchArray->MdcaPoint(iSelectedItem));
                 }
-        iObserver->FileChosenL( ETrue, fileName );
+            iObserver->RandomDataFileChosenL( ETrue, fileName );
+            }
+        else
+            {
+            iObserver->RandomDataFileChosenL( EFalse );
+            }
         }
-    else
-        {
-        iObserver->FileChosenL( EFalse );
-        }
-    delete iSearchArray;
-    iSearchArray = NULL;
-    iObserver = NULL;
     }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +134,7 @@ TBool CCommandParser::OpenScriptL(MCommandParserObserver* aObserver)
 
     // init the search array
     delete iSearchArray;
+    iSearchArray = NULL;
     iSearchArray = new(ELeave) CDesCArrayFlat(20);
 
     // wait dialog
@@ -381,10 +389,14 @@ void CCommandParser::OpenScriptL()
 #endif
 */
 
-TBool CCommandParser::GetRandomDataFilenameL(TDes& aFilename)
+TBool CCommandParser::GetRandomDataFilenameL(MCommandParserObserver *aObserver)
     {    
     LOGSTRING("Creator: CCommandParser::GetRandomDataFilenameL");
     TBool ret = EFalse;
+
+    User::LeaveIfNull( aObserver );
+    iObserver = aObserver;
+    iSelectedItem = 0;
 
     // init the search array
     if (iSearchArray)
@@ -466,7 +478,7 @@ TBool CCommandParser::GetRandomDataFilenameL(TDes& aFilename)
         // add "default" (resource file) to list
         fileNameArray->AppendL(_L("Default"));
 
-		ret = iEngine->GetEngineWrapper()->PopupListDialog(_L("Select random data file"), fileNameArray, &iSelectedItem, this);
+		ret = iEngine->GetEngineWrapper()->PopupListDialog(_L("Select random data file"), fileNameArray, &iSelectedItem, this, EGetingRandomDataFile);
         CleanupStack::PopAndDestroy(fileNameArray);
         }
     else  // no random data files found from the search paths

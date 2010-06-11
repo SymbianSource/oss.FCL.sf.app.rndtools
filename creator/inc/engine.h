@@ -103,15 +103,24 @@ class MCommandParserObserver
     {
 public:
     /**
-     * Called when CCommandParser user has choosen some file(script file, random data file)
+     * Called when CCommandParser user has choosen script file
      *
      * @since S60 10.1
      * @param aSuccess ETrue if "Ok", "Yes" or other "positive" button was pressed
      * @param aFileName filename chosen by user
      * @return None.
      */
-    virtual void FileChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC) = 0;
+    virtual void ScriptChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC) = 0;
 
+    /**
+     * Called when CCommandParser user has choosen random data file
+     *
+     * @since S60 10.1
+     * @param aSuccess ETrue if "Ok", "Yes" or other "positive" button was pressed
+     * @param aFileName filename chosen by user
+     * @return None.
+     */
+    virtual void RandomDataFileChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC) = 0;
     };
 
 /**
@@ -135,6 +144,10 @@ const TInt KUndef = KErrNotFound;
 
 class CCreatorEngine : public CActive, public MUIObserver, public MCommandParserObserver
 	{
+enum ECreatorEngineState{
+    ECreatorEngineDeleteAllEntries,
+    ECreatorEngineDeleteAllCreatorEntries,
+};
 public:
     
     enum TRandomStringType
@@ -268,14 +281,24 @@ public: // from MUIObserver
     
 public: // from MCommandParserObserver
     /**
-     * Called when CCommandParser user has choosen some file(script file, random data file)
+     * Called when CCommandParser user has choosen script file
      *
      * @since S60 10.1
      * @param aSuccess ETrue if "Ok", "Yes" or other "positive" button was pressed
      * @param aFileName filename chosen by user
      * @return None.
      */
-    virtual void FileChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC);
+    virtual void ScriptChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC);
+    
+    /**
+     * Called when CCommandParser user has choosen random data file
+     *
+     * @since S60 10.1
+     * @param aSuccess ETrue if "Ok", "Yes" or other "positive" button was pressed
+     * @param aFileName filename chosen by user
+     * @return None.
+     */
+    virtual void RandomDataFileChosenL(TBool aSuccess, const TDesC& aFileName = KNullDesC);
     
 public:
     void ExecuteOptionsMenuCommandL(TInt aCommand);
@@ -341,6 +364,8 @@ public:
     void WriteEntryIdsToStoreL( RArray<TUint32>& aEntryIds, const TUid aModuleUid );
     void RemoveStoreL( const TUid aModuleUid );
 	void ProgressDialogCancelledL();
+	
+	void SortCommands();
     
 private:
     // needed by the engine itself
@@ -348,7 +373,6 @@ private:
     CEikonEnv* iEnv;
     //CCreatorAppUi* iAppUi;
     TInt iCurrentEntry;
-    TInt iEntriesToBeCreated;
     TInt iFailedCommands;
 
     CDesCArrayFlat* iSoundFileArray;

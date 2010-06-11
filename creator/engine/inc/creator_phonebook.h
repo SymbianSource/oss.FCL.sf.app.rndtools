@@ -109,7 +109,6 @@ private:
     void DoDeleteItemsCreatedWithCreatorL( TUid aStoreUid, CDictionaryFileStore* aStore );
     TBool HasOtherThanGroupsL( /*MVPbkContactLinkArray* aContacts */);																			//modify
     
-    QContactDetail CreateContactDetail(QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand );
 
 private:
 	
@@ -163,7 +162,7 @@ public:
 	QList<QContactDetail> iContactFields;//	RPointerArray<CCreatorContactField> iContactFields;
 
     QString iGroupName;//HBufC*  iGroupName;
-    TInt    iContactsInGroup;
+    TInt iContactsInGroup;
     TInt iNumberOfPhoneNumberFields;
     TInt iNumberOfURLFields;
     TInt iNumberOfEmailAddressFields;
@@ -183,8 +182,8 @@ class CCreatorContactField : public CBase//, public MCreatorRandomDataField
     {
 public:    
     static CCreatorContactField* NewL();
-    QContactDetail CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand = KErrNotFound );
-    QContactDetail CreateContactDetail(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TPtrC aData );
+    QContactDetail CreateContactDetailL(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand = KErrNotFound );
+    QContactDetail CreateContactDetailL(CCreatorEngine* aEngine,CPhonebookParameters* aParameters,QString aDetail, QString aFieldContext, QString aFieldString, TPtrC aData );
     void AddFieldToParam( CPhonebookParameters* aParam, QContactDetail aDetail);
     ~CCreatorContactField();
 private:

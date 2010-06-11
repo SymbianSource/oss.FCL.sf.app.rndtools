@@ -80,7 +80,7 @@ LOCAL_C TInt StartL()
                 }
             else
                 {
-                error = Reboot((RStarterSession::TResetReason)input);
+                error = Reboot(static_cast<RStarterSession::TResetReason>(input));
                 }
             }
         }
