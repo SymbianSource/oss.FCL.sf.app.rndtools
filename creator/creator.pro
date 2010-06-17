@@ -142,7 +142,7 @@ symbian: {
 			-lapengine \
 			-lnoteseditor \
 			-lxqservice \
-		    -lQtContacts \ 
+		    -lQtContacts \
 			-lagendainterface 
 
 	creatorDataBlock = \
