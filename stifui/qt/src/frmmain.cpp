@@ -28,6 +28,7 @@ const QString UNSELECTITEMHEADER = "   ";
 
 FrmMain::FrmMain()
     {
+    lastItemSelected = NULL;
     uiSetting = new UiSetting();
     createMenus();
     load();
@@ -56,6 +57,8 @@ FrmMain::~FrmMain()
     controller->RemoveStfEventListener(this);
     model->RemoveStifModelEventListener(this);
     
+    //lastItemSelected does not own any memory, don't need to delete.
+    lastItemSelected = NULL;
     delete uiSetting;
     delete dlgOutput;
     delete controller;
@@ -179,6 +182,11 @@ void FrmMain::createMenus()
     connect(actRunCasePar, SIGNAL(triggered()), this,
             SLOT(on_actRunCasePar_triggered()));
 
+    ////////////////////
+    actReapeatRunSeq = new QAction(tr("Repeat run sequentially"), this);
+    connect(actReapeatRunSeq, SIGNAL(triggered()), this,
+            SLOT(on_actReapeatRunSeq_triggered()));
+    
     actAddtoSet = new QAction(tr("Add cases to Set"), this);
     connect(actAddtoSet, SIGNAL(triggered()), this,
             SLOT(on_actAddtoSet_triggered()));
@@ -505,6 +513,7 @@ void FrmMain::LoadSubMenu()
         menuBar()->addMenu(menuRunCase);
         menuRunCase->addAction(actRunCaseSeq);
         menuRunCase->addAction(actRunCasePar);
+        menuBar()->addAction(actReapeatRunSeq);
         menuBar()->addSeparator();
         menuBar()->addAction(actAddtoSet);
         menuBar()->addSeparator();
@@ -687,9 +696,26 @@ void FrmMain::on_actRunCasePar_triggered()
     controller->RunCases(getSelectedCases(), Parallel);
     }
 
+void FrmMain::on_actReapeatRunSeq_triggered()
+    {
+    DlgRepeatRun dlgRepeatRun(this);
+    int result = dlgRepeatRun.exec();
+    if(result == QDialog::Accepted)
+        {
+        QList<CSTFCase> selectedCases = getSelectedCases();
+        if(selectedCases.count() > 0)
+            {
+            startRunning();
+            controller->RepeatRunCases( selectedCases, 
+                                        dlgRepeatRun.isRepeatInfinitely(),
+                                        dlgRepeatRun.GetLoopTimes() );
+            }
+        
+        }
+    }
+
 void FrmMain::on_actAddtoSet_triggered()
     {
-
     QList<CSTFCase> list = getSelectedCases();
     if (list.size() == 0)
         {
@@ -911,6 +937,96 @@ void FrmMain::on_actAbort_triggered()
     }
 
 void FrmMain::on_treeModuleList_itemClicked(QTreeWidgetItem* item, int /*column*/)
+    {
+    //Check if shift key is pressed
+    bool isShiftPressed = false;
+    Qt::KeyboardModifiers keyMod = QApplication::keyboardModifiers();
+    isShiftPressed=keyMod.testFlag(Qt::ShiftModifier);
+    
+    //Handle shift key.
+    //Shift not pressed.
+    if(!isShiftPressed)
+        {
+        setItemClicked(item);
+        }
+    //Shift pressed.
+    else
+        {
+        enum Direction
+            {
+            Item_NoDirection,
+            Item_Above,
+            Item_Below
+            };
+        Direction direction = Item_NoDirection;
+        QTreeWidgetItem* tempItem = item;
+        //check direction of last selected item comparing current one.
+        while(tempItem)
+            {
+            tempItem = treeModuleList->itemAbove(tempItem);
+            if(tempItem == lastItemSelected)
+                {
+                direction = Item_Above;
+                break;
+                }
+            }
+        if (direction != Item_Above)
+            {
+            tempItem = item;
+            while(tempItem)
+                {
+                tempItem = treeModuleList->itemBelow(tempItem);
+                if(tempItem == lastItemSelected)
+                    {
+                    direction = Item_Below;
+                    break;
+                    }
+                }
+            }
+        
+        // Select all items between current item and last selected item.
+        tempItem = item;
+        if(direction != Item_NoDirection)
+            {
+            while(tempItem)
+                {
+                //check if this item been selected.
+                bool isItemSelected = false;
+                if ( tempItem->text(0).left(3).compare(SELECTITEMHEADER)==0 )
+                    {
+                    isItemSelected = true;
+                    }
+                // If not selected, set to selected.
+                if (!isItemSelected )
+                    {
+                    setItemClicked(tempItem);
+                    }
+                
+                //Go above/below
+                if (direction == Item_Above)
+                    {
+                    tempItem = treeModuleList->itemAbove(tempItem);             
+                    }
+                if (direction == Item_Below)
+                    {
+                    tempItem = treeModuleList->itemBelow(tempItem);             
+                    }
+                
+                if (tempItem == lastItemSelected)
+                    {
+                    break;
+                    }
+                }
+            }
+        }
+    
+    // Set current clicked item to last selected item.
+    lastItemSelected = item;
+
+      
+    }
+
+void FrmMain::setItemClicked(QTreeWidgetItem* item)
     {
     QString header = UNSELECTITEMHEADER;
     if(item->text(0).startsWith(UNSELECTITEMHEADER))

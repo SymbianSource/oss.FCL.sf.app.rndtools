@@ -84,8 +84,26 @@ private slots:
 	void enableConsole();
 	void disableConsole();
 	void showParamList ();
-	
 
+	void doSelectComm(HbAction*);
+	void doEnableSerialComm(HbAction* );
+	void doSelectIAP(HbAction* );
+	void doSelectIpComm(HbAction* );
+	void doListenOnPort(HbAction* );
+	void doConnectRemoteHost(HbAction*);
+	void doSelectBTComm(HbAction*);
+	void doEnableByBTAddress(HbAction*);
+	void doEnableByBTName(HbAction*);
+	void doSetPriority(HbAction*);
+	void doSelectCfgFile(HbAction*);
+	void doModifyHtiCfgFile(HbAction*);
+	void doModifyBtCfgFile(HbAction*);
+	void doModifySerialCfgFile(HbAction*);
+	void doModifyIPCfgFile(HbAction*);
+	void doSetHtiCfgParameter(HbAction*);
+	void doSetBtCfgParameter(HbAction*);
+	void doSetSerialCfgParameter(HbAction*);
+	void doSetIPCfgParameter(HbAction*);
 private:
     
     /**
@@ -99,6 +117,10 @@ private:
     void createToolbar();
     
     void createTexts();
+    
+    void openListDialog(const QStringList& items, const int currentSelection, 
+            const QString &titleText, QObject* receiver, const char* member);
+    void openIPAddressDialog(const QString &titleText, QObject* receiver, const char* member);
 	
 public:
     
@@ -130,6 +152,8 @@ private:
     HbLabel* mCommDetailsTxt;
     
     QStringList mPluginList;
+    
+    QString mIapSelection;
 
 };
 
