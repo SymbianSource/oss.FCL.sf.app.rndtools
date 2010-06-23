@@ -24,6 +24,7 @@
 #include "creator_contactsetcache.h"
 #include <apgcli.h>
 #include <MuiuServiceUtilities.h>
+#include <utf.h>
 
 #include <mmf/common/mmfcontrollerpluginresolver.h> // for CleanupResetAndDestroyPushL
 
@@ -652,8 +653,8 @@ TInt CCreatorMessages::CreateMMSEntryL(const CMessagesParameters& parameters)
     waiter->StartAndWait();
     CleanupStack::PopAndDestroy(waiter);        
    
-    HBufC8* tempBuf = HBufC8::NewLC( parameters.iMessageBodyText->Des().Length() );
-    tempBuf->Des().Copy( parameters.iMessageBodyText->Des() );
+    HBufC8* tempBuf = CnvUtfConverter::ConvertFromUnicodeToUtf8L( parameters.iMessageBodyText->Des() );
+    CleanupStack::PushL(tempBuf);
     textFile.Write( tempBuf->Des() );        
     textFile.Close();
     CleanupStack::PopAndDestroy(); //tempBuf

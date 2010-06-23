@@ -18,11 +18,11 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define STIF_MAJOR_VERSION 1
-#define STIF_MINOR_VERSION 0
-#define STIF_BUILD_VERSION 0
+#define STIF_MAJOR_VERSION 7
+#define STIF_MINOR_VERSION 3
+#define STIF_BUILD_VERSION 34
 
-#define STIF_REL_DATE "1st Mar 2010"
+#define STIF_REL_DATE "1st June 2010"
 
 #define TO_UNICODE(text) _L(text) 
 

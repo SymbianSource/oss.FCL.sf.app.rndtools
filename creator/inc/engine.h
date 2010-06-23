@@ -22,7 +22,7 @@
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <f32file.h>
+#include <e32hal.h>
 #include <s32file.h>
 #include <s32mem.h>
 #include <w32std.h>

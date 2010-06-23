@@ -515,6 +515,7 @@ void CHtiCameraServicePlugin::MevroInitComplete( TInt aError )
     {
     HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::MevroInitComplete" );
     HTI_LOG_FORMAT("aError = %d", aError);
+    iError = aError;
     iWaiter->AsyncStop();
     HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::MevroInitComplete" );
     }
@@ -523,6 +524,7 @@ void CHtiCameraServicePlugin::MevroVideoPrepareComplete(TInt aError)
     {
     HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::MevroVideoPrepareComplete" );
     HTI_LOG_FORMAT("aError = %d", aError);
+    iError = aError;
     iWaiter->AsyncStop();
     HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::MevroVideoPrepareComplete" );
     }
@@ -531,6 +533,7 @@ void CHtiCameraServicePlugin::MevroVideoRecordingOn(TInt aError)
     {
     HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::MevroVideoRecordingOn" );
     HTI_LOG_FORMAT("aError = %d", aError);
+    iError = aError;
     HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::MevroVideoRecordingOn" );
     }
 
@@ -538,6 +541,7 @@ void CHtiCameraServicePlugin::MevroVideoRecordingPaused(TInt aError)
     {
     HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::MevroVideoRecordingPaused" );
     HTI_LOG_FORMAT("aError = %d", aError);
+    iError = aError;
     HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::MevroVideoRecordingPaused" );
     }
 
@@ -545,6 +549,7 @@ void CHtiCameraServicePlugin::MevroVideoRecordingComplete(TInt aError)
     {
     HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::MevroVideoRecordingComplete" );
     HTI_LOG_FORMAT("aError = %d", aError);
+    iError = aError;
     HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::MevroVideoRecordingComplete" );
     }
 //  End of File

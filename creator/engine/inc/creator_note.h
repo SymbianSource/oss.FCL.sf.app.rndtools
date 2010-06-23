@@ -28,7 +28,7 @@
 
 #include <e32base.h>
 //#include <npdapi.h>
-#include <NotesEditor>
+#include <noteseditorinterface.h>
 #include <AgendaUtil>
 #include <AgendaEntry>
 
@@ -59,7 +59,7 @@ public:
 
 private:
     AgendaUtil *iAgendaUtil;
-    NotesEditor *iNotepadApi;	//QT Notes api 
+    NotesEditorInterface *iNotepadApi;	//QT Notes api 
     //CNotepadApi *iNotepadApi;
 
     CNotepadParameters* iParameters;

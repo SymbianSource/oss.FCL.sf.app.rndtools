@@ -25,6 +25,7 @@
 #include <textresolver.h> 
 #include <eikprogi.h>
 #include <f32file.h>
+#include <e32svr.h>
 #include <eikfutil.h>
 #include <apparc.h>
 #include <apaid.h>
@@ -1396,8 +1397,9 @@ void CFileBrowserFileUtils::MoveUpOneLevelL()
     // update view
     RefreshViewL();
     
-    if ( iEngine->Settings().iRememberFolderSelection &&
-         iEngine->FileListContainer() && iPrevFolderIndex > KErrNotFound )
+    if (iEngine->Settings().iRememberFolderSelection
+        //&& iEngine->FileListContainer()
+        && iPrevFolderIndex > KErrNotFound )
         {
         
 //        TInt visibleItems = iEngine->FileListContainer()->ListBox()->Rect().Height() /

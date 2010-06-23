@@ -26,7 +26,12 @@ const QString DEFAULTINI = "c:\\testframework\\testframework.ini";
 
 
 StfQtUIController::StfQtUIController(IStfQtUIModel* aModel) :
-    model(aModel), isShowOutput(false)
+    model(aModel), 
+    isShowOutput(false), 
+    iCurrentRunPos(0),
+    isLoopInfinitely(false),
+    loopTimes(0)
+       
     {
     executor = new CStifExecutor();
     executor->OpenIniFile(DEFAULTINI);
@@ -132,6 +137,51 @@ void StfQtUIController::RunCases(const QList<CSTFCase>& caseList,
                 }
         RunSets(TEMPSETNAME, type);
         executor->RemoveSet(TEMPSETNAME);
+        }
+    }
+
+// run cases repeatly. 
+// By default, loopTimes = -1 means loop infinitely util user stop it.
+void StfQtUIController::RepeatRunCases(const QList<CSTFCase>& aCaseList, const bool aIsLoopInfinitely, const int aLoopTimes)
+    {
+    InitRepeatSetting(aIsLoopInfinitely, aLoopTimes);
+    repeatRunCaseList = aCaseList;
+    
+    Execution();
+    
+    }
+
+void StfQtUIController::InitRepeatSetting(const bool aIsLoopInfinitely, const int aLoopTimes)
+    {
+    loopTimes = aLoopTimes;
+    isLoopInfinitely = aIsLoopInfinitely;
+    iCurrentRunPos = 0;
+    }
+
+void StfQtUIController::ResetRepeatSetting()
+    {
+    iCurrentRunPos = 0;
+    isLoopInfinitely = false;
+    loopTimes = 0;
+    }
+
+// Repeat execution cases
+void StfQtUIController::Execution()
+    {
+    if(loopTimes > 0  || isLoopInfinitely)
+        {
+        int count = repeatRunCaseList.count();
+        CSTFCase aCase = repeatRunCaseList.at(iCurrentRunPos);
+        QString msg = "Start execute case:" + aCase.Name();
+        FireOnGetOutput(msg);
+        executor->ExecuteSingleCase(aCase.ModuleName(), aCase.Index());
+        
+        iCurrentRunPos++;
+        if( iCurrentRunPos >= count )
+            {
+            iCurrentRunPos = 0;
+            loopTimes --;
+            }    
         }
     }
 
@@ -283,6 +333,9 @@ void StfQtUIController::OnGetCaseUpdated(CStartedTestCase* aCase,
         model->RemoveRunningCase(aCase);
         model->AddCaseByStatus(EStatusAborted, stfcase);
         msg += "aborted";
+        
+        //reset repeat execution information
+        ResetRepeatSetting();
 
         }
     else if (flags & CUIStoreIf::EStatusExecuted)
@@ -306,7 +359,12 @@ void StfQtUIController::OnGetCaseUpdated(CStartedTestCase* aCase,
             model->AddCaseByStatus(EStatusPassed, stfcase);
             msg += "passed";
             }
-
+        
+        // if repeat execution is choosed, start to execution again.
+        if(loopTimes > 0 || isLoopInfinitely)
+            {
+            Execution();
+            }
         }
     else
         {

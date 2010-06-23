@@ -1007,7 +1007,10 @@ QContactDetail CCreatorContactField::CreateContactDetailL(CCreatorEngine* aEngin
                 
                 //QPixmap avatarPix(avatarFile);
 
-                contactAvatar.setAvatar(avatarFile);
+                QUrl imageUrl;
+                imageUrl.setUrl(avatarFile);
+                contactAvatar.setImageUrl(imageUrl);
+                //contactAvatar.setAvatar(avatarFile); //deprecated
                 //contactAvatar.setPixmap(avatarPix);
 
                 return contactAvatar;

@@ -17,8 +17,6 @@
 
 
 // INCLUDE FILES
-#include "../../../symbian_version.hrh"
-
 #include <apacmdln.h>
 #include <apgtask.h>
 #include <apgwgnam.h>
@@ -31,13 +29,27 @@
 #include <HtiDispatcherInterface.h>
 #include <HtiLogging.h>
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 #include <SWInstApi.h>
 #include <swi/sisregistrysession.h>
 #include <swi/sisregistrypackage.h>
+#else
+#include <usif/sif/sif.h>
+#include <usif/scr/scr.h>    //RSoftwareComponentRegistry
+#endif
 #include <javaregistryincludes.h>
 #include <WidgetRegistryClient.h>
 
 using namespace Java;
+#if ( SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4 )
+_LIT8( KSisxMimeType, "x-epoc/x-sisx-app" );
+_LIT8( KSisMimeType, "application/vnd.symbian.install" );
+_LIT8( KPipMimeType, "application/x-pip" );
+_LIT8( KJadMIMEType, "text/vnd.sun.j2me.app-descriptor" );
+_LIT8( KJarMIMEType, "application/java-archive" );
+_LIT8( KJavaMIMEType, "application/java");
+_LIT8( KJarxMIMEType, "application/x-java-archive");
+#endif
 
 // CONSTANTS
 const static TUid KAppServiceUid = { 0x1020DEC7 }; //This is Uid of AppServiceOS
@@ -57,7 +69,9 @@ _LIT8( KErrDescrFailedConnectSilentInstaller, "Failed to connect to silent insta
 _LIT8( KErrDescrFailedInstall, "Failed to install" );
 _LIT8( KErrDescrFailedUnInstall, "Failed to uninstall" );
 _LIT8( KErrDescrFailedFindPackage, "Failed to find the package" );
-
+#if ( SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4 )
+_LIT8( KErrDescrBadComponentId, "Bad component id");
+#endif
 _LIT8( KErrDescrFailedListInstApps, "Failed to list installed apps" );
 
 const static TUint8 KUnicodeMask = 0x01;
@@ -114,7 +128,9 @@ CHtiAppControl::~CHtiAppControl()
         delete iMimeTypes;
         }
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     iAugmentations.ResetAndDestroy();
+#endif
 
     HTI_LOG_FUNC_OUT( "~CHtiAppControl" );
     }
@@ -124,6 +140,7 @@ void CHtiAppControl::ConstructL()
     {
     HTI_LOG_FUNC_IN( "CHtiAppControl::ConstructL" );
     iMimeTypes = new (ELeave) CDesC8ArrayFlat( 8 );
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     iMimeTypes->AppendL( SwiUI::KSisxMimeType() );
     iMimeTypes->AppendL( SwiUI::KSisMimeType() );
     iMimeTypes->AppendL( SwiUI::KPipMimeType() );
@@ -131,8 +148,19 @@ void CHtiAppControl::ConstructL()
     iMimeTypes->AppendL( SwiUI::KJarMIMEType() );
     iMimeTypes->AppendL( SwiUI::KJavaMIMEType() );
     iMimeTypes->AppendL( SwiUI::KJarxMIMEType() );
+#else
+    iMimeTypes->AppendL( KSisxMimeType() );
+    iMimeTypes->AppendL( KSisMimeType() );
+    iMimeTypes->AppendL( KPipMimeType() );
+    iMimeTypes->AppendL( KJadMIMEType() );
+    iMimeTypes->AppendL( KJarMIMEType() );
+    iMimeTypes->AppendL( KJavaMIMEType() );
+    iMimeTypes->AppendL( KJarxMIMEType() );
+#endif
     iMimeTypes->AppendL( KWidgetMime() ); // from widgetregistryconstants.h
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     iAugmentationIndex = 0;
+#endif
 
     TInt err = iAppServer.Connect();
     if ( err == KErrNone )
@@ -566,8 +594,10 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
     HTI_LOG_FORMAT( "Unicode flag: %d", unicode );
 
     TFileName path;
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
     TBuf<SwiUI::KSWInstMaxPasswordLength> login;
     TBuf<SwiUI::KSWInstMaxPasswordLength> password;
+#endif
 
     switch ( aMessage[0] )
         {
@@ -584,6 +614,7 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
 
                 if ( offset >= 0)
                     {
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
                     iInstOpts = SwiUI::TInstallOptions();
 
                     iInstOpts.iUpgrade =            ConvertToPolicy( parameters[offset] ); offset++;
@@ -670,6 +701,156 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
 
                     launcher.Close();
                     SendMessageL( EOk );
+#else
+                    HTI_LOG_TEXT( "============RSoftwareInstall::Install=============" );
+                    Usif::RSoftwareInstall installer;
+                    TInt err = installer.Connect();
+                    if(err)
+                        {
+                        SendErrorMsg( err , KErrDescrFailedConnectSilentInstaller );
+                        HTI_LOG_FORMAT("cannot connect to SIF server, err %d", err);
+                        User::Leave(err);
+                        }
+                    CleanupClosePushL(installer);
+                    TRequestStatus status;
+                    Usif::COpaqueNamedParams *arguments = Usif::COpaqueNamedParams::NewL();
+                    CleanupStack::PushL(arguments);
+                    Usif::COpaqueNamedParams *results = Usif::COpaqueNamedParams::NewL();
+                    CleanupStack::PushL(results);
+                    
+                    arguments->AddIntL(Usif::KSifInParam_InstallSilently, ETrue);
+                    
+                    TInt intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_AllowUpgrade, intValue);
+                    HTI_LOG_FORMAT( "iUpgrade: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++; 
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_InstallOptionalItems, intValue);
+                    HTI_LOG_FORMAT( "iOptionalItems: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_PerformOCSP, intValue);
+                    HTI_LOG_FORMAT( "iOCSP: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_IgnoreOCSPWarnings, intValue);
+                    HTI_LOG_FORMAT( "iIgnoreOCSPWarnings: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::ENotAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_AllowUntrusted, intValue);
+                    HTI_LOG_FORMAT( "iUntrusted: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+						arguments->AddIntL(Usif::KSifInParam_PackageInfo, intValue);
+                    HTI_LOG_FORMAT( "iPackageInfo: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_GrantCapabilities,intValue);
+                    HTI_LOG_FORMAT( "iCapabilities: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_AllowAppShutdown,intValue);
+                    HTI_LOG_FORMAT( "iKillApp: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_AllowOverwrite,intValue);
+                    HTI_LOG_FORMAT( "iOverwrite: %d", intValue );
+                    intValue = ConvertToSifPolicy(parameters[offset]); offset++;
+                    if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_AllowDownload, intValue);
+                    HTI_LOG_FORMAT( "iDownload: %d", intValue );
+
+                    TBuf<32> login;
+                    offset = ParseString( parameters, offset, unicode, login );
+                    HTI_LOG_FORMAT( "login length: %d", login.Length() );
+                    if(login != KNullDesC)
+                        {
+                        arguments->AddStringL(Usif::KSifInParam_UserName, login);
+                        }
+                    HTI_LOG_TEXT( "Parsed login:" );
+                    HTI_LOG_DES( login )
+
+                    TBuf<32> password;
+                    offset = ParseString( parameters, offset, unicode, password );
+                    HTI_LOG_FORMAT( "password length: %d", password.Length() );
+                    if(password != KNullDesC)
+                        {
+                        arguments->AddStringL(Usif::KSifInParam_Password, password );
+                        }
+                    HTI_LOG_TEXT( "Parsed password:" );
+                    HTI_LOG_DES( password )
+
+                    TChar driver = (TChar) parameters[offset]; offset++;
+                    if(driver >= 'A' && driver <= 'Z')
+                        {
+                        intValue = driver - (TChar)'A';
+                        arguments->AddIntL(Usif::KSifInParam_Drive, intValue);
+                        HTI_LOG_FORMAT( "iDrive: %c", intValue + 'a' );
+                        }
+                    else if(driver >= 'a' && driver <= 'z')
+                        {
+                        intValue = driver - (TChar)'a';
+                        arguments->AddIntL(Usif::KSifInParam_Drive, intValue);
+                        HTI_LOG_FORMAT( "iDrive: %c", intValue + 'a' );
+                        }
+
+                    TLanguage oldFormatLanuage = (TLanguage)parameters[offset]; offset++;
+
+                    TBool usePhoneLang = (TBool)parameters[offset]; offset++;
+                    HTI_LOG_FORMAT( "iUsePhoneLang: %d", usePhoneLang );
+
+                    intValue =  ConvertToSifPolicy( parameters[offset] );offset++;
+                    /*if(intValue != Usif::EAllowed)
+                        arguments->AddIntL(Usif::KSifInParam_AllowUpgrade, intValue);*/
+                    HTI_LOG_FORMAT( "iUpgradeData: %d",  intValue ); 
+                    
+                    HTI_LOG_FORMAT( "parameters length: %d", parameters.Length());
+                    HTI_LOG_FORMAT( "next offset: %d", offset);
+
+                    if(usePhoneLang == EFalse)
+                        {
+                        if(parameters.Length() > offset)
+                            {
+                            TLanguage language = ELangTest;
+                            if (parameters.Length() == offset+2)
+                                {
+                                language = (TLanguage)(parameters[offset] + (parameters[offset+1]<<8));
+                                }
+                            else if (parameters.Length() == offset+1)
+                                {
+                                language = (TLanguage)(parameters[offset]);
+                                }
+                            if ((language > ELangTest) && (language < ELangMaximum))
+                                {
+                                arguments->AddIntL(Usif::KSifInParam_Languages, language);
+                                HTI_LOG_FORMAT( "iLang: %d", language );
+                                }
+                            }
+                        else
+                            {
+                            arguments->AddIntL(Usif::KSifInParam_Languages, oldFormatLanuage);
+                            HTI_LOG_FORMAT( "iLang0: %d", oldFormatLanuage );
+                            }
+                        }
+
+                    installer.Install(path, *arguments, *results, status);
+                    User::WaitForRequest(status);
+                    HTI_LOG_FORMAT("install status: %d", status.Int());
+                    TInt componentId = 0;
+                    TBool idExisted = results->GetIntByNameL(Usif::KSifOutParam_ComponentId, componentId);
+                    if ( idExisted )
+                        {
+                        HTI_LOG_FORMAT( "componentId:%d", componentId);
+                        }
+                    CleanupStack::PopAndDestroy(3);
+                    if (status != KErrNone)
+                        {
+                        SendErrorMsg( status.Int(), KErrDescrFailedInstall );
+                        break;
+                        }
+                    SendMessageL( EOk );
+#endif
                     }
                 else
                     {
@@ -704,11 +885,39 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
             TInt offset = 0;
             TInt32 uid = KErrNotFound;
             HBufC* packageName = NULL;
+#if ( SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4 )
+            Usif::TComponentId cid = KErrNotFound; 
+            HTI_LOG_TEXT( "============RSoftwareInstall::Uninstall=============" );
+            Usif::RSoftwareInstall installer;
+            TInt err = installer.Connect();
+            if(err)
+                {
+                SendErrorMsg( err , KErrDescrFailedConnectSilentInstaller );
+                HTI_LOG_FORMAT("cannot connect to SIF server, err %d", err);
+                User::Leave(err);
+                }
+            CleanupClosePushL(installer);
+            TRequestStatus status;
+            Usif::COpaqueNamedParams *arguments = Usif::COpaqueNamedParams::NewL();
+            CleanupStack::PushL(arguments);
+            Usif::COpaqueNamedParams *results = Usif::COpaqueNamedParams::NewL();
+            CleanupStack::PushL(results);
+#endif
             if ( aMessage[0] == EUnInstall )
                 {
                 uid = Parse32<TInt32>( parameters );
                 offset += 4;
                 HTI_LOG_FORMAT( "Uninstall by uid: %d", uid );
+#if ( SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4 )
+                cid = GetComponentIdFromUid(uid);
+                if ( cid == KErrNotFound )
+                    {
+                    HTI_LOG_FORMAT( "cid: %d", cid );
+                    SendErrorMsg( KErrNotFound, KErrDescrBadComponentId );
+                    CleanupStack::PopAndDestroy(3); //results, arguments, installer
+                    break;
+                    }
+#endif
                 }
             else
                 {
@@ -716,7 +925,19 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
                 TPtr namePtr = packageName->Des();
                 offset = ParseString( parameters, offset, unicode, namePtr );
                 HTI_LOG_FORMAT( "Uninstall by name: %S", packageName );
+#if ( SYMBIAN_VERSION_SUPPORT >= SYMBIAN_4 )
+                cid = GetComponentIdFromPackageName(*packageName);
+                CleanupStack::PopAndDestroy(); // packageName
+                if ( cid == KErrNotFound )
+                    {
+                    HTI_LOG_FORMAT( "cid: %d", cid );
+                    SendErrorMsg( KErrNotFound, KErrDescrFailedFindPackage );
+                    CleanupStack::PopAndDestroy(3); //results, arguments, installer
+                    break;
+                    }
+#endif
                 }
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
             iUnInstOpts = SwiUI::TUninstallOptions();
             iUnInstOpts.iKillApp = ConvertToPolicy( parameters[offset] );
             offset++;
@@ -788,6 +1009,48 @@ void CHtiAppControl::HandleInstallerControlL( const TDesC8& aMessage )
                 }
 
             launcher.Close();
+#else
+            
+            TInt intValue = ConvertToSifPolicy( parameters[offset] );
+            offset++;
+            arguments->AddIntL(Usif::KSifInParam_AllowAppShutdown, intValue);
+            HTI_LOG_FORMAT( "iKillApp: %d", intValue );
+            intValue = ConvertToSifPolicy( parameters[offset] );
+            offset++;
+            arguments->AddIntL(Usif::KSifInParam_AllowAppBreakDependency, intValue);
+            HTI_LOG_FORMAT( "iBreakDependency: %d", intValue );
+
+            TInt mimeIndex = parameters[offset];
+            if ( mimeIndex > iMimeTypes->Count() - 1 )
+                {
+                HTI_LOG_FORMAT( "Invalid mime type: %d", mimeIndex );
+                SendErrorMsg( KErrArgument, KErrDescrInvalidCmd );
+                break;
+                }
+
+            HTI_LOG_TEXT( "Uninstall mime type:" );
+            HTI_LOG_DES( (*iMimeTypes)[mimeIndex] );
+
+            HBufC* buf = HBufC::NewLC((*iMimeTypes)[mimeIndex].Length());
+            TPtr ptr = buf->Des();
+            ptr.Copy((*iMimeTypes)[mimeIndex]);
+            arguments->AddStringL(Usif::KSifInParam_MimeType, *buf);
+            CleanupStack::PopAndDestroy(); // buf
+      
+            HTI_LOG_FORMAT( "Component ID = %d", cid );
+            
+            arguments->AddIntL(Usif::KSifInParam_InstallSilently, ETrue);
+            
+            installer.Uninstall(cid, *arguments, *results, status, EFalse);
+            User::WaitForRequest(status);
+            HTI_LOG_FORMAT("uninstall status:%d", status.Int());
+            CleanupStack::PopAndDestroy(3); //results, arguments, installer
+            if (status != KErrNone)
+                {
+                SendErrorMsg(status.Int(), KErrDescrFailedUnInstall);
+                break;
+                }            
+#endif
             SendMessageL( EOk );
             }
             break;
@@ -1524,15 +1787,25 @@ inline TInt CHtiAppControl::SendErrorMsg( TInt anError,
                                                KAppServiceUid );
     }
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 SwiUI::TPolicy CHtiAppControl::ConvertToPolicy( const TInt8 aValue )
     {
     if ( aValue == 0 ) return SwiUI::EPolicyNotAllowed;
 
     return  SwiUI::EPolicyAllowed;
     }
+#else
+Usif::TSifPolicy CHtiAppControl::ConvertToSifPolicy( const TInt8 aValue )
+    {
+    if ( aValue == 0 ) return Usif::ENotAllowed;
+
+    return  Usif::EAllowed;    
+    }
+#endif
 
 TBool CHtiAppControl::ValidateInstallParams( const TDesC8& aParams, TBool aIsUnicode )
     {
+    HTI_LOG_FORMAT( "ValidateInstallParams => length: %d", aParams.Length() );
     if ( aParams.Length() > 0 )
         {
         TInt offset = 0;
@@ -1589,6 +1862,7 @@ TBool CHtiAppControl::ValidateInstallParams( const TDesC8& aParams, TBool aIsUni
     return EFalse;
     }
 
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 TInt CHtiAppControl::GetPackageUidL( const TDesC& aPackageName,
                                           TInt aMimeIndex )
     {
@@ -1733,6 +2007,88 @@ TInt CHtiAppControl::GetPackageUidL( const TDesC& aPackageName,
 
     return KErrNone; // never returns from here
     }
+#else
+TInt CHtiAppControl::GetComponentIdFromUid(const TInt32 aUid)
+    {
+    TInt cid = KErrNotFound;
+    Usif::RSoftwareComponentRegistry registry;
+    User::LeaveIfError(registry.Connect());
+    CleanupClosePushL(registry);
+    RArray<TUid> uidList;
+    CleanupClosePushL(uidList);
+    RArray<Usif::TComponentId> componentIdList;
+    CleanupClosePushL(componentIdList);
+    registry.GetComponentIdsL(componentIdList);
+    for(TInt i = 0; i < componentIdList.Count(); i++)
+        {
+        Usif::TComponentId compId = componentIdList[i];
+        Usif::CComponentEntry *compEntry = Usif::CComponentEntry::NewLC();
+        if(registry.GetComponentL(compId, *compEntry))
+            {
+            /*if(compEntry->IsRemovable() && 
+                 compEntry->SoftwareType() == Usif::KSoftwareTypeNative)*/
+            if(compEntry->IsRemovable())
+                {
+                _LIT(KCompUid, "CompUid");
+                Usif::CPropertyEntry *property = 
+                    registry.GetComponentPropertyL(compId, KCompUid);
+                CleanupStack::PushL(property);
+                Usif::CIntPropertyEntry* intProperty = 
+                    dynamic_cast<Usif::CIntPropertyEntry*>(property);
+                uidList.AppendL(TUid::Uid(intProperty->IntValue()));
+                CleanupStack::PopAndDestroy(property);
+                }
+            else
+                {
+                uidList.AppendL(KNullUid);
+                }
+            }
+        CleanupStack::PopAndDestroy( compEntry );
+        }
+    TUid tuid(TUid::Uid(aUid));
+    if(tuid != KNullUid)
+        {
+        TInt index = uidList.Find(tuid);
+        if(index >= 0 && index < componentIdList.Count())
+            {
+            cid = componentIdList[index];
+            }
+        }
+        CleanupStack::PopAndDestroy( 3, &registry );// componentIdList, uidList, registry
+        return cid;
+    }
 
+TInt CHtiAppControl::GetComponentIdFromPackageName(const TDesC& aPackageName)
+    {
+    TInt cid = KErrNotFound;
+    Usif::RSoftwareComponentRegistry registry;
+    User::LeaveIfError(registry.Connect());
+    CleanupClosePushL(registry);
+    RArray<Usif::TComponentId> componentIdList;
+    CleanupClosePushL(componentIdList);
+    registry.GetComponentIdsL(componentIdList);
+    TInt count = componentIdList.Count();    
+    for(TInt i = 0; i < count; i++)
+        {
+        Usif::TComponentId compId = componentIdList[i];
+        Usif::CComponentEntry *compEntry = Usif::CComponentEntry::NewLC();
+        if(registry.GetComponentL(compId, *compEntry))
+            {
+            if(compEntry->IsRemovable())
+                {
+                if ( aPackageName.Compare( compEntry->Name() ) == 0 )
+                    {
+                    cid = compId;
+                    CleanupStack::PopAndDestroy( compEntry );
+                    break;
+                    }
+                }
+            }
+        CleanupStack::PopAndDestroy( compEntry );
+        }
+        CleanupStack::PopAndDestroy( 2, &registry );// componentIdList, registry
+        return cid;
+    }
 
+#endif
 // End of File

@@ -32,6 +32,7 @@ SOURCES += src/perfmondatapopupdialog.cpp
 SOURCES += src/perfmondatapopupwidget.cpp
 
 symbian {
+		INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
     TARGET.EPOCALLOWDLLDATA = 1
     TARGET.CAPABILITY = CAP_GENERAL_DLL
     TARGET.UID3 = 0x2002E6B0

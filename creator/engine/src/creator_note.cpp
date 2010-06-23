@@ -72,20 +72,21 @@ void CCreatorNotepad::ConstructL(CCreatorEngine* aEngine)
 
     iEngine = aEngine;
     iAgendaUtil = new AgendaUtil();
-    iNotepadApi = new NotesEditor(iAgendaUtil);
+    //iNotepadApi = new NotesEditor(iAgendaUtil);
     //iNotepadApi = CNotepadApi::NewL();
     }
 
 CCreatorNotepad::~CCreatorNotepad()
     {
     LOGSTRING("Creator: CCreatorNotepad::~CCreatorNotepad");
-    
+ 
+ /*   
     if(iNotepadApi)
         {
         delete iNotepadApi;
         iNotepadApi = NULL;
         }
-    
+*/    
     if(iAgendaUtil)
         {
         delete iAgendaUtil;
@@ -95,7 +96,7 @@ CCreatorNotepad::~CCreatorNotepad()
     if (iParameters)
         {
         delete iParameters;
-        iParameters;
+        iParameters = NULL;
         }
     }
 
@@ -143,8 +144,8 @@ TInt CCreatorNotepad::CreateNoteEntryL(CNotepadParameters *aParameters)
 
     //iNotepadApi->AddContentL(parameters->iNoteText->Des());
     QString textNote = QString::fromUtf16(parameters->iNoteText->Ptr(),parameters->iNoteText->Length());
-    iNotepadApi->edit(textNote);
-    iNotepadApi->close(NotesEditor::CloseWithSave);
+    iNotepadApi->edit(textNote, iAgendaUtil);
+    iNotepadApi->close(NotesEditorInterface::CloseWithSave, iAgendaUtil);
     
     return err;
     }

@@ -24,6 +24,7 @@
 #include <e32base.h>
 #include <badesca.h>
 #include <eikenv.h>
+#include <e32ldr_private.h>
 
 class E32ImageHeader;
 class E32ImportSection;

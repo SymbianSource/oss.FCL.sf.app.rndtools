@@ -31,14 +31,6 @@
 #include <apaid.h>
 #include <s32file.h>
 
-// hash key selection related includes
-#ifndef __SERIES60_30__
-  #include <centralrepository.h>
-  #include <AknFepInternalCRKeys.h>
-  #include <AvkonInternalCRKeys.h>
-  #include <e32property.h> 
-#endif
-
 // CONSTANTS
 // UID of the application
 const TUid KUidFileBrowser = { 0x102828D6 };
@@ -90,9 +82,6 @@ void CEngine::ActivateEngineL()
     TRAP_IGNORE( LoadSettingsL() );
 
     iFileUtils = CFileBrowserFileUtils::NewL(this);
-
-    // get hash key selection value
-    GetHashKeySelectionStatus();
     }
 
 // ---------------------------------------------------------------------------
@@ -101,13 +90,6 @@ void CEngine::DeActivateEngineL()
     {
     }
 	
-// --------------------------------------------------------------------------------------------
-
-//void CEngine::SetFileListContainer(CFileBrowserFileListContainer* aFileListContainer)
-//    {
-//    iFileListContainer = aFileListContainer;
-//    }
-
 // ---------------------------------------------------------------------------
 
 void CEngine::LoadDFSValueL(CDictionaryFileStore* aDicFS, const TUid& aUid, TInt& aValue)
@@ -274,39 +256,6 @@ void CEngine::SaveSettingsL(TBool aNotifyModules)
         }
     }
 
-// --------------------------------------------------------------------------------------------
-
-void CEngine::GetHashKeySelectionStatus()
-    {
-    TBool hashKeySelectionInUse(EFalse);
-    
-#ifndef __SERIES60_30__
-    
-    // get hash key selection value
-    TRAP_IGNORE(
-        CRepository* repository = CRepository::NewLC(KCRUidAknFep);
-        repository->Get(KAknFepHashKeySelection, hashKeySelectionInUse);
-        CleanupStack::PopAndDestroy();
-    );
-    
-    // even if hash key selection is in use, ignore the value in qwerty mode
-    if (hashKeySelectionInUse)
-        {
-        TBool qwertyMode(EFalse);
-        RProperty qwertyModeStatusProperty;
-        qwertyModeStatusProperty.Attach(KCRUidAvkon, KAknQwertyInputModeActive);
-        qwertyModeStatusProperty.Get(qwertyMode);
-        qwertyModeStatusProperty.Close();
-        
-        if (qwertyMode)
-            hashKeySelectionInUse = EFalse;        
-        }
-
-#endif
-
-    iIsHashKeySelectionInUse = hashKeySelectionInUse;
-    }
-    	
 // --------------------------------------------------------------------------------------------
 
 TInt CEngine::LaunchSettingsDialogL()
