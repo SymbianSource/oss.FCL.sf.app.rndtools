@@ -287,5 +287,4 @@ TTypeUid::Ptr CUITestServerStarterAppContainer::MopSupplyObject( TTypeUid aId )
 	return CCoeControl::MopSupplyObject( aId );
 	}
 
-
 // End of File

@@ -1,7 +1,7 @@
 ===============================================================================
 
-RELEASE NOTES - FILEBROWSER v5.0.1
-RELEASED 21st May 2010
+RELEASE NOTES - FILEBROWSER v5.1.0
+RELEASED 18th June 2010
 
 SUPPORTS S60 3.0+
 
@@ -37,10 +37,10 @@ Main Features:
 
 ===============================================================================
 
-What's New in v5.0.1
+What's New in v5.1.0
 ====================
 - Error fixes
-- All files to text file with file sizes
+- File filtering
 - Usability improvements
 
 ===============================================================================
@@ -110,6 +110,12 @@ N/A
 
 Version History:
 ================
+
+Version 5.0.1 - 21th May 2010
+====================
+- Error fixes
+- All files to text file with file sizes
+- Usability improvements
 
 Version 5.0.0 - 23th April 2010
 -----------------------------

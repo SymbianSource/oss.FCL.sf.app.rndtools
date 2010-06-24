@@ -160,6 +160,8 @@ class CHtiAdminEngine : public CBase
 		void SetCfgParamL(const TDesC& aParamName, const TDesC& aParamValue, const TDesC& aFileName);
 		void GetCfgParamL(const TDesC& aParamName, TDes& aParamValue, const TDesC& aFileName);
 		
+		void StartTimer();
+		
 	private:
 		// Enginewrapper that is used for communicating between QT and Symbian
 		HtiEngineWrapper* iEngineWrapper;             

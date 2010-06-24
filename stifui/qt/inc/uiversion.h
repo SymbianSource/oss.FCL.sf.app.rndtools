@@ -24,3 +24,5 @@ const QString QtUIVersion = "v1.1.1";
 const QString QtUIName = "STFUI";
 
 #endif /* UIVERSION_H_ */
+
+// End of File

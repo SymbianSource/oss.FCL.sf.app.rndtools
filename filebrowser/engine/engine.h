@@ -22,7 +22,7 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <apgcli.h>
-#include <CAknMemorySelectionSettingPage.h>
+
 #include "FBFileUtils.h"
 
 // setting keys (do not change uids of existing keys to maintain compatibility to older versions!)
@@ -48,7 +48,6 @@ class CFileBrowserFileListContainer;
 class CFileBrowserScreenCapture;
 class CFileBrowserFileUtils;
 class CEikonEnv;
-class CAknGlobalConfirmationQuery;
 class CDictionaryFileStore;
 class MFileBrowserUI;
 

@@ -26,9 +26,9 @@
 #include "creator_modulebase.h"
 
 #include <e32base.h>
-#include <FavouritesItem.h>
-#include <FavouritesDb.h>
-#include <FavouritesFile.h>
+//#include <FavouritesItem.h>
+//#include <FavouritesDb.h>
+//#include <FavouritesFile.h>
 
 
 

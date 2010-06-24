@@ -106,11 +106,12 @@ void MainView::createMenu(HbApplication &app)
 		mMessagesLoadAction = mLoadSubMenu1->addAction("Messages");
 		connect(mMessagesLoadAction, SIGNAL( triggered() ), mSm, SLOT(map()));
 		mSm->setMapping(mMessagesLoadAction, ELoadGenCmdNewLoadMessages);
-
+//TODO to be fixed using replacement for downloadmanager
+/*
 		mNetConnLoadAction = mLoadSubMenu1->addAction("Network conn.");
 		connect(mNetConnLoadAction, SIGNAL( triggered() ), mSm, SLOT(map()));
 		mSm->setMapping(mNetConnLoadAction, ELoadGenCmdNewLoadNetConn);
-	
+*/	
 		mKeyPressLoadAction = mLoadSubMenu2->addAction("Key presses");
 		connect(mKeyPressLoadAction, SIGNAL( triggered() ), mSm, SLOT(map()));
 		mSm->setMapping(mKeyPressLoadAction, ELoadGenCmdNewLoadKeyPress);

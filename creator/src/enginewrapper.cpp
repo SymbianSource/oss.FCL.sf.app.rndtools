@@ -68,28 +68,37 @@ bool EngineWrapper::init()
 
 // ---------------------------------------------------------------------------
 
+QList<MemoryDetails> EngineWrapper::GetMemoryDetailsList()
+	{
+	RPointerArray<TMemoryDetails> tMemDetList = iEngine->GetMemoryDetailsList();
+	QList<MemoryDetails> memDetList;
+	MemoryDetails memDet;
+		for(int i=0; i<tMemDetList.Count(); i++)
+			{
+			TMemoryDetails* temp = tMemDetList.operator [](i);
+			QString free = QString::fromUtf16(tMemDetList.operator [](i)->iFree.Ptr(), tMemDetList.operator [](i)->iFree.Length());//QString((QChar*) temp->iFree.Ptr(), temp->iFree.Length());
+			QString size = QString::fromUtf16(tMemDetList.operator [](i)->iSize.Ptr(), tMemDetList.operator [](i)->iSize.Length());//QString((QChar*) temp->iSize.Ptr(), temp->iSize.Length());
+			QString driveLetter = QString::fromUtf8((const char*) &tMemDetList.operator [](i)->iDriveLetter, (int) sizeof(char) );//QString((QChar*) &temp->iDriveLetter, (int) sizeof( char ) );
+			memDet.mFree = free; //QString((QChar*)tMemDetList[i]->iFree.Ptr(), tMemDetList[i]->iFree.Length());
+			memDet.mSize = size; //QString((QChar*) tMemDetList[i]->iSize.Ptr(), tMemDetList[i]->iSize.Length());
+			memDet.mDriveLetter = driveLetter;
+			
+			//memDetList[i].mDriveLetter = QString::fromUtf8( (char *) &tMemDetList[i]->iDriveLetter, (int) sizeof( char ) );
+			memDetList.append( memDet );
+			}
+	return memDetList;
+	}
+
 MemoryDetails EngineWrapper::GetMemoryDetails()
 {
+	
     TMemoryDetails tMemoryDetails = iEngine->GetMemoryDetails();
     MemoryDetails memoryDetails;
 
     // Convert TMemoryDetails to MemoryDetails 
-    memoryDetails.mCFree  = QString((QChar*)tMemoryDetails.iCFree.Ptr(), tMemoryDetails.iCFree.Length());
-	memoryDetails.mDFree  = QString((QChar*)tMemoryDetails.iDFree.Ptr(), tMemoryDetails.iDFree.Length());
-	memoryDetails.mEFree  = QString((QChar*)tMemoryDetails.iEFree.Ptr(), tMemoryDetails.iEFree.Length());
-	memoryDetails.mHFree  = QString((QChar*)tMemoryDetails.iHFree.Ptr(), tMemoryDetails.iHFree.Length());
-	
-	memoryDetails.mCSize  = QString((QChar*)tMemoryDetails.iCSize.Ptr(), tMemoryDetails.iCSize.Length());
-	memoryDetails.mDSize  = QString((QChar*)tMemoryDetails.iDSize.Ptr(), tMemoryDetails.iDSize.Length());
-		memoryDetails.mHSize  = QString((QChar*)tMemoryDetails.iHSize.Ptr(), tMemoryDetails.iHSize.Length());
-	
-	if (tMemoryDetails.iENotAvailable == EFalse) {
-		memoryDetails.mESize  = QString((QChar*)tMemoryDetails.iESize.Ptr(), tMemoryDetails.iESize.Length());
-		memoryDetails.mENotAvailable = false;
-	}
-	else {
-		memoryDetails.mENotAvailable = true;
-	}
+	memoryDetails.mRamFree  = QString((QChar*)tMemoryDetails.iRamFree.Ptr(), tMemoryDetails.iRamFree.Length());
+	memoryDetails.mRamSize  = QString((QChar*)tMemoryDetails.iRamSize.Ptr(), tMemoryDetails.iRamSize.Length());
+
 	return memoryDetails;
 }
 

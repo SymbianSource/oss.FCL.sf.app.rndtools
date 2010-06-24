@@ -24,9 +24,12 @@
 
 void MemSpyThreadDetailIndexView::initialize(const QVariantMap& params)
 {
-	MemSpyView::initialize(params);
+	setTitle(tr("Details"));
 	
-	setTitle(tr("Thread Details"));
+	mProcessName = params["pname"].toString();
+	mThreadName = params["tname"].toString();
+	
+	MemSpyView::initialize(params);
 	
 	mThreadId = qVariantValue<ThreadId>(params["tid"]);
 	
@@ -69,7 +72,17 @@ HbMenu* MemSpyThreadDetailIndexView::createToolMenu()
 	
 	return menu;
 }
-	
+
+bool MemSpyThreadDetailIndexView::isBreadCrumbVisible() const
+{
+    return true;
+}
+
+QString MemSpyThreadDetailIndexView::getBreadCrumbText() const
+{
+    return tr("Processes > %1 > Threads > %2").arg(mProcessName).arg(mThreadName);
+}
+
 void MemSpyThreadDetailIndexView::changePriority()
 {
 	QAction *s = qobject_cast<QAction*>(sender());
@@ -111,6 +124,8 @@ void MemSpyThreadDetailIndexView::itemClicked(const QModelIndex& index)
 	QVariantMap map;
 	map.insert("tid", mThreadId);
 	map.insert("type", types[index.row()]);
+	map.insert("pname", mProcessName);
+	map.insert("tname", mThreadName);
 	mViewManager.showView(ThreadDetailView, map);
 }
 

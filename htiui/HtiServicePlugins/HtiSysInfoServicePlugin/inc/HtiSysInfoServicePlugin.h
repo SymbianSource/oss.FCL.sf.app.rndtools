@@ -98,7 +98,9 @@ class CHtiSysInfoServicePlugin : public CHTIServicePluginInterface
         void HandleHsdpaCommandL( const TDesC8& aMessage );
         void HandleUpdateMediaGalleryL( const TDesC8& aMessage );
         void HandleActivateSkinL( const TDesC8& aMessage );
+        void HandleSetLanguageL( const TDesC8& aMessage );
 
+        void SetDefaultNumberModeL(TInt aMode, TInt aNbrModeType);
         void ParseTimeDataL( const TDesC8& aTimeData, TTime& aResult );
         TInt CleanUpTempFiles();
         TBool CanTurnBluetoothOnL( const TBool aUseForce );

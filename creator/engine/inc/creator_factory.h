@@ -25,7 +25,7 @@
 
 class CCreatorEngine;
 class CCreatorPhonebookBase;
-class CCreatorConnectionSettingsBase;
+//class CCreatorConnectionSettingsBase;
 
 
 class TCreatorFactory{
@@ -34,8 +34,8 @@ public:
 	static CCreatorPhonebookBase* CreatePhoneBookL(CCreatorEngine* aEngine);
 	static CCreatorModuleBaseParameters* CreatePhoneBookParametersL();
 
-    static CCreatorConnectionSettingsBase* CreateConnectionSettingsL(CCreatorEngine* aEngine);
-    static CCreatorModuleBaseParameters* CreateConnectionSettingsParametersL();
+//    static CCreatorConnectionSettingsBase* CreateConnectionSettingsL(CCreatorEngine* aEngine);
+//    static CCreatorModuleBaseParameters* CreateConnectionSettingsParametersL();
 	
 
 };

@@ -41,9 +41,16 @@ void CCreatorPhonebookBase::QueryDialogClosedL(TBool aPositiveAction, TInt aUser
             iEntriesToBeCreated = 1;
             break;
         case ECreatorPhonebookStart:
-            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Fields in contact"), R_CONTACT_CREATION_TYPE_QUERY, 
-                &iDummy, this, iCommand == ECmdCreatePhoneBookEntryContacts ? ECreatorPhonebookGetContactFields : ECreatorPhonebookGetGroupFields
-                );
+        	if(iCommand == ECmdCreatePhoneBookEntryContacts )
+        		{
+				retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Fields in contact"), R_CONTACT_CREATION_TYPE_QUERY, 
+        	                &iDummy, this, ECreatorPhonebookGetContactFields );
+        		}
+        	else
+        		{
+				retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Number of contacts "), R_GROUP_CREATION_TYPE_QUERY, 
+        	       	                &iDummy, this, ECreatorPhonebookGetGroupFields );
+        		}
             break;
         case ECreatorPhonebookGetContactFields:
             if(iDummy==0)// first item, use default fields

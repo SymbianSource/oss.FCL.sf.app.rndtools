@@ -142,3 +142,5 @@ class CUITestServerStarterDocument : public CAknDocument
 
 
 #endif /*UITESTSERVERSTARTERDOCUMENT_H_*/
+
+// End of File

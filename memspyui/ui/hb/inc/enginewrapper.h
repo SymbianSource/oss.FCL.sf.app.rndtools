@@ -19,6 +19,8 @@
 #define ENGINEWRAPPER_H_
 
 #include <QObject>
+#include <QVariantList>
+#include <QSettings>
 
 #include <memspysession.h>
 
@@ -102,6 +104,49 @@ enum ThreadInfoType
 	ThreadInfoTypePDD = EMemSpyThreadInfoItemTypePDD,
 };
 
+enum DeviceWideOperation
+{
+	OutputPhoneInfo = 0,
+	    
+	OutputDetailedPhoneInfo,
+	    
+	OutputHeapInfo,
+	    
+	OutputCompactHeapInfo,
+	    
+	OutputHeapCellListing,
+	    
+	OutputHeapData,
+	    
+	OutputStackInfo,
+	    
+	OutputCompactStackInfo,
+	    
+	OutputUserStackData,
+	    
+	OutputKernelStackData
+};
+
+enum SwmtMode
+{
+	SwmtModeBasic = 0,
+	SwmtModeFull,
+	SwmtModeCustom
+};
+
+enum HeapDumpsMode
+{
+	HeapDumpsModeKernel = 0,
+	HeapDumpsModeUser,
+	HeapDumpsModeBoth
+};
+
+enum OutputMode
+{
+	OutputModeTrace = 0,
+	OutputModeFile
+};
+
 class MemSpyProcess
 {
 public:
@@ -109,12 +154,23 @@ public:
 		: mProcess(process)
 	{}
 	
-	virtual  ~MemSpyProcess() { delete mProcess;	}
+	virtual  ~MemSpyProcess() { delete mProcess; }
 	
 	ProcessId id() const { return mProcess->Id(); }
 	
 	QString name() const { return QString((QChar*) mProcess->Name().Ptr(), mProcess->Name().Length()); }
 	
+	QString exitInfo() const;
+	
+	int priority() const { return mProcess->Priority(); }
+	
+	int threadCount() const { return mProcess->ThreadCount(); }
+	
+	int sid() const { return mProcess->SID(); }
+	
+	int vid() const { return mProcess->VID(); }
+	
+	bool isDead() const { return mProcess->IsDead(); }
 	
 private:
 	CMemSpyApiProcess *mProcess;
@@ -283,11 +339,150 @@ private:
 	CMemSpyApiThreadInfoItem* mItem;
 };
 
-class EngineWrapper : public QObject
+class MemSpyDwoProgressTracker : public QObject, public CActive
+{
+	Q_OBJECT
+
+public:
+	MemSpyDwoProgressTracker(RMemSpySession &session);
+	virtual ~MemSpyDwoProgressTracker();
+	
+public slots:
+
+	void start();
+
+	void cancel();
+	
+protected: // from CActive
+	
+	virtual void RunL();
+	 
+	virtual void DoCancel();
+	 
+	virtual TInt RunError(TInt aError);
+	
+signals:
+	void progress(int progress, const QString& processName);
+	
+private:
+	TMemSpyDeviceWideOperationProgress mProgress;
+	RMemSpySession mSession;
+};
+
+class MemSpyDwoTracker : public QObject, public CActive
+{
+	Q_OBJECT
+
+public:
+	MemSpyDwoTracker(RMemSpySession &session, DeviceWideOperation operation);
+	virtual ~MemSpyDwoTracker();
+	
+public slots:
+
+	void start();
+	
+	void cancel();
+	
+protected: // from CActive
+	
+	virtual void RunL();
+	 
+	virtual void DoCancel();
+	 
+	virtual TInt RunError(TInt aError);
+	
+signals:
+	void finished(int errorCode);
+	void progress(int progress, const QString& processName);
+	
+private:
+	RMemSpySession mSession;
+	MemSpyDwoProgressTracker *mProgressTracker;
+	DeviceWideOperation mOperation;
+};
+
+class MemSpyAsyncTracker : public QObject, public CActive
+{
+	Q_OBJECT
+	
+public:
+	
+	MemSpyAsyncTracker(RMemSpySession& session, void (RMemSpySession::*function)(TRequestStatus&));
+	
+	void start();
+	
+	virtual void RunL();
+	
+	virtual void DoCancel();
+	
+	virtual TInt RunError(TInt aError);
+	
+signals:
+	
+	void finished(int errorCode);
+	
+private:
+	void (RMemSpySession::*mFunction)(TRequestStatus&);
+	RMemSpySession& mSession;
+};
+
+class MemSpySwmtDumpTracker : public MemSpyAsyncTracker
 {
 public:
+	MemSpySwmtDumpTracker(RMemSpySession& session) : 
+		MemSpyAsyncTracker(session, &RMemSpySession::ForceSwmtUpdate)
+	{}
+};
+
+class MemSpyKernelHeapDumpTracker : public MemSpyAsyncTracker
+{
+public:
+	MemSpyKernelHeapDumpTracker(RMemSpySession& session) : 
+		MemSpyAsyncTracker(session, &RMemSpySession::OutputKernelHeapData)
+	{}
+};
+
+class MemSpySettings : private QSettings
+{
+public:
+	
+	MemSpySettings();
+	
+	OutputMode outputMode() const;
+	void setOutputMode(OutputMode mode);
+	
+	QString outputPath() const;
+	void setOutputPath(const QString& path);
+		
+	int swmtTimerPeriod() const;
+	void setSwmtTimerPeriod(int period);
+	
+	SwmtMode swmtMode() const;
+	void setSwmtMode(SwmtMode mode);
+	
+	QVariantList swmtCategories() const;
+	void setSwmtCategories(const QVariantList& categories);
+	
+	HeapDumpsMode heapDumpsMode() const;
+	void setHeapDumpsMode(HeapDumpsMode mode);
+};
+
+class EngineWrapper : public QObject
+{
+	Q_OBJECT
+	
+public:
+	EngineWrapper();
+	
 	virtual ~EngineWrapper();
+	
 	bool initialize();
+	
+	MemSpySettings& settings();
+	
+	const MemSpySettings& settings() const;
+	
+	
 	
 	QList<MemSpyProcess*> getProcesses();
 	
@@ -301,9 +496,34 @@ public:
 	
 	QList<MemSpyKernelObject*> getKernelObjects(int type);
 	
+	MemSpyDwoTracker* createDeviceWideOperation(DeviceWideOperation operation);
+	
+	MemSpyKernelHeapDumpTracker* createKernelHeapDumpTracker();
+	
+	MemSpySwmtDumpTracker* createSwmtDumpTracker();
+	
+	void setSwmtSettings(SwmtMode mode, const QVariantList& categories);
+	
+	bool isSwmtRunning();
+	
+	void startSwmt(int period);
+	
+	void stopSwmt();
+	
+	void forceSwmtDump();
+	
+	void outputKernelHeapData();
+	
+	int outputThreadHeapData(const QString& filter);
+	
+	void updateOutputSettings();
+	
 private:
 	RMemSpySession mSession;
 	
+	bool mSwmtRunning;
+	
+	MemSpySettings mSettings;
 };
 
 #endif /* ENGINEWRAPPER_H_ */

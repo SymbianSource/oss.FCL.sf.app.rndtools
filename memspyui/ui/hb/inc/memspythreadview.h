@@ -18,7 +18,7 @@
 #ifndef MEMSPYTHREADVIEW_H_
 #define MEMSPYTHREADVIEW_H_
 
-#include "memspyview.h"
+#include "memspylistview.h"
 #include "enginewrapper.h"
 
 class MemSpyThreadModel : public QAbstractListModel
@@ -32,26 +32,39 @@ public:
 	
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
+	void refresh();
+	
 private:
+	ProcessId mProcessId;
+	
+	EngineWrapper& mEngine;
+	
 	QList<MemSpyThread*> mThreads;
 	
 	QMap<int, QString> mPriorityMap;
 };
 
 
-class MemSpyThreadView : public MemSpyView
+class MemSpyThreadView : public MemSpyListView
 {
 	Q_OBJECT
 	
 public:
 	MemSpyThreadView(EngineWrapper &engine, ViewManager &viewManager);
 	~MemSpyThreadView();
+	
+public slots:
+    virtual void refresh();
 
 protected:
 	void initialize(const QVariantMap& params);
 	
 protected:
 	virtual bool isRefreshable() const { return true; }
+	
+	virtual bool isBreadCrumbVisible() const;
+	
+	QString getBreadCrumbText() const;
 	
 private slots:
 	void itemClicked(const QModelIndex& index);
@@ -62,6 +75,9 @@ private:
 	HbMenu* mContextMenu;
 	HbMenu* mPriorityMenu;
 	ThreadId mThreadId;
+	QString mProcessName;
+	
+	MemSpyThreadModel* mModel;
 };
 
 #endif /* MEMSPYTHREADVIEW_H_ */

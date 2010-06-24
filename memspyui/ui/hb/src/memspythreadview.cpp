@@ -22,9 +22,11 @@
 #include "memspythreadview.h"
 #include "viewmanager.h"
 
-MemSpyThreadModel::MemSpyThreadModel(EngineWrapper &engine, ProcessId threadId, QObject *parent) :
+MemSpyThreadModel::MemSpyThreadModel(EngineWrapper &engine, ProcessId processId, QObject *parent) :
 	QAbstractListModel(parent),
-	mThreads(engine.getThreads(threadId))
+	mProcessId(processId),
+	mEngine(engine),
+	mThreads(engine.getThreads(processId))
 {
 	mPriorityMap.insert(ThreadPriorityNull, tr("[Null]"));
 	mPriorityMap.insert(ThreadPriorityMuchLess, tr("[Much Less]"));
@@ -78,11 +80,21 @@ QVariant MemSpyThreadModel::data(const QModelIndex &index, int role) const
 	return QVariant();
 }
 
+void MemSpyThreadModel::refresh()
+{
+    beginResetModel();
+    QList<MemSpyThread*> data = mEngine.getThreads(mProcessId);
+    qDeleteAll(mThreads);
+    mThreads = data;
+    endResetModel();
+}
+
 MemSpyThreadView::MemSpyThreadView(EngineWrapper &engine, ViewManager &viewManager) : 
-	MemSpyView(engine, viewManager), 
+	MemSpyListView(engine, viewManager), 
 	mContextMenu(0), 
 	mPriorityMenu(0),
-	mThreadId(0)
+	mThreadId(0),
+	mModel(0)
 {
 }
 
@@ -94,13 +106,15 @@ MemSpyThreadView::~MemSpyThreadView()
 
 void MemSpyThreadView::initialize(const QVariantMap& params)
 {
+	ProcessId pid = qVariantValue<ProcessId>(params["pid"]);
+	setTitle(tr("Threads"));
+	
+	mProcessName = params["pname"].toString();
+	
 	MemSpyView::initialize(params);
 	
-	ProcessId pid = qVariantValue<ProcessId>(params["pid"]);
-	setTitle(tr("Threads").arg(pid));
-	
-	mListView.setModel(new MemSpyThreadModel(mEngine, pid, this));
-	mListView.setLongPressEnabled(true);
+	mModel = new MemSpyThreadModel(mEngine, pid, this);
+	mListView.setModel(mModel);
 	
 	connect(&mListView, SIGNAL(activated(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
 	connect(&mListView, SIGNAL(longPressed(HbAbstractViewItem*,QPointF)),
@@ -128,16 +142,30 @@ void MemSpyThreadView::initialize(const QVariantMap& params)
 	mPriorityMenu->addAction(tr("Abs. Real Time 8"), this, SLOT(changePriority()));
 }
 
+
+bool MemSpyThreadView::isBreadCrumbVisible() const
+{
+    return true;
+}
+
+QString MemSpyThreadView::getBreadCrumbText() const
+{
+    return tr("Processes > %1").arg(mProcessName);
+}
+
 void MemSpyThreadView::itemClicked(const QModelIndex& index)
 {
 	QVariantMap map;
 	map["tid"] = index.data(Qt::UserRole);
+	map.insert("pname", mProcessName);
+	map.insert("tname", index.data(Qt::DisplayRole).toStringList().at(0));
+	
 	mViewManager.showView(ThreadDetailIndexView, map);
 }
 
 void MemSpyThreadView::catchLongPress(HbAbstractViewItem *item, const QPointF &coords)
 {
-	mThreadId = qVariantValue<ThreadId>(item->data(Qt::UserRole));
+	mThreadId = qVariantValue<ThreadId>(item->modelIndex().data(Qt::UserRole));
 	mContextMenu->setPreferredPos(coords);
 	mContextMenu->open();
 }
@@ -167,4 +195,10 @@ void MemSpyThreadView::changePriority()
 		ThreadPriorityAbsoluteRealTime8 };
 	
 	mEngine.setThreadPriority(mThreadId, priorities[index]);
+	refresh();
+}
+
+void MemSpyThreadView::refresh()
+{ 
+    mModel->refresh(); 
 }

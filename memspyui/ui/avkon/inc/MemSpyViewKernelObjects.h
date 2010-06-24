@@ -66,8 +66,7 @@ private: // From CCoeControl
     TKeyResponse OfferKeyEventL( const TKeyEvent& aKeyEvent, TEventCode aType );
 
 private: // From MAknTabObserver
-    void TabChangedL( TInt aIndex ); 
-    TPtrC TypeAsString( TMemSpyDriverContainerType aType );
+    void TabChangedL( TInt aIndex );     
     
 private: // Command handlers
     void OnCmdTerminateL();

@@ -19,8 +19,6 @@
 #define EDITORVIEW_H
 
 #include <hbview.h>
-#include <hbmainwindow.h>
-//#include <QtGui>
 
 class HbTextEdit;
 class HbAction;
@@ -30,7 +28,7 @@ class EditorView : public HbView
     Q_OBJECT
 
 public:
-    EditorView(HbMainWindow &mainWindow);
+    EditorView();
     ~EditorView();
     void open(const QString& fileName, bool flagReadOnly);
 
@@ -56,8 +54,6 @@ private:
     void loadFile(const QString &fileName);
     void createMenu();
 
-    /* Main Window of folderbrowser */
-    HbMainWindow &mMainWindow;
     // editor
     HbTextEdit *mTextEdit;
     // if flag true, file is currently in hex format
@@ -69,7 +65,6 @@ private:
     HbAction* mToTextAction;
     HbAction* mToHexAction;
     HbAction* mExitAction;
-	
 };
 
 #endif // EDITORVIEW_H

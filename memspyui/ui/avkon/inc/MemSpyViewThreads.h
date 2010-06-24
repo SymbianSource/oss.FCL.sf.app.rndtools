@@ -36,7 +36,7 @@ class CMemSpyViewThreads : public CMemSpyViewBase
     {
 public:
     //CMemSpyViewThreads( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyProcess& aProcess );
-	CMemSpyViewThreads( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aId );
+	CMemSpyViewThreads( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aId, TThreadId aThreadId );
     ~CMemSpyViewThreads();
     void ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune = NULL );
 

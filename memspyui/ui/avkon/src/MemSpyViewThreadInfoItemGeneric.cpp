@@ -63,18 +63,7 @@ void CMemSpyViewThreadInfoItemGeneric::ConstructL( const TRect& aRect, CCoeContr
     {
 	const TPtrC pTitle( MemSpyUiUtils::ThreadInfoItemNameByType( iType ) );
 	SetTitleL( pTitle );
-    //
-    /* TODO:
-    if  ( iInfoItem->IsReady() == EFalse )
-        {
-#ifdef _DEBUG
-        RDebug::Printf( "CMemSpyViewThreadInfoItemGeneric::ConstructL() - show wait note - item not ready, iType: %d", iInfoItem->Type() );
-#endif
 
-        // Wait for engine data to be made ready... 
-        ShowWaitNoteL();
-        }
-	*/
     CMemSpyViewBase::ConstructL( aRect, aContainer, aSelectionRune );
     }
 
@@ -202,7 +191,7 @@ CMemSpyViewBase* CMemSpyViewThreadInfoItemGeneric::PrepareParentViewL()
     {
     CMemSpyViewThreadInfoItemList* parent = new(ELeave) CMemSpyViewThreadInfoItemList( iMemSpySession, iObserver, iParentProcessId, iThreadId );
     CleanupStack::PushL( parent );
-    parent->ConstructL( Rect(), *Parent() ); //TODO: arguent removed: iInfoItem
+    parent->ConstructL( Rect(), *Parent(), iType );
     CleanupStack::Pop( parent );
     return parent;
     }
@@ -232,16 +221,14 @@ void CMemSpyViewThreadInfoItemGeneric::SetListBoxModelL()
 	
 	for( TInt i=0; i<iThreadInfoItems.Count(); i++)
 		{						
-		HBufC* iCombined = HBufC::NewL( iThreadInfoItems[i]->Caption().Length() + iThreadInfoItems[i]->Value().Length() + 30 );		
+		HBufC* combined = HBufC::NewLC( iThreadInfoItems[i]->Caption().Length() + iThreadInfoItems[i]->Value().Length() + 30 );		
 			/*
-		else if ( iCombined->Des().MaxLength() < requiredLength )
+		else if ( combined->Des().MaxLength() < requiredLength )
 			{
-			iCombined = iCombined->ReAllocL( requiredLength );
-			}*/
-		
-		CleanupStack::PushL( iCombined );
+			combined = combined->ReAllocL( requiredLength );
+			}*/				
         
-		TPtr pCombined( iCombined->Des() );
+		TPtr pCombined( combined->Des() );
 		pCombined.Zero();
 		pCombined.Copy( _L("\t") );
 		if( iThreadInfoItems[i]->Caption() != KNullDesC )
@@ -252,9 +239,7 @@ void CMemSpyViewThreadInfoItemGeneric::SetListBoxModelL()
 			pCombined.Append( iThreadInfoItems[i]->Value() );
 			}					
 		
-		iModel->AppendL( pCombined );				
-		
-		CleanupStack::PopAndDestroy( iCombined );
+		iModel->AppendL( pCombined );								
 		}	
 	
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );

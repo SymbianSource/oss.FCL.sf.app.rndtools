@@ -46,7 +46,7 @@ class CCreatorBrowser;
 class CCreatorCalendarBase;
 class CCreatorNotepad;
 class CCreatorLogs;
-class CCreatorAccessPoints;
+//class CCreatorAccessPoints;
 class CCreatorMailboxes;
 class CCreatorIMPS;
 class CCreatorFiles;
@@ -55,7 +55,7 @@ class CCreatorLandmarks;
 class MCreatorModuleBase;
 class CCreatorPhonebookBase;
 class CCreatorModuleBaseParameters;
-class CCreatorConnectionSettingsBase;
+//class CCreatorConnectionSettingsBase;
 class CDictionaryFileStore;
 class CImageDecoder;
 class CFbsBitmap;
@@ -129,15 +129,18 @@ public:
 class TMemoryDetails
 	{
 public:
-    TBuf<16> iCFree;
-    TBuf<16> iDFree;
-    TBuf<16> iEFree;
-    TBuf<16> iHFree;
-	TBuf<16> iCSize;
-    TBuf<16> iDSize;
+	
+	TBuf<16> iFree;
+	TBuf<16> iSize;
+	TChar iDriveLetter;
+
+    TBuf<16> iRamFree;
+    TBuf<16> iRomFree;
+    
 	TBool    iENotAvailable;
-    TBuf<16> iESize;
-	TBuf<16> iHSize;
+
+	TBuf<16> iRamSize;
+	TBuf<16> iRomSize;
 	};
 // Common constant for undefined integer value:
 const TInt KUndef = KErrNotFound;
@@ -238,6 +241,7 @@ public:
     static CCreatorEngine* NewLC(EngineWrapper *aEngineWrapper);	
     ~CCreatorEngine();
 	
+    inline RPointerArray<TMemoryDetails> GetMemoryDetailsList(){ return iMemoryDetailsList; };
 	inline TMemoryDetails GetMemoryDetails(){ return iMemoryDetails; };
 	inline EngineWrapper* GetEngineWrapper(){ return iEngineWrapper; };
 	
@@ -406,7 +410,7 @@ private:
     CCreatorPhonebookBase* iPhonebook;
     CCreatorNotepad* iNotepad;
     CCreatorLogs* iLogs;
-    CCreatorConnectionSettingsBase* iAccessPoints;
+//    CCreatorConnectionSettingsBase* iAccessPoints;
     CCreatorMailboxes* iMailboxes;
     CCreatorIMPS* iIMPS;
     CCreatorFiles* iFiles;
@@ -435,6 +439,9 @@ private:
 
     EngineWrapper* iEngineWrapper; // Enginewrapper that is used for communicating between QT and Symbian
 	TMemoryDetails iMemoryDetails;
+	
+	RPointerArray<TMemoryDetails> iMemoryDetailsList;
+	
 	TInt iResourceFileId;
 
 	HBufC* iCommandLineScriptName;

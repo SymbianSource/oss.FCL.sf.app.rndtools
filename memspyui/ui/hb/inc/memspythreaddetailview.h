@@ -18,7 +18,7 @@
 #ifndef MEMSPYTHREADDETAILVIEW_H_
 #define MEMSPYTHREADDETAILVIEW_H_
 
-#include "memspyview.h"
+#include "memspylistview.h"
 #include "enginewrapper.h"
 
 class HbMenu;
@@ -39,19 +39,25 @@ private:
 };
 
 
-class MemSpyThreadDetailView : public MemSpyView
+class MemSpyThreadDetailView : public MemSpyListView
 {
 	Q_OBJECT
 	
 public:
 	MemSpyThreadDetailView(EngineWrapper &engine, ViewManager &viewManager) 
-		: MemSpyView(engine, viewManager) {}
+		: MemSpyListView(engine, viewManager) {}
 protected:
 	virtual void initialize(const QVariantMap& params);
+	
+	virtual bool isBreadCrumbVisible() const;
+	
+	virtual QString getBreadCrumbText() const;
 	
 private:
 	ThreadId mThreadId;
 	HbMenu *mPriorityMenu;
+	QString mProcessName;
+	QString mThreadName;
 };
 
 #endif /* MEMSPYTHREADDETAILVIEW_H_ */

@@ -18,13 +18,13 @@
 #include <HbApplication>
 #include <HbMainWindow>
 
-#include "filebrowsermainwindow.h"
+#include "fbmainwindow.h"
 
 
 int main(int argc, char *argv[])
 {
     HbApplication app(argc, argv);
-    FileBrowserMainWindow window;
+    FbMainWindow window;
     window.init();
     int result = app.exec();
 

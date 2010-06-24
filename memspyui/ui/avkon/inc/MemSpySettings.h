@@ -25,6 +25,7 @@
 
 // Engine includes
 #include <memspy/engine/memspyengineoutputsink.h>
+#include <memspy/engine/memspyenginehelpersysmemtrackerconfig.h>
 
 // Classes referenced
 class CMemSpyEngine;
@@ -48,6 +49,8 @@ private:
 public: // API
     inline RFs& FsSession() { return iFsSession; }
     void StoreSettingsL();
+    
+    void SetSinkType( TMemSpySinkType aType ) { iSinkType = aType; }
 
 private: // Settings methods
     void RestoreSettingsL();
@@ -56,9 +59,13 @@ private: // Settings methods
     RFile SettingsFileLC( TBool aReplace = EFalse );
 
 private: // Data members
-    RFs& iFsSession;
-    //CMemSpyEngine& iEngine;
-    //RMemSpySession& iMemSpySession;
+    RFs& iFsSession;    
+    RMemSpySession& iMemSpySession;
+    
+private: //Settings
+    TMemSpySinkType iSinkType;
+    TMemSpyEngineHelperSysMemTrackerConfig iSwmtConfig;
+    RArray<TUid> iUidList;
     };
 
 

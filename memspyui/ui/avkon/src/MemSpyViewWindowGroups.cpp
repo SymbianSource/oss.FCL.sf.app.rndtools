@@ -204,6 +204,7 @@ void CMemSpyViewWindowGroups::OnCmdSwitchToL()
 
 void CMemSpyViewWindowGroups::OnCmdEndL( TInt aCommand )
     {
+	/*
     TBool doTerminate = ETrue;
     
     CMemSpyEngineObjectContainer& container = iEngine.Container();
@@ -252,6 +253,7 @@ void CMemSpyViewWindowGroups::OnCmdEndL( TInt aCommand )
             }                
         }
     RefreshL();
+    */
     }
 
 

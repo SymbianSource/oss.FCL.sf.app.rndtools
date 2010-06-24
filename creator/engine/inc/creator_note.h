@@ -16,27 +16,20 @@
 */
 
 
-
-
-
 #ifndef __CREATORNOTEPAD_H__
 #define __CREATORNOTEPAD_H__
 
 #include "engine.h"
 #include "creator_modulebase.h"
-
+#include "creator_notepadwrapper.h"
 
 #include <e32base.h>
-//#include <npdapi.h>
-#include <noteseditorinterface.h>
-#include <AgendaUtil>
-#include <AgendaEntry>
-
 
 static const TInt KNotepadFieldLength = 1024;
 
 class CCreatorEngine;
 class CNotepadParameters;
+class CCreatorNotepadWrapper;
 
 
 class CCreatorNotepad : public CCreatorModuleBase
@@ -58,9 +51,7 @@ public:
     void DeleteAllCreatedByCreatorL();
 
 private:
-    AgendaUtil *iAgendaUtil;
-    NotesEditorInterface *iNotepadApi;	//QT Notes api 
-    //CNotepadApi *iNotepadApi;
+    CCreatorNotepadWrapper* iNotepadWrapper;
 
     CNotepadParameters* iParameters;
     RFs& iFs;

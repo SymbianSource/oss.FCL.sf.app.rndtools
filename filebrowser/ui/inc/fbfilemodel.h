@@ -15,8 +15,8 @@
 *
 */
 
-#ifndef FILEBROWSERMODELH_H_
-#define FILEBROWSERMODELH_H_
+#ifndef FBFILEMODELH_H_
+#define FBFILEMODELH_H_
 
 #include <QAbstractListModel>
 
@@ -25,13 +25,13 @@ class EngineWrapper;
 class QModelIndex;
 class QFileIconProvider;
 
-class FileBrowserModel : public QAbstractListModel
+class FbFileModel : public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    explicit FileBrowserModel(EngineWrapper *engineWrapper, QObject *parent = 0);
-    virtual ~FileBrowserModel();
+    explicit FbFileModel(EngineWrapper *engineWrapper, QObject *parent = 0);
+    virtual ~FbFileModel();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role) const;
@@ -44,4 +44,4 @@ private:
 
 
 
-#endif /* FILEBROWSERMODELH_H_ */
+#endif /* FBFILEMODELH_H_ */

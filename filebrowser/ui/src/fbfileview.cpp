@@ -15,17 +15,17 @@
 *
 */
 
-#include "filebrowserview.h"
-#include "filebrowsermainwindow.h"
+#include "fbfileview.h"
 #include "settingsview.h"
 #include "editorview.h"
 #include "searchview.h"
 #include "enginewrapper.h"
 #include "notifications.h"
 
-#include "filebrowsermodel.h"
+#include "fbfilemodel.h"
+#include "filebrowsersortfilterproxymodel.h"
+//#include "fbfilelistviewitem.h"
 
-#include <HbMainWindow>
 #include <HbMenu>
 #include <HbPopup>
 #include <HbView>
@@ -41,6 +41,8 @@
 #include <HbValidator>
 #include <HbInputDialog>
 #include <HbToolBar>
+#include <HbToolBarExtension>
+#include <HbSearchPanel>
 
 #include <QString>
 #include <QGraphicsLinearLayout>
@@ -49,20 +51,17 @@
 //TODO check if needed to do this way
 #include <FB.hrh>
 
-//const int DRIVEPATHLENGTH = 4;
-const QString okActionText("OK");
-const QString cancelActionText("Cancel");
-
 // ---------------------------------------------------------------------------
 
-FileBrowserView::FileBrowserView(FileBrowserMainWindow &mainWindow)
-    : mMainWindow(mainWindow),
+FbFileView::FbFileView() :
     mEngineWrapper(0),
     mListView(0),
     mToolBar(0),
     mNaviPane(0),
+    mSearchPanel(0),
     mMainLayout(0),
-    mFileBrowserModel(0),
+    mFbFileModel(0),
+    mSortFilterProxyModel(0),
     mOptionMenuActions(),
     mContextMenuActions(),
     mContextMenu(0),
@@ -91,23 +90,33 @@ FileBrowserView::FileBrowserView(FileBrowserMainWindow &mainWindow)
 
 // ---------------------------------------------------------------------------	
 
-void FileBrowserView::init(EngineWrapper *engineWrapper)
+void FbFileView::init(EngineWrapper *engineWrapper)
 {
     mEngineWrapper = engineWrapper;
 
     mListView = new HbListView(this);
-    mFileBrowserModel = new FileBrowserModel(mEngineWrapper);
+    mListView->listItemPrototype()->setStretchingStyle(HbListViewItem::StretchLandscape);
+
+//    mListView->setItemPrototype(new FbDiskListViewItem(mListView));
+
+    mFbFileModel = new FbFileModel(mEngineWrapper);
     if (!mListView->model()) {
-        mListView->setModel(mFileBrowserModel);
-        mListView->listItemPrototype()->setStretchingStyle(HbListViewItem::StretchLandscape);
+
         mEngineWrapper->refreshView();
-        mToolbarBackAction->setEnabled(!mEngineWrapper->isDriveListViewActive());
+
+        mSortFilterProxyModel = new FileBrowserSortFilterProxyModel(this);
+        mSortFilterProxyModel->setSourceModel(mFbFileModel);
+        mSortFilterProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+        mSearchPanel->setPlaceholderText(QString("Type filter criteria"));
+
+        mListView->setModel(mSortFilterProxyModel);
     }
 
     //mListView->setRootIndex(mFileSystemModel->index(startPath));
     //mListView->setRootIndex(model->index());
 
-    mListView->setScrollingStyle(HbScrollArea::PanWithFollowOn);
+    //setItemVisible(Hb::ToolBarItem, !mEngineWrapper->isDriveListViewActive());
+//    mListView->setScrollingStyle(HbScrollArea::PanWithFollowOn);
 
     connect(mListView, SIGNAL(activated(QModelIndex)), this, SLOT(activated(QModelIndex)));
     connect(mListView, SIGNAL(longPressed(HbAbstractViewItem*,QPointF)),
@@ -123,13 +132,12 @@ void FileBrowserView::init(EngineWrapper *engineWrapper)
     mMainLayout = new QGraphicsLinearLayout(Qt::Vertical);
     mMainLayout->addItem(mNaviPane);
     mMainLayout->addItem(mListView);
-    //mMainLayout->addItem(mToolBar);
     setLayout(mMainLayout);
 }
 
 // ---------------------------------------------------------------------------
 
-FileBrowserView::~FileBrowserView()
+FbFileView::~FbFileView()
 {  
 //    if (mEngineWrapper) {
 //        delete mEngineWrapper;
@@ -138,7 +146,8 @@ FileBrowserView::~FileBrowserView()
         mContextMenu->deleteLater();
     }
 
-    delete mFileBrowserModel;
+    delete mSortFilterProxyModel;
+    delete mFbFileModel;
     delete mListView;
     delete mToolBar;
 }
@@ -148,7 +157,7 @@ FileBrowserView::~FileBrowserView()
   Dynamic menu update during the runtime is performed by updateOptionMenu() which
   to menu's aboutToShow() signal.
   */
-void FileBrowserView::createMenu()
+void FbFileView::createMenu()
 {
     createFileMenu();
     createEditMenu();
@@ -167,13 +176,11 @@ void FileBrowserView::createMenu()
 /**
   Initial setup for File submenu
   */
-void FileBrowserView::createFileMenu()
+void FbFileView::createFileMenu()
 {
     mOptionMenuActions.mFileMenu = menu()->addMenu("File");
 
-    mOptionMenuActions.mFileBackMoveUp = mOptionMenuActions.mFileMenu->addAction("Back/Move up (<-)", this, SLOT(fileBackMoveUp()));
-    mOptionMenuActions.mFileOpenDrive = mOptionMenuActions.mFileMenu->addAction("Open drive (->)", this, SLOT(fileOpenDrive()));
-    mOptionMenuActions.mFileOpenDirectory = mOptionMenuActions.mFileMenu->addAction("Open directory (->)", this, SLOT(fileOpenDirectory()));
+    mOptionMenuActions.mFileBackMoveUp = mOptionMenuActions.mFileMenu->addAction("Back/Move up", this, SLOT(fileBackMoveUp()));
     mOptionMenuActions.mFileSearch = mOptionMenuActions.mFileMenu->addAction("Search...", this, SLOT(fileSearch()));
     //mOptionMenuActions.mFileSearch->setVisible(false);
 
@@ -184,7 +191,6 @@ void FileBrowserView::createFileMenu()
     mOptionMenuActions.mFileDelete = mOptionMenuActions.mFileMenu->addAction("Delete", this, SLOT(fileDelete()));
     mOptionMenuActions.mFileRename = mOptionMenuActions.mFileMenu->addAction("Rename", this, SLOT(fileRename()));
     mOptionMenuActions.mFileTouch = mOptionMenuActions.mFileMenu->addAction("Touch", this, SLOT(fileTouch()));
-    mOptionMenuActions.mFileProperties = mOptionMenuActions.mFileMenu->addAction("Properties", this, SLOT(fileProperties()));
 
 //    mOptionMenuActions.mFileChecksumsMenu = mOptionMenuActions.mFileMenu->addMenu("Checksums");
 //    mOptionMenuActions.mFileChecksumsMD5 = mOptionMenuActions.mFileChecksumsMenu->addAction("MD5", this, SLOT(fileChecksumsMD5()));
@@ -198,7 +204,7 @@ void FileBrowserView::createFileMenu()
 /**
   Initial setup for Edit submenu
   */
-void FileBrowserView::createEditMenu()
+void FbFileView::createEditMenu()
 {
     mOptionMenuActions.mEditMenu = menu()->addMenu("Edit");
 
@@ -220,10 +226,10 @@ void FileBrowserView::createEditMenu()
 /**
   Initial setup for View submenu
   */
-void FileBrowserView::createViewMenu()
+void FbFileView::createViewMenu()
 {
     mOptionMenuActions.mViewMenu = menu()->addMenu("View");
-    mOptionMenuActions.mViewMenu->menuAction()->setVisible(false);
+    //mOptionMenuActions.mViewMenu->menuAction()->setVisible(false);
 
     mOptionMenuActions.mViewFilterEntries = mOptionMenuActions.mViewMenu->addAction("Filter entries", this, SLOT(viewFilterEntries()));
     mOptionMenuActions.mViewRefresh = mOptionMenuActions.mViewMenu->addAction("Refresh", this, SLOT(viewRefresh()));
@@ -232,7 +238,7 @@ void FileBrowserView::createViewMenu()
 /**
   Initial setup for Tools submenu
   */
-void FileBrowserView::createToolsMenu()
+void FbFileView::createToolsMenu()
 {
     mOptionMenuActions.mToolsMenu = menu()->addMenu("Tools");
 
@@ -241,10 +247,10 @@ void FileBrowserView::createToolsMenu()
     mOptionMenuActions.mToolsAllFilesToTextFile = mOptionMenuActions.mToolsMenu->addAction("All files to a text file", this, SLOT(toolsAllFilesToTextFile()));
     //mOptionMenuActions.mToolsAllFilesToTextFile->setVisible(false);
 
-    mOptionMenuActions.mToolsAvkonIconCacheMenu = mOptionMenuActions.mToolsMenu->addMenu("Avkon icon cache");
-    mOptionMenuActions.mToolsAvkonIconCacheMenu->menuAction()->setVisible(false);
-    mOptionMenuActions.mToolsAvkonIconCacheEnable = mOptionMenuActions.mToolsAvkonIconCacheMenu->addAction("Enable", this, SLOT(toolsAvkonIconCacheEnable()));
-    mOptionMenuActions.mToolsAvkonIconCacheDisable = mOptionMenuActions.mToolsAvkonIconCacheMenu->addAction("Clear and disable", this, SLOT(toolsAvkonIconCacheDisable()));
+//    mOptionMenuActions.mToolsAvkonIconCacheMenu = mOptionMenuActions.mToolsMenu->addMenu("Avkon icon cache");
+//    mOptionMenuActions.mToolsAvkonIconCacheMenu->menuAction()->setVisible(false);
+//    mOptionMenuActions.mToolsAvkonIconCacheEnable = mOptionMenuActions.mToolsAvkonIconCacheMenu->addAction("Enable", this, SLOT(toolsAvkonIconCacheEnable()));
+//    mOptionMenuActions.mToolsAvkonIconCacheDisable = mOptionMenuActions.mToolsAvkonIconCacheMenu->addAction("Clear and disable", this, SLOT(toolsAvkonIconCacheDisable()));
 
     mOptionMenuActions.mToolsDisableExtendedErrors = mOptionMenuActions.mToolsMenu->addAction("Disable extended errors", this, SLOT(toolsDisableExtendedErrors()));
     mOptionMenuActions.mToolsDumpMsgStoreWalk = mOptionMenuActions.mToolsMenu->addAction("Dump msg. store walk", this, SLOT(toolsDumpMsgStoreWalk()));
@@ -288,7 +294,7 @@ void FileBrowserView::createToolsMenu()
 /**
   Creates Selection mode menu item in option menu
   */
-void FileBrowserView::createSelectionMenuItem()
+void FbFileView::createSelectionMenuItem()
 {
     if (!mOptionMenuActions.mSelection) {
         mOptionMenuActions.mSelection = menu()->addAction("Selection mode");
@@ -301,7 +307,7 @@ void FileBrowserView::createSelectionMenuItem()
 /**
   Creates Setting menu item in option menu
   */
-void FileBrowserView::createSettingsMenuItem()
+void FbFileView::createSettingsMenuItem()
 {
     mOptionMenuActions.mSetting = menu()->addAction("Settings...");
     connect(mOptionMenuActions.mSetting, SIGNAL(triggered()), this, SIGNAL(aboutToShowSettingsView()));
@@ -311,7 +317,7 @@ void FileBrowserView::createSettingsMenuItem()
 /**
   Creates About menu item in option menu
   */
-void FileBrowserView::createAboutMenuItem()
+void FbFileView::createAboutMenuItem()
 {
     // about note
     mOptionMenuActions.mAbout = menu()->addAction("About");
@@ -321,7 +327,7 @@ void FileBrowserView::createAboutMenuItem()
 /**
   Creates Exit menu item in option menu
   */
-void FileBrowserView::createExitMenuItem()
+void FbFileView::createExitMenuItem()
 {
     // application exit
     mOptionMenuActions.mExit = menu()->addAction("Exit");
@@ -336,72 +342,57 @@ void FileBrowserView::createExitMenuItem()
   If there's remove and add operations at same time, always remove first
   to keep to the correct menu items order.
   */
-void FileBrowserView::updateOptionMenu()
+void FbFileView::updateOptionMenu()
 {
-    bool isFileItemListEmpty = mFileBrowserModel->rowCount() == 0;
-    bool isDriveListActive = mEngineWrapper->isDriveListViewActive();
+    bool isFileItemListEmpty = mFbFileModel->rowCount() == 0;
     bool isNormalModeActive = true;       //iModel->FileUtils()->IsNormalModeActive();
-    bool currentDriveReadOnly = mEngineWrapper->isCurrentDriveReadOnly();   //iModel->FileUtils()->IsCurrentDriveReadOnly();
-    bool currentItemDirectory = mEngineWrapper->getFileEntry(currentItemIndex()).isDir();
-    bool listBoxSelections = mListView->selectionModel()->selection().count() == 0;
+    bool isCurrentDriveReadOnly = mEngineWrapper->isCurrentDriveReadOnly();   //iModel->FileUtils()->IsCurrentDriveReadOnly();
+    bool isCurrentItemDirectory = mEngineWrapper->getFileEntry(currentItemIndex()).isDir();
+    // bool currentSelected = true;    //iContainer->ListBox()->View()->ItemIsSelected(iContainer->ListBox()->View()->CurrentItemIndex());
+    bool isAllSelected = mListView->selectionModel()->selection().count() == mFbFileModel->rowCount();
+    //bool isNoneSelected = mListView->selectionModel()->selection().count() != 0;
+    bool hasSelectedItems = mListView->selectionModel()->selection().count() != 0;
     bool isSelectionMode = mOptionMenuActions.mSelection && mOptionMenuActions.mSelection->isChecked();
-    bool emptyClipBoard = !mEngineWrapper->isClipBoardListInUse();
-    bool showSnapShot = false;           //iModel->FileUtils()->DriveSnapShotPossible();
+    bool isClipBoardEmpty = !mEngineWrapper->isClipBoardListInUse();
+    //bool showSnapShot = false;           //iModel->FileUtils()->DriveSnapShotPossible();
 
     bool showEditMenu(true);
-    if (isDriveListActive) {
-        if (!showSnapShot || isFileItemListEmpty && emptyClipBoard)
-            showEditMenu = false;
-        else
-            showEditMenu = true;
-    } else {
-        if (isFileItemListEmpty && emptyClipBoard)
-            showEditMenu = false;
-        else
-            showEditMenu = true;
-    }
+    if (isFileItemListEmpty && isClipBoardEmpty)
+        showEditMenu = false;
+    else
+        showEditMenu = true;
 
     mOptionMenuActions.mEditMenu->menuAction()->setVisible(showEditMenu);
-    // TODO mContextMenuActions.mDiskAdminMenu->menuAction()->setVisible(isDriveListActive);
 
-    mOptionMenuActions.mFileBackMoveUp->setVisible( !isDriveListActive);
+    //mOptionMenuActions.mFileBackMoveUp->setVisible( !isDriveListViewActive);
 
-    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileOpen, isFileItemListEmpty || isDriveListActive || currentItemDirectory);
-    mOptionMenuActions.mFileOpenDrive->setVisible( !(isFileItemListEmpty || !isDriveListActive));
-    mOptionMenuActions.mFileOpenDirectory->setVisible( !(isFileItemListEmpty || isDriveListActive || !currentItemDirectory));
+    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileView, isFileItemListEmpty || !hasSelectedItems || isCurrentItemDirectory);
+    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileEdit, isFileItemListEmpty || !hasSelectedItems || isCurrentItemDirectory);
+    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileSendTo, isFileItemListEmpty || driveListActive || isCurrentItemDirectory);
 
-    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileView, isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive);
-    //aMenuPane->SetItemDimmed(EFileBrowserCmd FileEdit, isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive);
-    //aMenuPane->SetItemDimmed(EFileBrowserCmdFileSendTo, isFileItemListEmpty || driveListActive || currentItemDirectory);
+    mOptionMenuActions.mFileNewMenu->menuAction()->setVisible(!isCurrentDriveReadOnly);
+    mOptionMenuActions.mFileDelete->setVisible(!isFileItemListEmpty && !isCurrentDriveReadOnly && hasSelectedItems/*isSelectionMode*/);
+    mOptionMenuActions.mFileRename->setVisible(!isFileItemListEmpty && !isCurrentDriveReadOnly && hasSelectedItems/*&& isSelectionMode*/);
+    mOptionMenuActions.mFileTouch->setVisible(!isFileItemListEmpty && !isCurrentDriveReadOnly && hasSelectedItems);
 
-    mOptionMenuActions.mFileNewMenu->menuAction()->setVisible(!(isDriveListActive || currentDriveReadOnly));
-    mOptionMenuActions.mFileDelete->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly && isSelectionMode);
-    mOptionMenuActions.mFileRename->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly && !listBoxSelections && isSelectionMode);
-    mOptionMenuActions.mFileTouch->setVisible(!(isFileItemListEmpty || isDriveListActive || currentDriveReadOnly));
-    mOptionMenuActions.mFileProperties->setVisible(!(isFileItemListEmpty || listBoxSelections));
-    // TODO mOptionMenuActions.mFileChecksumsMenu->setVisible(!(isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive));
-    // TODO mOptionMenuActions.mFileSetAttributes->setVisible(!(isFileItemListEmpty || isDriveListActive || currentDriveReadOnly));
-    // TODO mOptionMenuActions.mFileCompress->setVisible(!(currentDriveReadOnly || isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive));
-    // TODO mOptionMenuActions.mFileDecompress->setVisible(!(currentDriveReadOnly || isFileItemListEmpty || listBoxSelections || currentItemDirectory || isDriveListActive));
+    // TODO mOptionMenuActions.mFileChecksumsMenu->setVisible(!(isFileItemListEmpty || !hasSelectedItems || isCurrentItemDirectory));
+    // TODO mOptionMenuActions.mFileSetAttributes->setVisible(!(isFileItemListEmpty || isCurrentDriveReadOnly));
+    // TODO mOptionMenuActions.mFileCompress->setVisible(!(isCurrentDriveReadOnly || isFileItemListEmpty || !hasSelectedItems || isCurrentItemDirectory));
+    // TODO mOptionMenuActions.mFileDecompress->setVisible(!(isCurrentDriveReadOnly || isFileItemListEmpty || !hasSelectedItems || isCurrentItemDirectory));
 
-//    bool currentSelected = true;    //iContainer->ListBox()->View()->ItemIsSelected(iContainer->ListBox()->View()->CurrentItemIndex());
-    bool allSelected = mListView->selectionModel()->selection().count() == mFileBrowserModel->rowCount();
-    bool noneSelected = mListView->selectionModel()->selection().count() != 0;
+    mOptionMenuActions.mEditCut->setVisible(!isFileItemListEmpty && !isCurrentDriveReadOnly && isSelectionMode);
+    mOptionMenuActions.mEditCopy->setVisible(!isFileItemListEmpty && isSelectionMode);
+    mOptionMenuActions.mEditPaste->setVisible(!(isClipBoardEmpty || isCurrentDriveReadOnly));
+    mOptionMenuActions.mEditCopyToFolder->setVisible(!isFileItemListEmpty);
+    mOptionMenuActions.mEditMoveToFolder->setVisible(!(isCurrentDriveReadOnly || isFileItemListEmpty));
 
-    //mOptionMenuActions.mEditSnapShotToE->setVisible(isDriveListActive); // TODO
-    mOptionMenuActions.mEditCut->setVisible(!isDriveListActive && !currentDriveReadOnly && !isFileItemListEmpty && !isSelectionMode);
-    mOptionMenuActions.mEditCopy->setVisible(!isDriveListActive && !isFileItemListEmpty);
-    mOptionMenuActions.mEditPaste->setVisible(!(isDriveListActive || emptyClipBoard || currentDriveReadOnly));
-    mOptionMenuActions.mEditCopyToFolder->setVisible(!(isDriveListActive || isFileItemListEmpty));
-    mOptionMenuActions.mEditMoveToFolder->setVisible(!(isDriveListActive || currentDriveReadOnly || isFileItemListEmpty));
+    mOptionMenuActions.mEditSelect->setVisible(false/*!currentSelected && !isFileItemListEmpty*/);
+    mOptionMenuActions.mEditUnselect->setVisible(false/*currentSelected && !isFileItemListEmpty*/);
+    mOptionMenuActions.mEditSelectAll->setVisible(isSelectionMode && !isAllSelected && !isFileItemListEmpty);
+    mOptionMenuActions.mEditUnselectAll->setVisible(hasSelectedItems && !isFileItemListEmpty);
 
-    mOptionMenuActions.mEditSelect->setVisible(false/*!isDriveListActive && !currentSelected && !isFileItemListEmpty*/);
-    mOptionMenuActions.mEditUnselect->setVisible(false/*!isDriveListActive && currentSelected && !isFileItemListEmpty*/);
-    mOptionMenuActions.mEditSelectAll->setVisible(!isDriveListActive && !allSelected && !isFileItemListEmpty);
-    mOptionMenuActions.mEditUnselectAll->setVisible(!isDriveListActive && !noneSelected && !isFileItemListEmpty);
-
-    // TODO mOptionMenuActions.mViewSort->setVisible(!(!isNormalModeActive || isDriveListActive || isFileItemListEmpty));
-    // TODO mOptionMenuActions.mViewOrder->setVisible(!(!isNormalModeActive || isDriveListActive || isFileItemListEmpty));
+    // TODO mOptionMenuActions.mViewSort->setVisible(!(!isNormalModeActive || isFileItemListEmpty));
+    // TODO mOptionMenuActions.mViewOrder->setVisible(!(!isNormalModeActive  || isFileItemListEmpty));
     mOptionMenuActions.mViewRefresh->setVisible(isNormalModeActive);
     mOptionMenuActions.mViewFilterEntries->setVisible(!isFileItemListEmpty);
 
@@ -428,7 +419,7 @@ void FileBrowserView::updateOptionMenu()
 //    mOptionMenuActions.mToolsLocalConnectivityLaunchUSBUI->setVisible(usbAllowed);
 }
 
-void FileBrowserView::createContextMenu()
+void FbFileView::createContextMenu()
 {
     mContextMenu = new HbMenu();
     connect(mContextMenu, SIGNAL(aboutToShow()), this, SLOT(updateContextMenu()));
@@ -436,23 +427,17 @@ void FileBrowserView::createContextMenu()
     createFileContextMenu();
     createEditContextMenu();
     createViewContextMenu();
-    createDiskAdminContextMenu();
 }
 
 
-void FileBrowserView::createFileContextMenu()
+void FbFileView::createFileContextMenu()
 {
     mContextMenuActions.mFileMenu = mContextMenu->addMenu("File");
 
-    mContextMenuActions.mFileBackMoveUp = mContextMenuActions.mFileMenu->addAction("Back/Move up (<-)", this, SLOT(fileBackMoveUp()));
-    mContextMenuActions.mFileOpenDrive = mContextMenuActions.mFileMenu->addAction("Open drive (->)", this, SLOT(fileOpenDrive()));
+    //mContextMenuActions.mFileBackMoveUp = mContextMenuActions.mFileMenu->addAction("Back/Move up (<-)", this, SLOT(fileBackMoveUp()));
     mContextMenuActions.mFileOpenDirectory = mContextMenuActions.mFileMenu->addAction("Open directory (->)", this, SLOT(fileOpenDirectory()));
 //    mContextMenuActions.mFileSearch = mContextMenuActions.mFileMenu->addAction("Search...", this, SLOT(fileSearch()));
     //mContextMenuActions.mFileSearch->setVisible(false);
-
-//    mContextMenuActions.mFileNewMenu = mContextMenuActions.mFileMenu->addMenu("New");
-//    mContextMenuActions.mFileNewFile = mContextMenuActions.mFileNewMenu->addAction("File", this, SLOT(fileNewFile()));
-//    mContextMenuActions.mFileNewDirectory = mContextMenuActions.mFileNewMenu->addAction("Directory", this, SLOT(fileNewDirectory()));
 
     mContextMenuActions.mFileDelete = mContextMenuActions.mFileMenu->addAction("Delete", this, SLOT(fileDelete()));
     mContextMenuActions.mFileRename = mContextMenuActions.mFileMenu->addAction("Rename", this, SLOT(fileRename()));
@@ -468,7 +453,7 @@ void FileBrowserView::createFileContextMenu()
 //    mContextMenuActions.mFileSetAttributes->setVisible(false);
 }
 
-void FileBrowserView::createEditContextMenu()
+void FbFileView::createEditContextMenu()
 {
     mContextMenuActions.mEditMenu = mContextMenu->addMenu("Edit");
 
@@ -482,138 +467,109 @@ void FileBrowserView::createEditContextMenu()
     mContextMenuActions.mEditMoveToFolder = mContextMenuActions.mEditMenu->addAction("Move to folder...", this, SLOT(editMoveToFolder()));
 }
 
-void FileBrowserView::createViewContextMenu()
+void FbFileView::createViewContextMenu()
 {
 
 }
 
-/**
-  Initial setup for Disk Admin submenu
-  */
-void FileBrowserView::createDiskAdminContextMenu()
+void FbFileView::updateContextMenu()
 {
-    mContextMenuActions.mDiskAdminMenu = mContextMenu->addMenu("Disk admin");
-    //mContextMenuActions.mDiskAdminMenu->menuAction()->setVisible(false);
-
-    mContextMenuActions.mDiskAdminSetDrivePassword = mContextMenuActions.mDiskAdminMenu->addAction("Set drive password", this, SLOT(diskAdminSetDrivePassword()));
-    mContextMenuActions.mDiskAdminUnlockDrive = mContextMenuActions.mDiskAdminMenu->addAction("Unlock drive", this, SLOT(diskAdminUnlockDrive()));
-    mContextMenuActions.mDiskAdminClearDrivePassword = mContextMenuActions.mDiskAdminMenu->addAction("Clear drive password", this, SLOT(diskAdminClearDrivePassword()));
-    mContextMenuActions.mDiskAdminEraseDrivePassword = mContextMenuActions.mDiskAdminMenu->addAction("Erase drive password", this, SLOT(diskAdminEraseDrivePassword()));
-
-    mContextMenuActions.mDiskAdminFormatDrive = mContextMenuActions.mDiskAdminMenu->addAction("Format drive", this, SLOT(diskAdminFormatDrive()));
-    mContextMenuActions.mDiskAdminFormatDrive->setVisible(false);
-    mContextMenuActions.mDiskAdminQuickFormatDrive = mContextMenuActions.mDiskAdminMenu->addAction("Quick format drive", this, SLOT(diskAdminQuickFormatDrive()));
-    mContextMenuActions.mDiskAdminQuickFormatDrive->setVisible(false);
-
-    mContextMenuActions.mDiskAdminCheckDisk = mContextMenuActions.mDiskAdminMenu->addAction("Check disk", this, SLOT(diskAdminCheckDisk()));
-    mContextMenuActions.mDiskAdminScanDrive = mContextMenuActions.mDiskAdminMenu->addAction("Scan drive", this, SLOT(diskAdminScanDrive()));
-    mContextMenuActions.mDiskAdminSetDriveName = mContextMenuActions.mDiskAdminMenu->addAction("Set drive name", this, SLOT(diskAdminSetDriveName()));
-    mContextMenuActions.mDiskAdminSetDriveVolumeLabel = mContextMenuActions.mDiskAdminMenu->addAction("Set drive volume label", this, SLOT(diskAdminSetDriveVolumeLabel()));
-    mContextMenuActions.mDiskAdminEjectDrive = mContextMenuActions.mDiskAdminMenu->addAction("Eject drive", this, SLOT(diskAdminEjectDrive()));
-    mContextMenuActions.mDiskAdminDismountDrive = mContextMenuActions.mDiskAdminMenu->addAction("Dismount drive", this, SLOT(diskAdminDismountDrive()));
-    mContextMenuActions.mDiskAdminEraseMBR = mContextMenuActions.mDiskAdminMenu->addAction("Erase MBR", this, SLOT(diskAdminEraseMBR()));
-    mContextMenuActions.mDiskAdminPartitionDrive = mContextMenuActions.mDiskAdminMenu->addAction("Partition drive", this, SLOT(diskAdminPartitionDrive()));
-}
-
-void FileBrowserView::updateContextMenu()
-{
-    bool isFileItemListEmpty = mFileBrowserModel->rowCount() == 0;
-    bool isDriveListActive = mEngineWrapper->isDriveListViewActive();
+    bool isFileItemListEmpty = mFbFileModel->rowCount() == 0;
+    bool isDriveListViewActive = mEngineWrapper->isDriveListViewActive();
 //    bool isNormalModeActive = true;       //iModel->FileUtils()->IsNormalModeActive();
-    bool currentDriveReadOnly = mEngineWrapper->isCurrentDriveReadOnly();
-    bool currentItemDirectory = mEngineWrapper->getFileEntry(mCurrentIndex /*currentItemIndex()*/).isDir();
-    bool listBoxSelections = mListView->selectionModel()->selection().count() == 0;
+    bool isCurrentDriveReadOnly = mEngineWrapper->isCurrentDriveReadOnly();
+    bool isCurrentItemDirectory = mEngineWrapper->getFileEntry(currentItemIndex()).isDir();
+    bool hasSelectedItems = mListView->selectionModel()->selection().count() != 0;
     bool isSelectionMode = mOptionMenuActions.mSelection && mOptionMenuActions.mSelection->isChecked();
-    bool emptyClipBoard = !mEngineWrapper->isClipBoardListInUse();
-//    bool showSnapShot = false;           //iModel->FileUtils()->DriveSnapShotPossible();
-
-//    bool showEditMenu(true);
-//    if (isDriveListActive) {
-//        if (!showSnapShot || isFileItemListEmpty && emptyClipBoard)
-//            showEditMenu = false;
-//        else
-//            showEditMenu = true;
-//    } else {
-//        if (isFileItemListEmpty && emptyClipBoard)
-//            showEditMenu = false;
-//        else
-//            showEditMenu = true;
-//    }
+    bool isClipBoardEmpty = !mEngineWrapper->isClipBoardListInUse();
 
     // File submenu
-    mContextMenuActions.mFileBackMoveUp->setVisible( !isDriveListActive);
-    mContextMenuActions.mFileOpenDrive->setVisible( !isFileItemListEmpty && isDriveListActive);
-    mContextMenuActions.mFileOpenDirectory->setVisible( !isFileItemListEmpty && !isDriveListActive && currentItemDirectory);
+    //mContextMenuActions.mFileBackMoveUp->setVisible( !isDriveListViewActive);
+    mContextMenuActions.mFileOpenDirectory->setVisible( !isFileItemListEmpty && !isDriveListViewActive && isCurrentItemDirectory);
 
-//    mContextMenuActions.mFileNewMenu->menuAction()->setVisible(!(isDriveListActive || currentDriveReadOnly));
-    mContextMenuActions.mFileDelete->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly);
-    mContextMenuActions.mFileRename->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly && !listBoxSelections);
-    mContextMenuActions.mFileTouch->setVisible(!isFileItemListEmpty && !isDriveListActive && !currentDriveReadOnly);
-    mContextMenuActions.mFileProperties->setVisible(!isFileItemListEmpty && !listBoxSelections && !isSelectionMode);
+    mContextMenuActions.mFileDelete->setVisible(!isFileItemListEmpty && !isDriveListViewActive && !isCurrentDriveReadOnly);
+    mContextMenuActions.mFileRename->setVisible(!isFileItemListEmpty && !isDriveListViewActive && !isCurrentDriveReadOnly);
+    mContextMenuActions.mFileTouch->setVisible(!isFileItemListEmpty && !isDriveListViewActive && !isCurrentDriveReadOnly);
+    mContextMenuActions.mFileProperties->setVisible(!isFileItemListEmpty && !isSelectionMode);
 
-    mContextMenuActions.mFileChecksumsMenu->menuAction()->setVisible(!(isFileItemListEmpty || isSelectionMode /*|| listBoxSelections*/ || currentItemDirectory || isDriveListActive));
+    mContextMenuActions.mFileChecksumsMenu->menuAction()->setVisible(!(isFileItemListEmpty || isSelectionMode /*|| !hasSelectedItems*/ || isCurrentItemDirectory || isDriveListViewActive));
     // Edit submenu
-    mContextMenuActions.mEditMenu->menuAction()->setVisible(!isDriveListActive);
-    mContextMenuActions.mEditCut->setVisible(!(isDriveListActive || currentDriveReadOnly || isFileItemListEmpty));
-    mContextMenuActions.mEditCopy->setVisible(!(isDriveListActive || isFileItemListEmpty));
-    mContextMenuActions.mEditPaste->setVisible(!isDriveListActive && !emptyClipBoard && !currentDriveReadOnly);
-    mContextMenuActions.mEditCopyToFolder->setVisible(!(isDriveListActive || isFileItemListEmpty));
-    mContextMenuActions.mEditMoveToFolder->setVisible(!(isDriveListActive || currentDriveReadOnly || isFileItemListEmpty));
-    //DiskAdmin submenu
-    mContextMenuActions.mDiskAdminMenu->menuAction()->setVisible(isDriveListActive);
+    mContextMenuActions.mEditMenu->menuAction()->setVisible(!isDriveListViewActive);
+    mContextMenuActions.mEditCut->setVisible(!(isDriveListViewActive || isCurrentDriveReadOnly || isFileItemListEmpty));
+    mContextMenuActions.mEditCopy->setVisible(!(isDriveListViewActive || isFileItemListEmpty));
+    mContextMenuActions.mEditPaste->setVisible(!isDriveListViewActive && !isClipBoardEmpty && !isCurrentDriveReadOnly);
+    mContextMenuActions.mEditCopyToFolder->setVisible(!(isDriveListViewActive || isFileItemListEmpty));
+    mContextMenuActions.mEditMoveToFolder->setVisible(!(isDriveListViewActive || isCurrentDriveReadOnly || isFileItemListEmpty));
 }
 
 // ---------------------------------------------------------------------------
 
-void FileBrowserView::onLongPressed(HbAbstractViewItem *listViewItem, QPointF coords)
+void FbFileView::onLongPressed(HbAbstractViewItem *listViewItem, QPointF coords)
 {
-    //Q_UNUSED(listViewItem);
+    QModelIndex proxyIndex = listViewItem->modelIndex();
+    //map to source model
+    mCurrentIndex = mSortFilterProxyModel->mapToSource(proxyIndex);
 
-//    QItemSelectionModel *selectionIndexes = mListView->selectionModel();
-
-    // by default use selected items
-//    if (selectionIndexes && selectionIndexes->hasSelection()) {
-//        mSelectionIndexes = mListView->selectionModel()->selectedIndexes();
-//    } else {
-        mCurrentIndex = listViewItem->modelIndex();
-//        mSelectionIndexes.clear();
-//        mSelectionIndexes.append(mModelIndex);
-//    }
     mContextMenu->setPreferredPos(coords);
     mContextMenu->show();
 }
 
-
 /**
   Create a file browser tool bar
   */
-void FileBrowserView::createToolBar()
+void FbFileView::createToolBar()
 {
-    mToolBar = new HbToolBar(this);
+    mToolBar = toolBar();
 
-    mToolbarBackAction = new HbAction(/*"Back"*/);
+    mToolbarBackAction = new HbAction(mToolBar);
     mToolbarBackAction->setToolTip("Back");
     mToolbarBackAction->setIcon(HbIcon(QString(":/qgn_indi_tb_filebrowser_folder_parent.svg")));
     connect(mToolbarBackAction, SIGNAL(triggered()), this, SLOT(fileBackMoveUp()));
     mToolBar->addAction(mToolbarBackAction);
 
+    // Find button and its extension
+    HbToolBarExtension* filterExtension = new HbToolBarExtension();
+    // Set search panel widget
+    mSearchPanel = new HbSearchPanel(filterExtension);
+    mSearchPanel->setMinimumWidth( 360 ); // TODO should be based on layout, screen width
+    connect(mSearchPanel, SIGNAL(criteriaChanged(const QString &)), this, SLOT(filterCriteriaChanged(const QString &)));
+    connect(mSearchPanel, SIGNAL(exitClicked()), filterExtension, SLOT(close()));
+    connect(mSearchPanel, SIGNAL(exitClicked()), this, SLOT(clearFilterCriteria()));
+    filterExtension->setContentWidget(mSearchPanel);
+
+    HbAction* mToolbarFilterAction = mToolBar->addExtension(filterExtension);
+//    mToolbarFilterAction->setText("Filter");
+    mToolbarFilterAction->setToolTip("Filter");
+    mToolbarFilterAction->setIcon(HbIcon(QString(":/qgn_indi_tb_filebrowser_find.svg")));
+    //connect(mToolbarFilterAction, SIGNAL(triggered()), this, SLOT(viewFilterEntries()));
+
     if (mOptionMenuActions.mSelection) {
+        //mOptionMenuActions.mSelection->setIcon(HbIcon(QString(":/qgn_indi_tb_filebrowser_selection_active.svg")));
         mToolBar->addAction(mOptionMenuActions.mSelection);
     }
 
-    setToolBar(mToolBar);
+//    // TODO Paste to be added
+//    if (mOptionMenuActions.mEditPaste) {
+//        //mOptionMenuActions.mEditPaste->setIcon(HbIcon(QString(":/qgn_indi_tb_filebrowser_selection_active.svg")));
+//        mToolBar->addAction(mOptionMenuActions.mEditPaste);
+//    }
 }
 
 /**
   Refresh FileBrowser view
   */
-void FileBrowserView::refreshList()
+void FbFileView::refreshList()
 {
+    editUnselectAll();
     mEngineWrapper->refreshView();
-//    mNaviPane->setPlainText(QString(mEngineWrapper->currentPath()));
+    mSearchPanel->setCriteria(QString(""));
+    mListView->model()->revert();
     mListView->reset();
-    mListView->setModel(mFileBrowserModel);
-    mToolbarBackAction->setEnabled(!mEngineWrapper->isDriveListViewActive());
+
+    if (mListView->model() && mListView->model()->rowCount() > 0) {
+        QModelIndex firstIndex = mListView->model()->index(0, 0);
+        mListView->scrollTo(firstIndex);
+    }
 
     TListingMode listingMode = mEngineWrapper->listingMode();
     if (listingMode == ENormalEntries)
@@ -632,26 +588,9 @@ void FileBrowserView::refreshList()
         mNaviPane->setPlainText(QString(tr("Attachments in Outbox")));
 }
 
-/**
-  Populate changed folder content, i.e. in practice navigation list items
-  */
-void FileBrowserView::populateFolderContent()
-{
-    // update the file browser by setting up the model with current directory as root path
-    if(mListView->model() == 0)  {
-        mFileBrowserModel = new FileBrowserModel(mEngineWrapper);
-        mListView->setModel(mFileBrowserModel);
-    }
-
-    refreshList();
-    //mFileSystemModel->setFilter(mFileSystemModel->filter() | QDir::System | QDir::Hidden);
-    //mFileSystemModel->setRootPath(directory);
-    //mListView->setRootIndex(mFileSystemModel->index(directory));
-}
-
 // ---------------------------------------------------------------------------	
 
-void FileBrowserView::fileOpen(HbAction *action)
+void FbFileView::fileOpen(HbAction *action)
 {
 //    Q_UNUSED(action);
     HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
@@ -674,24 +613,23 @@ void FileBrowserView::fileOpen(HbAction *action)
 /**
   Open overwrite dialog
   */
-void FileBrowserView::fileOverwriteDialog()
+void FbFileView::fileOverwriteDialog()
 {
     mOverwriteOptions = OverwriteOptions();
     // open user-dialog to select: view as text/hex,  open w/AppArc or open w/DocH. embed
     QStringList list;
     list << QString("Overwrite all")
-            << QString("Skip all existing")
-            << QString("Gen. unique filenames")
-            << QString("Query postfix");
+         << QString("Skip all existing")
+         << QString("Gen. unique filenames")
+         << QString("Query postfix");
     openListDialog(list, QString("Overwrite?"), this, SLOT(fileOverwrite(HbAction *)));
 }
 
 /**
   File overwrite
   */
-void FileBrowserView::fileOverwrite(HbAction *action)
+void FbFileView::fileOverwrite(HbAction *action)
 {
-//    Q_UNUSED(action);
     HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
     if(!action && dlg && dlg->selectedItems().count()) {
         mOverwriteOptions.queryIndex = dlg->selectedItems().at(0).toInt();
@@ -709,7 +647,7 @@ void FileBrowserView::fileOverwrite(HbAction *action)
 /**
   File overwrite postfix query dialog
   */
-void FileBrowserView::fileOverwritePostfix(HbAction *action)
+void FbFileView::fileOverwritePostfix(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -726,19 +664,14 @@ void FileBrowserView::fileOverwritePostfix(HbAction *action)
   \param Title text titleText of a dialog heading widget
   \return None
   */
-void FileBrowserView::openListDialog(const QStringList& items, const QString &titleText, QObject* receiver, const char* member)
+void FbFileView::openListDialog(const QStringList& items, const QString &titleText, QObject* receiver, const char* member)
 {
-//    Q_UNUSED(items);
-//    Q_UNUSED(titleText);
-//    Q_UNUSED(receiver);
-//    Q_UNUSED(member);
     // Create a list and some simple content for it
     HbSelectionDialog *dlg = new HbSelectionDialog();
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     // Set items to be popup's content
     dlg->setStringItems(items);
     dlg->setSelectionMode(HbAbstractItemView::SingleSelection);
-    //dlg->setDismissPolicy(HbPopup::TapOutside);
 
     HbLabel *title = new HbLabel(dlg);
     title->setPlainText(titleText);
@@ -750,7 +683,7 @@ void FileBrowserView::openListDialog(const QStringList& items, const QString &ti
 
 // ---------------------------------------------------------------------------
 
-void FileBrowserView::openPropertyDialog(const QStringList& propertyList, const QString& title)
+void FbFileView::openPropertyDialog(const QStringList& propertyList, const QString& title)
 {
     HbDialog *dialog = new HbDialog();
     dialog->setDismissPolicy(HbPopup::TapOutside);
@@ -779,32 +712,32 @@ void FileBrowserView::openPropertyDialog(const QStringList& propertyList, const 
     dialog->open();
 }
 
-void FileBrowserView::storeSelectedItemsOrCurrentItem()
+/**
+  Stores selection or current index mapped to source model
+  */
+void FbFileView::storeSelectedItemsOrCurrentItem()
 {
     QItemSelectionModel *selectionIndexes = mListView->selectionModel();
 
     // by default use selected items
     if (selectionIndexes) {
         if (selectionIndexes->hasSelection()) {
-            mSelectionIndexes = mListView->selectionModel()->selectedIndexes();
+            QItemSelection proxyItemSelection = mListView->selectionModel()->selection();
+            QItemSelection itemSelection = mSortFilterProxyModel->mapSelectionToSource(proxyItemSelection);
+            mSelectionIndexes = itemSelection.indexes();
         } else { // or if none selected, use the current item index
             mSelectionIndexes.clear();
-            mSelectionIndexes.append(mCurrentIndex);
-//            QModelIndex currentIndex = currentItemIndex();
-//            if (mFileBrowserModel->rowCount(currentItemIndex) > currentItemIndex && currentItemIndex >= 0)
-//            {
-//                modelIndexList.append(currentIndex);
-//            }
+            QModelIndex currentIndex = currentItemIndex();  //alreade mapped to source model
+            mSelectionIndexes.append(currentIndex);
         }
     }
-//    mClipBoardInUse = true;
 }
 
 // ---------------------------------------------------------------------------
 
-QModelIndex FileBrowserView::currentItemIndex()
+QModelIndex FbFileView::currentItemIndex()
 {
-    return mCurrentIndex;//mListView->selectionModel()->currentIndex();
+    return mCurrentIndex;
 }
 
 // ---------------------------------------------------------------------------
@@ -814,63 +747,33 @@ QModelIndex FileBrowserView::currentItemIndex()
 /**
   Move back/up in folder browsing history
   */
-void FileBrowserView::fileBackMoveUp()
+void FbFileView::fileBackMoveUp()
 {
     mLocationChanged = true;
-//    if(mDirectory.length() < DRIVEPATHLENGTH) {
-//        // location in the root of any drive -> move back/up to root of device
-//        QModelIndex index = currentItemIndex();
-//        const QString filePath = mFileSystemModel->filePath(index);
-//        qDebug() << "handleBackButton filePath" << filePath;
-//        mDirectory = mInitDirPath.path();
-//        populateFolderContent(mDirectory);
-//    }
-//    else if(mDirectory != mInitDirPath.path()) {
-//        // location in any folder in any drive -> move back/up
-//        QDir dir(mDirectory);
-//        dir.cdUp();
-//        const QString currentPath = dir.absolutePath();
-//        mDirectory = currentPath;
-//        populateFolderContent(currentPath);
-//        mSelectedFilePath = "";
-//    } else {
-//        // location already in the device root, no way up.
-//        // do nothing.
-//    }
     mEngineWrapper->moveUpOneLevel();
-    populateFolderContent();
+    //mListView->setRootIndex(currentItemIndex());
+    refreshList();
+    if (mEngineWrapper->isDriveListViewActive()) {
+        emit aboutToShowDriveView();
+    }
 }
 
-void FileBrowserView::fileOpenDrive()
-{
-    // TODO make a separate function to be called from here and fileOpenDirectory()
-    mLocationChanged = true;
-    // get selected drive or directory from list view model and open it:
-    //if (mListView->selectionModel()->hasSelection()) {
-//    if (mListView->selectionModel()->selection().count() != 0) {
-//        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->moveDownToDirectory(mCurrentIndex);
-        populateFolderContent();
-//    } else {
-//        Notifications::showErrorNote("not selected item!");
-//    }
-}
-
-void FileBrowserView::fileOpenDirectory()
+void FbFileView::fileOpenDirectory()
 {
     mLocationChanged = true;
     // get selected drive or directory from list view model and open it:
     //if (mListView->selectionModel()->hasSelection()) {
 //    if (mListView->selectionModel()->selection().count() != 0) {
 //        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->moveDownToDirectory(mCurrentIndex);
-        populateFolderContent();
+        mEngineWrapper->moveDownToDirectory(currentItemIndex());
+//        mListView->setRootIndex(currentItemIndex());
+        refreshList();
 //    } else {
 //        Notifications::showErrorNote("not selected item!");
 //    }
 }
 
-void FileBrowserView::fileSearch()
+void FbFileView::fileSearch()
 {
     QString searchPath;
 //    if (mEngineWrapper->currentPath() != mInitDirPath.path()) {
@@ -886,7 +789,7 @@ void FileBrowserView::fileSearch()
 /**
   Open new file dialog
   */
-void FileBrowserView::fileNewFile()
+void FbFileView::fileNewFile()
 {
     QString heading = QString("Enter filename");
     HbInputDialog::getText(heading, this, SLOT(doFileNewFile(HbAction*)), QString(), scene());
@@ -895,7 +798,7 @@ void FileBrowserView::fileNewFile()
 /**
   Create a new file in current directory with a name queried from user
   */
-void FileBrowserView::doFileNewFile(HbAction *action)
+void FbFileView::doFileNewFile(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -908,7 +811,7 @@ void FileBrowserView::doFileNewFile(HbAction *action)
 /**
   Open new directory dialog
   */
-void FileBrowserView::fileNewDirectory()
+void FbFileView::fileNewDirectory()
 {
     QString heading = QString("Enter directory name");
     HbInputDialog::getText(heading, this, SLOT(doFileNewDirectory(HbAction*)), QString(), scene());
@@ -917,7 +820,7 @@ void FileBrowserView::fileNewDirectory()
 /**
   Create a new directory in current directory with a name queried from user
   */
-void FileBrowserView::doFileNewDirectory(HbAction *action)
+void FbFileView::doFileNewDirectory(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -930,7 +833,7 @@ void FileBrowserView::doFileNewDirectory(HbAction *action)
 /**
   Question for Delete actually selected files
   */
-void FileBrowserView::fileDelete()
+void FbFileView::fileDelete()
 {
     storeSelectedItemsOrCurrentItem();
     const QString messageFormat = "Delete %1 entries?";
@@ -941,7 +844,7 @@ void FileBrowserView::fileDelete()
 /**
   Delete actually selected files
   */
-void FileBrowserView::doFileDelete(HbAction* action)
+void FbFileView::doFileDelete(HbAction* action)
 {
     if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
         //storeSelectedItemsOrCurrentItem();
@@ -953,7 +856,7 @@ void FileBrowserView::doFileDelete(HbAction* action)
 /**
   Open rename dialog for actually selected files
   */
-void FileBrowserView::fileRename()
+void FbFileView::fileRename()
 {
     storeSelectedItemsOrCurrentItem();
     mEngineWrapper->setCurrentSelection(mSelectionIndexes);
@@ -971,7 +874,7 @@ void FileBrowserView::fileRename()
 /**
   Rename actually selected files
   */
-void FileBrowserView::doFileRename(HbAction *action)
+void FbFileView::doFileRename(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -994,7 +897,7 @@ void FileBrowserView::doFileRename(HbAction *action)
 /**
   Rename actually selected files
   */
-void FileBrowserView::doFileRenameFileExist(HbAction *action)
+void FbFileView::doFileRenameFileExist(HbAction *action)
 {
     if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
         mEngineWrapper->rename(mModelIndex, mNewFileName);
@@ -1008,7 +911,7 @@ void FileBrowserView::doFileRenameFileExist(HbAction *action)
 /**
   Touch actually selected files
   */
-void FileBrowserView::fileTouch()
+void FbFileView::fileTouch()
 {
     storeSelectedItemsOrCurrentItem();
     mEngineWrapper->setCurrentSelection(mSelectionIndexes);
@@ -1026,7 +929,7 @@ void FileBrowserView::fileTouch()
 /**
   Touch actually selected files
   */
-void FileBrowserView::doFileTouch(HbAction* action)
+void FbFileView::doFileTouch(HbAction* action)
 {
     bool recurse = false;
     if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
@@ -1036,31 +939,30 @@ void FileBrowserView::doFileTouch(HbAction* action)
     refreshList();
 }
 
-void FileBrowserView::fileChecksumsMD5()
+void FbFileView::fileChecksumsMD5()
 {
     fileChecksums(EFileChecksumsMD5);
 }
 
-void FileBrowserView::fileChecksumsMD2()
+void FbFileView::fileChecksumsMD2()
 {
     fileChecksums(EFileChecksumsMD2);
 }
 
-void FileBrowserView::fileChecksumsSHA1()
+void FbFileView::fileChecksumsSHA1()
 {
     fileChecksums(EFileChecksumsSHA1);
 }
 
-void FileBrowserView::fileChecksums(TFileBrowserCmdFileChecksums checksumType)
+void FbFileView::fileChecksums(TFileBrowserCmdFileChecksums checksumType)
 {
-//    QModelIndex currentIndex = currentItemIndex();
-    mEngineWrapper->showFileCheckSums(mCurrentIndex, checksumType);
+    mEngineWrapper->showFileCheckSums(currentItemIndex(), checksumType);
 }
 
 /**
   Show file properties
   */
-void FileBrowserView::fileProperties()
+void FbFileView::fileProperties()
 {
     QModelIndex currentIndex = currentItemIndex();
     QStringList propertyList;
@@ -1069,13 +971,13 @@ void FileBrowserView::fileProperties()
     openPropertyDialog(propertyList, titleText);
 }
 
-void FileBrowserView::fileSetAttributes()
+void FbFileView::fileSetAttributes()
 {
 
 }
 
 // edit menu
-void FileBrowserView::editSnapShotToE()
+void FbFileView::editSnapShotToE()
 {
 
 }
@@ -1084,10 +986,15 @@ void FileBrowserView::editSnapShotToE()
   Set selected files into clipboard.
   Selected item will be removed after paste operation.
   */
-void FileBrowserView::editCut()
+void FbFileView::editCut()
 {
     storeSelectedItemsOrCurrentItem();
-    mClipboardIndexes = mSelectionIndexes;
+
+    // Store indices to clipboard
+    mClipboardIndexes.clear();
+    for (int i = 0; i < mSelectionIndexes.size(); ++i) {
+        mClipboardIndexes.append(mSelectionIndexes.at(i));
+    }
 
     mEngineWrapper->clipboardCut(mClipboardIndexes);
 
@@ -1102,10 +1009,15 @@ void FileBrowserView::editCut()
   Set selected files into clipboard.
   Selected item will not be removed after paste operation.
   */
-void FileBrowserView::editCopy()
+void FbFileView::editCopy()
 {
     storeSelectedItemsOrCurrentItem();
-    mClipboardIndexes = mSelectionIndexes;
+
+    // Store indices to clipboard
+    mClipboardIndexes.clear();
+    for (int i = 0; i < mSelectionIndexes.size(); ++i) {
+        mClipboardIndexes.append(mSelectionIndexes.at(i));
+    }
 
     mEngineWrapper->clipboardCopy(mClipboardIndexes);
 
@@ -1121,7 +1033,7 @@ void FileBrowserView::editCopy()
   Moves or copies file selection stored in clipboard to a actual directory.
   Removing files depend on previous operation, i.e. Cut or Copy
   */
-void FileBrowserView::editPaste()
+void FbFileView::editPaste()
 {
     bool someEntryExists(false);
 
@@ -1131,13 +1043,14 @@ void FileBrowserView::editPaste()
     if (someEntryExists) {
         fileOverwriteDialog();
     }
+    
     mEngineWrapper->clipboardPaste(mOverwriteOptions);
 }
 
 /**
   Open copy to folder new filename dialog
   */
-void FileBrowserView::editCopyToFolder()
+void FbFileView::editCopyToFolder()
 {
     QString heading = QString("Enter new name");
     HbInputDialog::getText(heading, this, SLOT(doEditCopyToFolder(HbAction*)), mEngineWrapper->currentPath(), scene());
@@ -1146,7 +1059,7 @@ void FileBrowserView::editCopyToFolder()
 /**
   Copies current file selection to a queried directory.
   */
-void FileBrowserView::doEditCopyToFolder(HbAction *action)
+void FbFileView::doEditCopyToFolder(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -1169,16 +1082,16 @@ void FileBrowserView::doEditCopyToFolder(HbAction *action)
 /**
   Open move to folder new filename dialog.
   */
-void FileBrowserView::editMoveToFolder()
+void FbFileView::editMoveToFolder()
 {
     QString heading = QString("Enter new name");
-    HbInputDialog::getText(heading, this, SLOT(doEditCopyToFolder(HbAction*)), mEngineWrapper->currentPath(), scene());
+    HbInputDialog::getText(heading, this, SLOT(doEditMoveToFolder(HbAction*)), mEngineWrapper->currentPath(), scene());
 }
 
 /**
   Moves current file selection to a queried directory.
   */
-void FileBrowserView::doEditMoveToFolder(HbAction *action)
+void FbFileView::doEditMoveToFolder(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -1201,13 +1114,13 @@ void FileBrowserView::doEditMoveToFolder(HbAction *action)
 /**
   Select current file
   */
-void FileBrowserView::editSelect()
+void FbFileView::editSelect()
 {
     QItemSelectionModel *selectionModel = mListView->selectionModel();
     if (selectionModel) {
         selectionModel->select(selectionModel->currentIndex(), QItemSelectionModel::SelectCurrent);
         selectionModel->select(selectionModel->currentIndex(), QItemSelectionModel::Select);
-        itemHighlighted(selectionModel->currentIndex());
+//        itemHighlighted(selectionModel->currentIndex());
         refreshList();
     }
 }
@@ -1215,30 +1128,30 @@ void FileBrowserView::editSelect()
 /**
   Unselect current file
   */
-void FileBrowserView::editUnselect()
+void FbFileView::editUnselect()
 {
     QItemSelectionModel *selectionModel = mListView->selectionModel();
     if (selectionModel) {
         selectionModel->select(selectionModel->currentIndex(), QItemSelectionModel::Deselect);
-        itemHighlighted(selectionModel->currentIndex());
+//        itemHighlighted(selectionModel->currentIndex());
     }
 }
 
 /**
   Select all files
   */
-void FileBrowserView::editSelectAll()
+void FbFileView::editSelectAll()
 {
     QItemSelectionModel *selectionModel = mListView->selectionModel();
     if (selectionModel) {
 
-        if (mFileBrowserModel->rowCount() > 0) {
-            QModelIndex firstIndex = mFileBrowserModel->index(0, 0);
-            QModelIndex lastIndex = mFileBrowserModel->index( (mFileBrowserModel->rowCount() - 1), 0);
+        //if (mFileBrowserModel->rowCount() > 0) {
+        if (mListView->model() && mListView->model()->rowCount() > 0) {
+            QModelIndex firstIndex = mListView->model()->index(0, 0);
+            QModelIndex lastIndex = mListView->model()->index( (mListView->model()->rowCount() - 1), 0);
 
             QItemSelection itemSelection(firstIndex, lastIndex);
-            //selectionModel->select(itemSelection, QItemSelectionModel::SelectCurrent);
-            selectionModel->select(itemSelection, QItemSelectionModel::Select);
+            selectionModel->select(itemSelection, QItemSelectionModel::SelectCurrent);
         }
     }
 }
@@ -1246,7 +1159,7 @@ void FileBrowserView::editSelectAll()
 /**
   Unselect all files
   */
-void FileBrowserView::editUnselectAll()
+void FbFileView::editUnselectAll()
 {
     QItemSelectionModel *selectionModel = mListView->selectionModel();
     if (selectionModel) {
@@ -1257,436 +1170,45 @@ void FileBrowserView::editUnselectAll()
 // ---------------------------------------------------------------------------
 // view menu
 // ---------------------------------------------------------------------------
-void FileBrowserView::viewFilterEntries()
+void FbFileView::viewFilterEntries()
 {
-
+    if (mToolBar && mToolBar->actions().count() > 1 && mToolBar->actions().at(1)) {
+        HbAction* tbeFilterAction = qobject_cast<HbAction*>(mToolBar->actions().at(1));
+        if (tbeFilterAction && tbeFilterAction->toolBarExtension()) {
+            HbToolBarExtension *tbeFilter = tbeFilterAction->toolBarExtension();
+            tbeFilter->open();
+        }
+    }
 }
-void FileBrowserView::viewRefresh()
+
+/**
+  Set filter criteria to proxy model
+  */
+void FbFileView::filterCriteriaChanged(const QString &criteria)
+{
+    mSortFilterProxyModel->setFilterCriteria(criteria);
+}
+
+/**
+  Set filter criteria to proxy model
+  */
+void FbFileView::clearFilterCriteria()
+{
+    mSearchPanel->setCriteria(QString(""));
+}
+
+/**
+  Refresh view
+  */
+void FbFileView::viewRefresh()
 {
     refreshList();
-}
-
-// ---------------------------------------------------------------------------
-// disk admin menu
-// ---------------------------------------------------------------------------
-
-/**
-  Open old password for the selected drive dialog.
-  */
-void FileBrowserView::diskAdminSetDrivePassword()
-{
-    QModelIndex currentIndex = currentItemIndex();
-    // check if the drive has a password
-    if (mEngineWrapper->hasDrivePassword(currentIndex)) {
-        QString heading = QString("Existing password");
-        HbInputDialog::getText(heading, this, SLOT(diskAdminSetDrivePasswordNew(HbAction*)), QString(), scene());
-    }
-}
-
-/**
-   Open new password for the selected drive dialog.
-  */
-void FileBrowserView::diskAdminSetDrivePasswordNew(HbAction *action)
-{
-    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
-    if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
-        mOldPassword = dlg->value().toString();
-    }
-
-    QString heading = QString("New password");
-    HbInputDialog::getText(heading, this, SLOT(doDiskAdminSetDrivePassword(HbAction*)), mOldPassword, scene());
-}
-
-/**
-   Set password for the selected drive.
-  */
-void FileBrowserView::doDiskAdminSetDrivePassword(HbAction *action)
-{
-    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
-    if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
-        QString newPassword = dlg->value().toString();
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminSetDrivePassword(currentIndex, mOldPassword, newPassword);
-        refreshList();
-    }
-}
-
-/**
-  Open Unlock the selected drive dialog.
-  */
-void FileBrowserView::diskAdminUnlockDrive()
-{
-    QModelIndex currentIndex = currentItemIndex();
-    // check if the drive is locked
-    if (mEngineWrapper->isDriveLocked(currentIndex)) {
-        QString heading = QString("Existing password");
-        HbInputDialog::getText(heading, this, SLOT(doDiskAdminUnlockDrive(HbAction*)), QString(), scene());
-    } else {
-        Notifications::showInformationNote(QString("This drive is not locked"));
-    }
-}
-
-/**
-  Unlock the selected drive.
-  */
-void FileBrowserView::doDiskAdminUnlockDrive(HbAction *action)
-{
-    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
-    if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
-        QString oldPassword = dlg->value().toString();
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminUnlockDrive(currentIndex, oldPassword);
-        refreshList();
-    }
-}
-
-/**
-  Open clear password of the selected drive dialog.
-  */
-void FileBrowserView::diskAdminClearDrivePassword()
-{
-    QModelIndex currentIndex = currentItemIndex();
-    // check if the drive has a password
-    if (mEngineWrapper->hasDrivePassword(currentIndex)) {
-        QString heading = QString("Existing password");
-        HbInputDialog::getText(heading, this, SLOT(doDiskAdminClearDrivePassword(HbAction*)), QString(), scene());
-    } else {
-        Notifications::showInformationNote(QString("This drive has no password"));
-    }
-}
-
-/**
-  Clear password of the selected drive.
-  */
-void FileBrowserView::doDiskAdminClearDrivePassword(HbAction *action)
-{
-    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
-    if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
-        QString oldPassword = dlg->value().toString();
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminClearDrivePassword(currentIndex, oldPassword);
-        refreshList();
-    }
-}
-
-
-/**
-  Question for erase password of the selected drive
-  */
-void FileBrowserView::diskAdminEraseDrivePassword()
-{
-    // check if the drive has a password
-    QModelIndex currentIndex = currentItemIndex();
-    if (mEngineWrapper->hasDrivePassword(currentIndex)) {
-        HbMessageBox::question(QString("Are you sure? All data can be lost!"), this, SLOT(doDiskAdminEraseDrivePassword(HbAction*)));
-    } else {
-        Notifications::showInformationNote(QString("This drive has no password"));
-    }
-}
-
-/**
-  Erase password of the selected drive
-  */
-void FileBrowserView::doDiskAdminEraseDrivePassword(HbAction* action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminEraseDrivePassword(currentIndex);
-        refreshList();
-    }
-}
-
-/**
-  Performs format on the selected drive
-  */
-void FileBrowserView::diskAdminFormatDrive()
-{
-    HbMessageBox::question(QString("Are you sure? All data will be lost!"), this, SLOT(doDiskAdminFormatDrive(HbAction*)));
-}
-
-/**
-  Performs format on the selected drive
-  */
-void FileBrowserView::doDiskAdminFormatDrive(HbAction* action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminFormatDrive(currentIndex, false);
-    }
-}
-
-/**
-  Performs quick format on the selected drive
-  */
-void FileBrowserView::diskAdminQuickFormatDrive()
-{
-    HbMessageBox::question(QString("Are you sure? All data will be lost!"), this, SLOT(doDiskAdminQuickFormatDrive(HbAction*)));
-}
-
-/**
-  Performs quick format on the selected drive
-  */
-void FileBrowserView::doDiskAdminQuickFormatDrive(HbAction* action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminFormatDrive(currentIndex, true);
-    }
-}
-
-/**
-    Checks the disk integrity on the selected drive
-  */
-void FileBrowserView::diskAdminCheckDisk()
-{
-    QModelIndex currentIndex = currentItemIndex();
-    mEngineWrapper->DiskAdminCheckDisk(currentIndex);
-}
-
-/**
-  Checks the selected drive for errors and corrects them
-  */
-void FileBrowserView::diskAdminScanDrive()
-{
-    HbMessageBox::question(QString("This finds errors on disk and corrects them. Proceed?"), this, SLOT(doDiskAdminScanDrive(HbAction*)));
-}
-
-/**
-  Checks the selected drive for errors and corrects them
-  */
-void FileBrowserView::doDiskAdminScanDrive(HbAction* action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminScanDrive(currentIndex);
-        refreshList();
-    }
-}
-
-/**
-  Open drive name dialog
-  */
-void FileBrowserView::diskAdminSetDriveName()
-{
-    QString driveName;
-
-    // get existing drive name
-    QModelIndex currentIndex = currentItemIndex();
-    mEngineWrapper->GetDriveName(currentIndex, driveName);
-
-    QString heading = QString("New name");
-    HbInputDialog::getText(heading, this, SLOT(doDiskAdminSetDriveName(HbAction*)), driveName, scene());
-}
-
-/**
-  Set drive name.
-  */
-void FileBrowserView::doDiskAdminSetDriveName(HbAction *action)
-{
-    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
-    if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
-        QString driveName = dlg->value().toString();
-
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminSetDriveName(currentIndex, driveName);
-
-        refreshList();
-    }
-}
-
-/**
-  Open drive volume label dialog
-  */
-void FileBrowserView::diskAdminSetDriveVolumeLabel()
-{
-    QString volumeLabel;
-
-    // get existing drive name
-    QModelIndex currentIndex = currentItemIndex();
-    mEngineWrapper->GetDriveVolumeLabel(currentIndex, volumeLabel);
-
-    QString heading = QString("New volume label");
-    HbInputDialog::getText(heading, this, SLOT(doDiskAdminSetDriveVolumeLabel(HbAction*)), volumeLabel, scene());
-}
-
-/**
-  Set drive volume label.
-  */
-void FileBrowserView::doDiskAdminSetDriveVolumeLabel(HbAction *action)
-{
-    HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
-    if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
-        QString volumeLabel = dlg->value().toString();
-
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminSetDriveVolumeLabel(currentIndex, volumeLabel);
-
-        refreshList();
-    }
-}
-
-/**
-  Eject the selected drive
-  */
-void FileBrowserView::diskAdminEjectDrive()
-{
-    QModelIndex currentIndex = currentItemIndex();
-    mEngineWrapper->DiskAdminEjectDrive(currentIndex);
-    refreshList();
-}
-
-/**
-  Dismount the selected drive
-  */
-void FileBrowserView::diskAdminDismountDrive()
-{
-    HbMessageBox::question(QString("Are you sure you know what are you doing?"), this, SLOT(doDiskAdminDismountDrive(HbAction*)));
-}
-
-void FileBrowserView::doDiskAdminDismountDrive(HbAction* action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminDismountDrive(currentIndex);
-        refreshList();
-    }
-}
-
-/**
-  Erase Master Boot Record of the selected drive
-  */
-void FileBrowserView::diskAdminEraseMBR()
-{
-    // TODO What to do with FB LITE macros?
-    HbMessageBox::question(QString("Are you sure? Your media driver must support this!"), this, SLOT(doDiskAdminEraseMBR(HbAction*)));
-}
-
-void FileBrowserView::doDiskAdminEraseMBR(HbAction* action)
-{
-    // TODO What to do with FB LITE macros?
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        HbMessageBox::question(QString("Are you really sure you know what are you doing ?!?"), this, SLOT(doDiskAdminReallyEraseMBR(HbAction*)));
-    }
-}
-
-void FileBrowserView::doDiskAdminReallyEraseMBR(HbAction* action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        // warn if the selected drive is not detected as removable
-        if (mEngineWrapper->isDriveRemovable(currentIndex)) {
-            mEngineWrapper->DiskAdminEraseMBR(currentIndex);
-            refreshList();
-        } else {
-            HbMessageBox::question(QString("Selected drive is not removable, really continue?"), this, SLOT(doDiskAdminNotRemovableReallyEraseMBR(HbAction*)));
-        }
-    }
-}
-
-void FileBrowserView::doDiskAdminNotRemovableReallyEraseMBR(HbAction* action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEngineWrapper->DiskAdminEraseMBR(currentIndex);
-        refreshList();
-    }
-
-}
-
-/**
-  Partition the selected drive
-  */
-void FileBrowserView::diskAdminPartitionDrive()
-{
-    const QString message("Are you sure? Your media driver must support this!");
-    HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveProceed(HbAction *)));
-}
-
-/**
-  Partition the selected drive if user is sure
-  */
-void FileBrowserView::diskAdminPartitionDriveProceed(HbAction *action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        const QString message("Are you really sure you know what are you doing ?!?");
-        HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveReallyProceed(HbAction *)));
-    }
-}
-
-/**
-  Partition the selected drive if user is really sure
-  */
-void FileBrowserView::diskAdminPartitionDriveReallyProceed(HbAction *action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        QModelIndex currentIndex = currentItemIndex();
-        mEraseMBR = false;
-        // warn if the selected drive is not detected as removable
-        mProceed = false;
-        if (mEngineWrapper->isDriveRemovable(currentIndex)) {
-            mProceed = true;
-        } else {
-            const QString message("Selected drive is not removable, really continue?");
-            HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveIsNotRemovable(HbAction *)));
-        }
-
-        if (mProceed) {
-            // query if erase mbr
-            mEraseMBR = false;
-
-            QString message("Erase MBR first (normally needed)?");
-            HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveEraseMbr(HbAction *)));
-
-            // TODO use HbListDialog
-            QStringList list;
-            list << "1" << "2" << "3" << "4";
-            openListDialog(list, QString("Partitions?"), this, SLOT(diskAdminPartitionDriveGetCount(HbAction*)));
-        }
-    }
-}
-
-/**
-  Store result of user query about proceeding when drive is not removable.
-  */
-void FileBrowserView::diskAdminPartitionDriveIsNotRemovable(HbAction *action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        mProceed = true;
-    } else {
-        mProceed = false;
-    }
-}
-
-/**
-  Store result of user query about erase MBR
-  */
-void FileBrowserView::diskAdminPartitionDriveEraseMbr(HbAction *action)
-{
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        mEraseMBR = true;
-    }
-}
-
-/**
-  Partition the selected drive
-  */
-void FileBrowserView::diskAdminPartitionDriveGetCount(HbAction* action)
-{
-//    Q_UNUSED(action);
-    HbSelectionDialog *dlg = static_cast<HbSelectionDialog*>(sender());
-    if(!action && dlg && dlg->selectedItems().count()){
-        int selectionIndex = dlg->selectedItems().at(0).toInt();
-        QModelIndex currentIndex = currentItemIndex();
-        int amountOfPartitions = selectionIndex + 1;
-        mEngineWrapper->DiskAdminPartitionDrive(currentIndex, mEraseMBR, amountOfPartitions);
-        refreshList();
-    }
 }
 
 // ---------------------------------------------------------------------------
 // tools menu
 // ---------------------------------------------------------------------------
-void FileBrowserView::toolsAllAppsToTextFile()
+void FbFileView::toolsAllAppsToTextFile()
 {
 
 }
@@ -1694,33 +1216,33 @@ void FileBrowserView::toolsAllAppsToTextFile()
 /**
   Write all files to text file
   */
-void FileBrowserView::toolsAllFilesToTextFile()
+void FbFileView::toolsAllFilesToTextFile()
 {
     mEngineWrapper->toolsWriteAllFiles();
 }
 
-void FileBrowserView::toolsAvkonIconCacheEnable()
-{
-
-}
-void FileBrowserView::toolsAvkonIconCacheDisable()
-{
-
-}
+//void FbFileView::toolsAvkonIconCacheEnable()
+//{
+//
+//}
+//void FbFileView::toolsAvkonIconCacheDisable()
+//{
+//
+//}
 
 /**
   Disable extended errors
   */
-void FileBrowserView::toolsDisableExtendedErrors()
+void FbFileView::toolsDisableExtendedErrors()
 {
     mEngineWrapper->ToolsSetErrRd(false);
 }
 
-void FileBrowserView::toolsDumpMsgStoreWalk()
+void FbFileView::toolsDumpMsgStoreWalk()
 {
 
 }
-void FileBrowserView::toolsEditDataTypes()
+void FbFileView::toolsEditDataTypes()
 {
 
 }
@@ -1728,7 +1250,7 @@ void FileBrowserView::toolsEditDataTypes()
 /**
   Enable extended errors
   */
-void FileBrowserView::toolsEnableExtendedErrors()
+void FbFileView::toolsEnableExtendedErrors()
 {
     mEngineWrapper->ToolsSetErrRd(true);
 }
@@ -1736,7 +1258,7 @@ void FileBrowserView::toolsEnableExtendedErrors()
 /**
   Open simulate leave dialog
   */
-void FileBrowserView::toolsErrorSimulateLeave()
+void FbFileView::toolsErrorSimulateLeave()
 {
     int leaveCode = -6;
     QString heading = QString("Leave code");
@@ -1748,7 +1270,7 @@ void FileBrowserView::toolsErrorSimulateLeave()
 /**
   Simulate leave.
   */
-void FileBrowserView::doToolsErrorSimulateLeave(HbAction *action)
+void FbFileView::doToolsErrorSimulateLeave(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -1763,7 +1285,7 @@ void FileBrowserView::doToolsErrorSimulateLeave(HbAction *action)
 /**
   Open simulate panic dialog.
   */
-void FileBrowserView::toolsErrorSimulatePanic()
+void FbFileView::toolsErrorSimulatePanic()
 {
     mPanicCategory = QString ("Test Category");
     QString heading = QString("Panic category");
@@ -1773,7 +1295,7 @@ void FileBrowserView::toolsErrorSimulatePanic()
 /**
   Simulate panic.
   */
-void FileBrowserView::doToolsErrorSimulatePanicCode(HbAction *action)
+void FbFileView::doToolsErrorSimulatePanicCode(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -1787,7 +1309,7 @@ void FileBrowserView::doToolsErrorSimulatePanicCode(HbAction *action)
 /**
   Simulate panic.
   */
-void FileBrowserView::doToolsErrorSimulatePanic(HbAction *action)
+void FbFileView::doToolsErrorSimulatePanic(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -1802,7 +1324,7 @@ void FileBrowserView::doToolsErrorSimulatePanic(HbAction *action)
 /**
   Open simulate exception dialog.
   */
-void FileBrowserView::toolsErrorSimulateException()
+void FbFileView::toolsErrorSimulateException()
 {
     int exceptionCode = 0;
     QString heading = QString("Exception code");
@@ -1812,7 +1334,7 @@ void FileBrowserView::toolsErrorSimulateException()
 /**
   Simulate exception.
   */
-void FileBrowserView::doToolsErrorSimulateException(HbAction *action)
+void FbFileView::doToolsErrorSimulateException(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -1824,47 +1346,47 @@ void FileBrowserView::doToolsErrorSimulateException(HbAction *action)
     }
 }
 
-//    void FileBrowserView::toolsLocalConnectivityActivateInfrared()
+//    void FbFileView::toolsLocalConnectivityActivateInfrared()
 //{
 //
 //}
-//    void FileBrowserView::toolsLocalConnectivityLaunchBTUI()
+//    void FbFileView::toolsLocalConnectivityLaunchBTUI()
 //{
 //
 //}
-//    void FileBrowserView::toolsLocalConnectivityLaunchUSBUI()
+//    void FbFileView::toolsLocalConnectivityLaunchUSBUI()
 //{
 //
 //}
-void FileBrowserView::toolsMessageInbox()
+void FbFileView::toolsMessageInbox()
 {
 
 }
-void FileBrowserView::toolsMessageDrafts()
+void FbFileView::toolsMessageDrafts()
 {
 
 }
-void FileBrowserView::toolsMessageSentItems()
+void FbFileView::toolsMessageSentItems()
 {
 
 }
-void FileBrowserView::toolsMessageOutbox()
+void FbFileView::toolsMessageOutbox()
 {
 
 }
-void FileBrowserView::toolsMemoryInfo()
+void FbFileView::toolsMemoryInfo()
 {
 
 }
-void FileBrowserView::toolsSecureBackStart()
+void FbFileView::toolsSecureBackStart()
 {
 
 }
-void FileBrowserView::toolsSecureBackRestore()
+void FbFileView::toolsSecureBackRestore()
 {
 
 }
-void FileBrowserView::toolsSecureBackStop()
+void FbFileView::toolsSecureBackStop()
 {
 
 }
@@ -1872,7 +1394,7 @@ void FileBrowserView::toolsSecureBackStop()
 /**
   Open debug mask dialog
   */
-void FileBrowserView::toolsSetDebugMaskQuestion()
+void FbFileView::toolsSetDebugMaskQuestion()
 {
     quint32 dbgMask = mEngineWrapper->getDebugMask();
     QString dbgMaskText = QString("0x").append(QString::number(dbgMask, 16));
@@ -1883,7 +1405,7 @@ void FileBrowserView::toolsSetDebugMaskQuestion()
 /**
   Set debug mask
   */
-void FileBrowserView::toolsSetDebugMask(HbAction *action)
+void FbFileView::toolsSetDebugMask(HbAction *action)
 {
     HbInputDialog *dlg = static_cast<HbInputDialog*>(sender());
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
@@ -1903,7 +1425,7 @@ void FileBrowserView::toolsSetDebugMask(HbAction *action)
     }
 }
 
-void FileBrowserView::toolsShowOpenFilesHere()
+void FbFileView::toolsShowOpenFilesHere()
 {
 
 }
@@ -1911,7 +1433,7 @@ void FileBrowserView::toolsShowOpenFilesHere()
 // ---------------------------------------------------------------------------
 // main menu items
 // ---------------------------------------------------------------------------
-void FileBrowserView::selectionModeChanged()
+void FbFileView::selectionModeChanged()
 {
     if (mOptionMenuActions.mSelection->isChecked()) {
          activateSelectionMode();
@@ -1923,7 +1445,7 @@ void FileBrowserView::selectionModeChanged()
 /**
   Show about note
   */
-void FileBrowserView::about()
+void FbFileView::about()
 {
     Notifications::showAboutNote();
 }
@@ -1937,42 +1459,31 @@ void FileBrowserView::about()
 /**
   Item is selected from list when selection mode is activated from menu
   */
-void FileBrowserView::selectionChanged(const QItemSelection &/*selected*/, const QItemSelection &/*deselected*/)
+void FbFileView::selectionChanged(const QItemSelection &/*selected*/, const QItemSelection &/*deselected*/)
 {
     //QItemSelectionModel *selectionModel = mListView->selectionModel();
     //itemHighlighted(selectionModel->currentIndex());
 }
 
 /**
-  An item is highlighted = single-clicked from file/folder list.
-  */
-void FileBrowserView::itemHighlighted(const QModelIndex& index)
-{
-    Q_UNUSED(index)
-//    mItemHighlighted = true;
-//    mFileInfo = mFileSystemModel->fileInfo(index);
-}
-
-
-/**
   An item is clicked from navigation item list. Navigation item list contains
   drive-, folder- or file items. Opens selected drive, folder or file popup menu
   */
-void FileBrowserView::activated(const QModelIndex& index)
+void FbFileView::activated(const QModelIndex& index)
 {
-    if (mFileBrowserModel) {
-        if (mEngineWrapper->isDriveListViewActive()) {
-            mEngineWrapper->moveDownToDirectory(index);
-            populateFolderContent();
-        } else if (mEngineWrapper->getFileEntry(index).isDir()) {
+    if (mFbFileModel) {
+        //map to source model
+        QModelIndex activatedIndex = mSortFilterProxyModel->mapToSource(index);
+
+        if (mEngineWrapper->getFileEntry(activatedIndex).isDir()) {
             // populate new content of changed navigation view.
             // mLocationChanged = true;
             // mDirectory = filePath;
-            mEngineWrapper->moveDownToDirectory(index);
-            populateFolderContent();
+            mEngineWrapper->moveDownToDirectory(activatedIndex);
+            refreshList();
         } else {  // file item
             // mSelectedFilePath = filePath;
-            FileEntry fileEntry = mEngineWrapper->getFileEntry(index);
+            FileEntry fileEntry = mEngineWrapper->getFileEntry(activatedIndex);
             mAbsoluteFilePath = fileEntry.path() + fileEntry.name();
 
             // open user-dialog to select: view as text/hex,  open w/AppArc or open w/DocH. embed
@@ -1985,22 +1496,12 @@ void FileBrowserView::activated(const QModelIndex& index)
 
 // ---------------------------------------------------------------------------
 
-void FileBrowserView::activateSelectionMode()
+void FbFileView::activateSelectionMode()
 {
     QString path;
     disconnect(mListView, SIGNAL(activated(QModelIndex)), this, SLOT(activated(QModelIndex)));
     mListView->setSelectionMode(HbListView::MultiSelection);
 
-//    if (mDirectory != mInitDirPath.path()) {
-//        QDir dir(mDirectory);
-//        path = mDirectory;
-//        QStringList dirs = dir.entryList(QDir::AllDirs | QDir::System | QDir::Hidden);
-//        if (dirs.count() > 0) {
-//            path.append("\\" + dirs.at(0) + "\\");
-//        }
-//    } else {
-//        path = ("C:\\");
-//    }
 //    QModelIndex index = mFileSystemModel->index(path,0);
 //    mListView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
 //    mListView->selectionModel()->select(index, QItemSelectionModel::Select);
@@ -2018,7 +1519,7 @@ void FileBrowserView::activateSelectionMode()
 
 // ---------------------------------------------------------------------------
 
-void FileBrowserView::deActivateSelectionMode()
+void FbFileView::deActivateSelectionMode()
 {
     disconnect(mListView->selectionModel(),
                SIGNAL(selectionChanged(QItemSelection, QItemSelection)),

@@ -23,13 +23,13 @@
 #include "creator_calendarelement.h"
 #include "creator_messageelement.h"
 #include "creator_fileelement.h"
-#include "creator_browserelement.h"
+//#include "creator_browserelement.h"
 #include "creator_logelement.h"
 //#include "creator_noteelement.h"
 //#include "creator_impselement.h"
 #include "creator_landmarkelement.h"
 #include "creator_mailboxelement.h"
-#include "creator_connectionmethodelement.h"
+//#include "creator_connectionmethodelement.h"
 
 CCreatorScriptElement* TCreatorScriptElementFactory::CreateElementL(CCreatorEngine* aEngine, const TDesC& aElementName, const TDesC& aContext )
     {   
@@ -73,6 +73,7 @@ CCreatorScriptElement* TCreatorScriptElementFactory::CreateElementL(CCreatorEngi
         {
         return CCreatorFileElement::NewL(aEngine, aElementName, aContext);
         }
+    /*
     else if( aElementName == creatorbrowser::KBookmark ||
             aElementName == creatorbrowser::KBookmarkFolder ||
             aElementName == creatorbrowser::KSavedPage ||
@@ -80,6 +81,7 @@ CCreatorScriptElement* TCreatorScriptElementFactory::CreateElementL(CCreatorEngi
         {
         return CCreatorBrowserElement::NewL(aEngine, aElementName, aContext);
         }
+    */
     else if( aElementName == creatorlog::KLog )
         {
         return CCreatorLogElement::NewL(aEngine, aElementName, aContext);
@@ -106,10 +108,12 @@ CCreatorScriptElement* TCreatorScriptElementFactory::CreateElementL(CCreatorEngi
         {
         return CCreatorMailboxElement::NewL(aEngine, aElementName, aContext);
         }
+/*    
     else if( aElementName == creatorconnectionmethod::KCm )
     	{
     	return CCreatorConnectionMethodElement::NewL(aEngine, aElementName, aContext);
     	}
+*/    	
     else
         {
         return CCreatorScriptElement::NewL(aEngine, aElementName, aContext);

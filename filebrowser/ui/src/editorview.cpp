@@ -16,7 +16,6 @@
 */
 
 #include <HbView>
-#include <HbMainWindow>
 #include <HbApplication>
 #include <HbAction>
 #include <HbMenu>
@@ -32,8 +31,7 @@
 
 #include "editorview.h"
 
-EditorView::EditorView(HbMainWindow &mainWindow)
-    : mMainWindow(mainWindow),
+EditorView::EditorView() :
     mTextEdit(0),
     mFileHex(false),
     mFlagReadOnly(),

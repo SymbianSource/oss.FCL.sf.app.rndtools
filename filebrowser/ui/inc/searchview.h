@@ -19,11 +19,9 @@
 #define SEARCHVIEW_H
 
 #include <HbView>
-#include <HbMainWindow>
 
 #include <QDateTime>
 
-class QDir;
 class QStringList;
 
 class EngineWrapper;

@@ -24,7 +24,6 @@
 
 #include <textresolver.h> 
 #include <eikprogi.h>
-#include <f32file.h>
 #include <e32svr.h>
 #include <eikfutil.h>
 #include <apparc.h>
@@ -33,9 +32,8 @@
 #include <eikenv.h>
 #include <bautils.h>
 #include <gulicon.h>
-#include <aknconsts.h>
 #include <babackup.h> 
-#include <aknmemorycardui.mbg>
+//#include <aknmemorycardui.mbg>
 #include <sendui.h>
 #include <CMessageData.h>
 #include <ezgzip.h>
@@ -121,7 +119,7 @@ void CFileBrowserFileUtils::ConstructL()
     iCurrentSelectionList = new(ELeave) CFileEntryList(64);
 
     iDocHandler = CDocumentHandler::NewL();
-    iDocHandler->SetExitObserver(this);
+//    iDocHandler->SetExitObserver(this);
     
     // set defaults to the search settings
     iSearchAttributes.iSearchDir = KNullDesC;
@@ -635,22 +633,6 @@ void CFileBrowserFileUtils::RefreshViewL()
 
 //    if (iEngine->FileListContainer())
 //        {
-        // update navi pane text        
-//        if (iListingMode == ENormalEntries)
-//            iEngine->FileListContainer()->SetNaviPaneTextL(iCurrentPath);
-//        else if (iListingMode == ESearchResults)
-//            iEngine->FileListContainer()->SetNaviPaneTextL(_L("Search results"));
-//        else if (iListingMode == EOpenFiles)
-//            iEngine->FileListContainer()->SetNaviPaneTextL(_L("Open files"));
-//        else if (iListingMode == EMsgAttachmentsInbox)
-//            iEngine->FileListContainer()->SetNaviPaneTextL(_L("Attachments in Inbox"));
-//        else if (iListingMode == EMsgAttachmentsDrafts)
-//            iEngine->FileListContainer()->SetNaviPaneTextL(_L("Attachments in Drafts"));
-//        else if (iListingMode == EMsgAttachmentsSentItems)
-//            iEngine->FileListContainer()->SetNaviPaneTextL(_L("Attachments in Sent Items"));
-//        else if (iListingMode == EMsgAttachmentsOutbox)
-//            iEngine->FileListContainer()->SetNaviPaneTextL(_L("Attachments in Outbox"));
-//
 //        // create a list box if it doesn't already exist
 //        if (!iEngine->FileListContainer()->ListBox())
 //            iEngine->FileListContainer()->CreateListBoxL(iEngine->Settings().iFileViewMode);
@@ -683,153 +665,153 @@ void CFileBrowserFileUtils::RefreshViewL()
     
 // --------------------------------------------------------------------------------------------
 
-/*CAknIconArray* CFileBrowserFileUtils::GenerateIconArrayL(TBool aGenerateNewBasicIconArray)
-    {
-	// TODO
-	
-    CAknIconArray* iconArray = NULL;
-
-    if (aGenerateNewBasicIconArray)
-        {
-        iconArray = new(ELeave) CAknIconArray(16);    
-        }
-    else
-        {
-        if (iEngine->FileListContainer())
-            iconArray = iEngine->FileListContainer()->ListBoxIconArrayL();
-        
-        if (!iconArray)    
-            iconArray = new(ELeave) CAknIconArray(16);
-        }
-
-        
-    CleanupStack::PushL(iconArray);
-    
-    // generate basic items if not already existing
-    if (iconArray->Count() < EFixedIconListLength)
-        {
-        // reset arrays
-        iconArray->Reset();
-        iAppIconList->Reset();
-        
-        // get default control color
-        TRgb defaultColor;
-        defaultColor = iEngine->EikonEnv()->Color(EColorControlText);
-        
-        // create a color icon of the marking indicator
-        CFbsBitmap* markBitmap = NULL;
-        CFbsBitmap* markBitmapMask = NULL;
-
-        AknsUtils::CreateColorIconL(AknsUtils::SkinInstance(),
-                KAknsIIDQgnIndiMarkedAdd,
-                KAknsIIDQsnIconColors,
-                EAknsCIQsnIconColorsCG13,
-                markBitmap,
-                markBitmapMask,
-                AknIconUtils::AvkonIconFileName(),
-                EMbmAvkonQgn_indi_marked_add,
-                EMbmAvkonQgn_indi_marked_add_mask,
-                defaultColor
-                );
-         
-        // 0 marking indicator
-        CGulIcon* markIcon = CGulIcon::NewL(markBitmap, markBitmapMask);
-        iconArray->AppendL(markIcon);                       
-
-        // 1 empty
-        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
-                                  EMbmAvkonQgn_prop_empty, EMbmAvkonQgn_prop_empty_mask, KAknsIIDQgnPropEmpty);
-        // 2 phone memory
-        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
-                                  EMbmAvkonQgn_prop_phone_memc, EMbmAvkonQgn_prop_phone_memc_mask, KAknsIIDQgnPropPhoneMemc);
-        // 3 memory card
-        AppendGulIconToIconArrayL(iconArray, KMemoryCardUiBitmapFile,
-                                  EMbmAknmemorycarduiQgn_prop_mmc_memc, EMbmAknmemorycarduiQgn_prop_mmc_memc_mask, KAknsIIDQgnPropMmcMemc);
-        // 4 memory card disabled
-        AppendGulIconToIconArrayL(iconArray, KMemoryCardUiBitmapFile,
-                                  EMbmAknmemorycarduiQgn_prop_mmc_non, EMbmAknmemorycarduiQgn_prop_mmc_non_mask, KAknsIIDQgnPropMmcNon);
-        // 5 folder
-        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
-                                  EMbmAvkonQgn_prop_folder_small, EMbmAvkonQgn_prop_folder_small_mask, KAknsIIDQgnPropFolderSmall);
-        // 6 folder with subfolders
-        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
-                                  EMbmAvkonQgn_prop_folder_sub_small, EMbmAvkonQgn_prop_folder_sub_small_mask, KAknsIIDQgnPropFolderSubSmall);
-        // 7 current folder
-        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
-                                  EMbmAvkonQgn_prop_folder_current, EMbmAvkonQgn_prop_folder_current_mask, KAknsIIDQgnPropFolderCurrent);
-        }
-
-    // append custom icons if not in drive list view and setting is enabled
-    if (!aGenerateNewBasicIconArray && !IsDriveListViewActive() && iEngine->Settings().iShowAssociatedIcons)
-        {
-        // init id counter
-        TInt idCounter(EFixedIconListLength + iAppIconList->Count());
-        
-        // loop all items in the file list
-        for (TInt i=0; i<iFileEntryList->Count(); i++)
-            {
-            TFileEntry& fileEntry = iFileEntryList->At(i);
-
-            // just check for normal files            
-            if (!fileEntry.iEntry.IsDir())     
-                {
-                TUid appUid = GetAppUid(fileEntry);
-                TInt iconId = AppIconIdForUid(appUid);
-                
-                if (appUid != KNullUid && iconId == KErrNotFound)
-                    {
-                    // icon not found from the icon array, generate it
-                    CFbsBitmap* bitmap = NULL;
-                    CFbsBitmap* mask = NULL;
-                    CGulIcon* appIcon = NULL;
-        
-                    TRAPD(err, 
-                        AknsUtils::CreateAppIconLC(AknsUtils::SkinInstance(), appUid, EAknsAppIconTypeList, bitmap, mask);
-                        appIcon = CGulIcon::NewL(bitmap, mask);
-                        CleanupStack::Pop(2); //bitmap, mask
-                        );
-                         
-                    if (err == KErrNone)
-                        {
-                        TAppIcon appIconEntry;
-                        appIconEntry.iId = idCounter;
-                        appIconEntry.iUid = appUid;
-                        
-                        appIcon->SetBitmapsOwnedExternally(EFalse);
-                        iconArray->AppendL(appIcon);
-                        iAppIconList->AppendL(appIconEntry);
-
-                        fileEntry.iIconId = idCounter;
-                                                
-                        idCounter++;      
-                        }
-                    else
-                        {
-                        delete bitmap;
-                        delete mask;
-		
-                        TAppIcon appIconEntry;
-                        appIconEntry.iId = EFixedIconEmpty;
-                        appIconEntry.iUid = appUid;
-                        
-                        iAppIconList->AppendL(appIconEntry);
-                        }
-                    }
-
-                else if (appUid != KNullUid && iconId >= 0)
-                    {
-                    // we already have already generated an icon for this uid, use it
-                    fileEntry.iIconId = iconId;
-                    }
-                }
-            }
-        }
-
-    CleanupStack::Pop(); //iconArray
-	return iconArray;
-    
-	}
-*/
+//CAknIconArray* CFileBrowserFileUtils::GenerateIconArrayL(TBool aGenerateNewBasicIconArray)
+//    {
+//	// TODO
+//
+//    CAknIconArray* iconArray = NULL;
+//
+//    if (aGenerateNewBasicIconArray)
+//        {
+//        iconArray = new(ELeave) CAknIconArray(16);
+//        }
+//    else
+//        {
+//        if (iEngine->FileListContainer())
+//            iconArray = iEngine->FileListContainer()->ListBoxIconArrayL();
+//
+//        if (!iconArray)
+//            iconArray = new(ELeave) CAknIconArray(16);
+//        }
+//
+//
+//    CleanupStack::PushL(iconArray);
+//
+//    // generate basic items if not already existing
+//    if (iconArray->Count() < EFixedIconListLength)
+//        {
+//        // reset arrays
+//        iconArray->Reset();
+//        iAppIconList->Reset();
+//
+//        // get default control color
+//        TRgb defaultColor;
+//        defaultColor = iEngine->EikonEnv()->Color(EColorControlText);
+//
+//        // create a color icon of the marking indicator
+//        CFbsBitmap* markBitmap = NULL;
+//        CFbsBitmap* markBitmapMask = NULL;
+//
+//        AknsUtils::CreateColorIconL(AknsUtils::SkinInstance(),
+//                KAknsIIDQgnIndiMarkedAdd,
+//                KAknsIIDQsnIconColors,
+//                EAknsCIQsnIconColorsCG13,
+//                markBitmap,
+//                markBitmapMask,
+//                AknIconUtils::AvkonIconFileName(),
+//                EMbmAvkonQgn_indi_marked_add,
+//                EMbmAvkonQgn_indi_marked_add_mask,
+//                defaultColor
+//                );
+//
+//        // 0 marking indicator
+//        CGulIcon* markIcon = CGulIcon::NewL(markBitmap, markBitmapMask);
+//        iconArray->AppendL(markIcon);
+//
+//        // 1 empty
+//        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
+//                                  EMbmAvkonQgn_prop_empty, EMbmAvkonQgn_prop_empty_mask, KAknsIIDQgnPropEmpty);
+//        // 2 phone memory
+//        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
+//                                  EMbmAvkonQgn_prop_phone_memc, EMbmAvkonQgn_prop_phone_memc_mask, KAknsIIDQgnPropPhoneMemc);
+//        // 3 memory card
+//        AppendGulIconToIconArrayL(iconArray, KMemoryCardUiBitmapFile,
+//                                  EMbmAknmemorycarduiQgn_prop_mmc_memc, EMbmAknmemorycarduiQgn_prop_mmc_memc_mask, KAknsIIDQgnPropMmcMemc);
+//        // 4 memory card disabled
+//        AppendGulIconToIconArrayL(iconArray, KMemoryCardUiBitmapFile,
+//                                  EMbmAknmemorycarduiQgn_prop_mmc_non, EMbmAknmemorycarduiQgn_prop_mmc_non_mask, KAknsIIDQgnPropMmcNon);
+//        // 5 folder
+//        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
+//                                  EMbmAvkonQgn_prop_folder_small, EMbmAvkonQgn_prop_folder_small_mask, KAknsIIDQgnPropFolderSmall);
+//        // 6 folder with subfolders
+//        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
+//                                  EMbmAvkonQgn_prop_folder_sub_small, EMbmAvkonQgn_prop_folder_sub_small_mask, KAknsIIDQgnPropFolderSubSmall);
+//        // 7 current folder
+//        AppendGulIconToIconArrayL(iconArray, AknIconUtils::AvkonIconFileName(),
+//                                  EMbmAvkonQgn_prop_folder_current, EMbmAvkonQgn_prop_folder_current_mask, KAknsIIDQgnPropFolderCurrent);
+//        }
+//
+//    // append custom icons if not in drive list view and setting is enabled
+//    if (!aGenerateNewBasicIconArray && !IsDriveListViewActive() && iEngine->Settings().iShowAssociatedIcons)
+//        {
+//        // init id counter
+//        TInt idCounter(EFixedIconListLength + iAppIconList->Count());
+//
+//        // loop all items in the file list
+//        for (TInt i=0; i<iFileEntryList->Count(); i++)
+//            {
+//            TFileEntry& fileEntry = iFileEntryList->At(i);
+//
+//            // just check for normal files
+//            if (!fileEntry.iEntry.IsDir())
+//                {
+//                TUid appUid = GetAppUid(fileEntry);
+//                TInt iconId = AppIconIdForUid(appUid);
+//
+//                if (appUid != KNullUid && iconId == KErrNotFound)
+//                    {
+//                    // icon not found from the icon array, generate it
+//                    CFbsBitmap* bitmap = NULL;
+//                    CFbsBitmap* mask = NULL;
+//                    CGulIcon* appIcon = NULL;
+//
+//                    TRAPD(err,
+//                        AknsUtils::CreateAppIconLC(AknsUtils::SkinInstance(), appUid, EAknsAppIconTypeList, bitmap, mask);
+//                        appIcon = CGulIcon::NewL(bitmap, mask);
+//                        CleanupStack::Pop(2); //bitmap, mask
+//                        );
+//
+//                    if (err == KErrNone)
+//                        {
+//                        TAppIcon appIconEntry;
+//                        appIconEntry.iId = idCounter;
+//                        appIconEntry.iUid = appUid;
+//
+//                        appIcon->SetBitmapsOwnedExternally(EFalse);
+//                        iconArray->AppendL(appIcon);
+//                        iAppIconList->AppendL(appIconEntry);
+//
+//                        fileEntry.iIconId = idCounter;
+//
+//                        idCounter++;
+//                        }
+//                    else
+//                        {
+//                        delete bitmap;
+//                        delete mask;
+//
+//                        TAppIcon appIconEntry;
+//                        appIconEntry.iId = EFixedIconEmpty;
+//                        appIconEntry.iUid = appUid;
+//
+//                        iAppIconList->AppendL(appIconEntry);
+//                        }
+//                    }
+//
+//                else if (appUid != KNullUid && iconId >= 0)
+//                    {
+//                    // we already have already generated an icon for this uid, use it
+//                    fileEntry.iIconId = iconId;
+//                    }
+//                }
+//            }
+//        }
+//
+//    CleanupStack::Pop(); //iconArray
+//	return iconArray;
+//
+//	}
+//
 // --------------------------------------------------------------------------------------------
 
 //void CFileBrowserFileUtils::AppendGulIconToIconArrayL(CAknIconArray* aIconArray, const TDesC& aIconFile, TInt aIconId, TInt aMaskId, const TAknsItemID aAknsItemId)
@@ -1991,7 +1973,7 @@ void CFileBrowserFileUtils::SearchL()
 //        iEngine->EikonEnv()->BusyMsgL(_L("** Searching **"), TGulAlignment(EHCenterVTop));
 
 
-        iEngine->FileBrowserUI()->ShowWaitDialog(_L("** Searching  **"));
+        iEngine->FileBrowserUI()->ShowWaitDialog(_L("Searching"));
         iFileEntryList->Reset();
 
         // if search dir is empty, find from all drives
@@ -2771,15 +2753,15 @@ void CFileBrowserFileUtils::OpenWithApparcL(TFileName aFileName)
 	
 // --------------------------------------------------------------------------------------------
 
-void CFileBrowserFileUtils::HandleServerAppExit(TInt aReason)
-	{
+//void CFileBrowserFileUtils::HandleServerAppExit(TInt aReason)
+//	{
 //	if (iOpenFileService)
 //		{
 //		delete iOpenFileService;
 //		iOpenFileService = NULL;
 //		}
-	MAknServerAppExitObserver::HandleServerAppExit(aReason);
-	}
+//	MAknServerAppExitObserver::HandleServerAppExit(aReason);
+//	}
 
 // --------------------------------------------------------------------------------------------
 
@@ -3155,7 +3137,7 @@ void CFileBrowserFileUtils::SetErrRdL(TBool aEnable)
         // update view
         RefreshViewL(); 
     
-        if (err == KErrNone)    
+        if (err == KErrNone)
             {
             iEngine->FileBrowserUI()->ShowConfirmationNote(_L("State changed"));
             }
@@ -3298,7 +3280,7 @@ void CFileBrowserFileUtils::WriteAllFilesL()
         CleanupClosePushL(file);
         iFindFileEntryList->Reset();
         
-        iEngine->FileBrowserUI()->ShowWaitDialog(_L("** Generating **"));
+        iEngine->FileBrowserUI()->ShowWaitDialog(_L("Generating"));
         
         for (TInt i=0; i<iDriveEntryList->Count(); i++)
             {
@@ -3323,9 +3305,30 @@ void CFileBrowserFileUtils::WriteAllFilesL()
             
             writeBuf.Copy(fileEntry.iPath);
             writeBuf.Append(fileEntry.iEntry.iName);
-            writeBuf.Append(_L(" - "));
+            writeBuf.Append(_L(","));
             writeBuf.AppendNum(fileEntry.iEntry.iSize);
             writeBuf.Append(_L(" B"));
+
+//            // date
+//            TTime entryModified = fileEntry.iEntry.iModified;
+//            // convert from universal time
+//            if ( iTz.ConvertToLocalTime( entryModified ) == KErrNone )
+//                {
+//                entryModified = fileEntry.iEntry.iModified; // use universal time
+//                }
+//
+//            _LIT(KDateFormat,               "%D%M%Y%/0%1%/1%2%/2%3%/3");
+//            TBuf<32> dateBuf;
+//            entryModified.FormatL(dateBuf, KDateFormat);
+//            writeBuf.Append(dateBuf);
+//
+//            writeBuf.Append(_L(" "));
+//            // time
+//            _LIT(KTimeFormat, "%-B%:0%J%:1%T%:2%S%:3%+B");
+//            TBuf<32> timeBuf;
+//            entryModified.FormatL(timeBuf, KTimeFormat);
+//            writeBuf.Append(timeBuf);
+//
             writeBuf.Append(KFileNewLine);
             file.Write(writeBuf);
             }
@@ -3339,7 +3342,7 @@ void CFileBrowserFileUtils::WriteAllFilesL()
         TFileName noteMsg;
         noteMsg.Format(KMessage, &allFilesPath);
 
-        iEngine->FileBrowserUI()->ShowConfirmationNote(noteMsg, ETrue); // NoTimeout
+        iEngine->FileBrowserUI()->ShowConfirmationNote(noteMsg, EFalse); // NoTimeout
         }
     else
         {

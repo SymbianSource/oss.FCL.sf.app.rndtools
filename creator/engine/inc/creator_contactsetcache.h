@@ -22,21 +22,19 @@
 #define CREATORCONTACTSETCACHE_H_
 
 #include <e32base.h>
-#include <qtcontacts.h>
 
 // Forward declarations
 class CContactLinkCacheImp;
 
-QTM_USE_NAMESPACE
 class CCreatorContactSet : public CBase
 {
 public:
     static CCreatorContactSet* NewL(TInt aLinkId, TInt aNumOfExistingContacts);
     virtual ~CCreatorContactSet();
-    void AppendL(QContactLocalId);
+    void AppendL(TUint32);
     TInt NumberOfExistingContacts() const;
-    RArray<QContactLocalId> ContactLinks();
-    const RArray<QContactLocalId> ContactLinks() const;
+    RArray<TUint32> ContactLinks();
+    const RArray<TUint32> ContactLinks() const;
 
     TInt LinkId() const;
 
@@ -45,15 +43,15 @@ private:
     //void ConstructL();
     TInt iLinkId;
     TInt iNumOfExistingContacts;
-    RArray<QContactLocalId> iContactLinks;
+    RArray<TUint32> iContactLinks;
 };
 
 class MContactLinkCache
 {
 public:
     virtual void AppendL(CCreatorContactSet* aContactSet) = 0;
-    virtual RArray<QContactLocalId> ContactLinks(TInt aLinkId) = 0;
-    virtual const RArray<QContactLocalId> ContactLinks(TInt aLinkId) const = 0;    
+    virtual RArray<TUint32> ContactLinks(TInt aLinkId) = 0;
+    virtual const RArray<TUint32> ContactLinks(TInt aLinkId) const = 0;    
     virtual RPointerArray<CCreatorContactSet>& ContactSets() = 0;
     virtual const RPointerArray<CCreatorContactSet>& ContactSets() const = 0;
     virtual const CCreatorContactSet& ContactSet(TInt aLinkId) const = 0;

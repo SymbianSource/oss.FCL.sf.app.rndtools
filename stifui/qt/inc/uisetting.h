@@ -20,7 +20,8 @@
 
 const QString KShowOutput = "showoutput";
 const QString KStyleSheet = "StyleSheet";
-
+const QString KFilter = "filter";
+const QString KFilterCaseSens = "filtercasesens";
 
 class UiSetting
     {
@@ -43,3 +44,5 @@ private:
     };
 
 #endif /* UISETTING_H_ */
+
+// End of File

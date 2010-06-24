@@ -107,20 +107,7 @@ void CMemSpyViewKernelHeap::SetListBoxModelL()
 				
 	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
 	listbox->Model()->SetItemTextArray( model );
-	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );	
-	
-	/*
-	// Get list contents
-	TMemSpyHeapInfo heapInfo;
-	iEngine.HelperHeap().GetHeapInfoKernelL( heapInfo );
-	CMemSpyEngineOutputList* list = iEngine.HelperHeap().NewHeapSummaryShortLC( heapInfo );
-
-	// Set up list box
-	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-	listbox->Model()->SetItemTextArray( list );
-	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
-	CleanupStack::Pop( list );
-	*/
+	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );			
 	}
 
 

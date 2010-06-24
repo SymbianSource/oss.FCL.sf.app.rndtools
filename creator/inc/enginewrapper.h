@@ -65,6 +65,11 @@ public:
 	*/
 	MemoryDetails GetMemoryDetails();
 	
+	/**
+	 * Get memory details list
+	 */
+	QList<MemoryDetails> GetMemoryDetailsList();
+	
 public: 
     
     /* Functions that are called from UI */
