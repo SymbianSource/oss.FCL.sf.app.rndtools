@@ -26,11 +26,13 @@
 #include <memspy/engine/memspyengineobjectthreadinfocontainer.h>
 #include <memspy/engine/memspyenginehelperprocess.h>
 #include <memspy/engine/memspyenginehelperstack.h>
+#include <memspysession.h>
 
 // User includes
 #include "MemSpyContainerObserver.h"
 #include "MemSpyViewThreads.h"
 #include "MemSpyViewThreadInfoItemHeap.h"
+#include "MemSpyAppUi.h"
 
 
 
@@ -69,19 +71,19 @@ TBool CMemSpyViewThreadInfoItemStack::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewThreadInfoItemStack::OnCmdStackInfoL()
     {
-   // TODO iEngine.HelperStack().OutputStackInfoL( Thread() );
+	iMemSpySession.OutputStackInfoL( ThreadId() );   
     }
 
 
 void CMemSpyViewThreadInfoItemStack::OnCmdStackDataUserL()
     {
-    // TODO iEngine.HelperStack().OutputStackDataL( Thread(), EMemSpyDriverDomainUser );
+    iMemSpySession.OutputStackDataL( ThreadId(), EMemSpyDriverDomainUser );
     }
 
 
 void CMemSpyViewThreadInfoItemStack::OnCmdStackDataKernelL()
     {
-    // TODO iEngine.HelperStack().OutputStackDataL( Thread(), EMemSpyDriverDomainKernel );
+	iMemSpySession.OutputStackDataL( ThreadId(), EMemSpyDriverDomainKernel );
     }    
 
 

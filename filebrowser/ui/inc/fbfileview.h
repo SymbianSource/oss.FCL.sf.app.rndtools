@@ -15,14 +15,13 @@
 *
 */
 
-#ifndef FILEBROWSERVIEWH_H_
-#define FILEBROWSERVIEWH_H_
+#ifndef FBFILEVIEWH_H_
+#define FBFILEVIEWH_H_
 
 #include "menuaction.h"
 #include "enginewrapper.h"
 
 #include <HbView>
-#include <HbMainWindow>
 #include <HbApplication>
 
 #include <QModelIndexList>
@@ -41,21 +40,22 @@ class HbLabel;
 class HbDialog;
 class HbAbstractViewItem;
 class HbMenu;
+class HbSearchPanel;
 
-class FileBrowserMainWindow;
 class EditorView;
 class SearchView;
 class SettingsView;
 class EngineWrapper;
-class FileBrowserModel;
+class FbFileModel;
+class FileBrowserSortFilterProxyModel;
 
-class FileBrowserView : public HbView
+class FbFileView : public HbView
 {
     Q_OBJECT
 
 public:
-    explicit FileBrowserView(FileBrowserMainWindow &mainWindow);
-    virtual ~FileBrowserView();
+    explicit FbFileView();
+    virtual ~FbFileView();
     void init(EngineWrapper *engineWrapper);
 
 public slots:
@@ -86,17 +86,12 @@ private:
     void createFileContextMenu();
     void createEditContextMenu();
     void createViewContextMenu();
-    void createDiskAdminContextMenu();
     void createToolBar();
-
-//    void refreshList();
-    void populateFolderContent();
 
 private slots:
     // menu action slots
     // file menu
     void fileBackMoveUp();
-    void fileOpenDrive();
     void fileOpenDirectory();
     void fileSearch();
 
@@ -143,60 +138,15 @@ private slots:
 
     // view menu
     void viewFilterEntries();
+    void filterCriteriaChanged(const QString &);
+    void clearFilterCriteria();
     void viewRefresh();
-
-    // disk admin menu
-    void diskAdminSetDrivePassword();
-    void diskAdminSetDrivePasswordNew(HbAction *);
-    void doDiskAdminSetDrivePassword(HbAction *);
-
-    void diskAdminUnlockDrive();
-    void doDiskAdminUnlockDrive(HbAction *);
-
-    void diskAdminClearDrivePassword();
-    void doDiskAdminClearDrivePassword(HbAction *);
-
-    void diskAdminEraseDrivePassword();
-    void doDiskAdminEraseDrivePassword(HbAction *);
-
-    void diskAdminFormatDrive();
-    void doDiskAdminFormatDrive(HbAction *);
-
-    void diskAdminQuickFormatDrive();
-    void doDiskAdminQuickFormatDrive(HbAction *);
-
-    void diskAdminCheckDisk();
-
-    void diskAdminScanDrive();
-    void doDiskAdminScanDrive(HbAction *);
-
-    void diskAdminSetDriveName();
-    void doDiskAdminSetDriveName(HbAction *);
-
-    void diskAdminSetDriveVolumeLabel();
-    void doDiskAdminSetDriveVolumeLabel(HbAction *);
-
-    void diskAdminEjectDrive();
-    void diskAdminDismountDrive();
-    void doDiskAdminDismountDrive(HbAction *);
-
-    void diskAdminEraseMBR();
-    void doDiskAdminEraseMBR(HbAction *);
-    void doDiskAdminReallyEraseMBR(HbAction *);
-    void doDiskAdminNotRemovableReallyEraseMBR(HbAction *);
-    
-    void diskAdminPartitionDrive();
-    void diskAdminPartitionDriveProceed(HbAction *);
-    void diskAdminPartitionDriveReallyProceed(HbAction *);
-    void diskAdminPartitionDriveIsNotRemovable(HbAction *);
-    void diskAdminPartitionDriveEraseMbr(HbAction *);
-    void diskAdminPartitionDriveGetCount(HbAction*);
 
     // tools menu
     void toolsAllAppsToTextFile();
     void toolsAllFilesToTextFile();
-    void toolsAvkonIconCacheEnable();
-    void toolsAvkonIconCacheDisable();
+//    void toolsAvkonIconCacheEnable();
+//    void toolsAvkonIconCacheDisable();
 
     void toolsDisableExtendedErrors();
     void toolsDumpMsgStoreWalk();
@@ -233,14 +183,13 @@ private slots:
     void about();
     
 signals:
+    void aboutToShowDriveView();
     void aboutToShowSettingsView();
     void aboutToShowEditorView(const QString &, bool);
     void aboutToShowSearchView(const QString &);
     void aboutToSimulateLeave(int);
 
 private slots:
-    void itemHighlighted(const QModelIndex &index);
-    //void itemSelected(const QModelIndex &index);
     void updateOptionMenu();
     void updateContextMenu();
     void selectionChanged(const QItemSelection &, const QItemSelection &);
@@ -254,19 +203,21 @@ private slots:
     void fileOverwritePostfix(HbAction *);
 
 private:
-    FileBrowserMainWindow &mMainWindow;
     EngineWrapper *mEngineWrapper;
 
     HbListView *mListView;
     HbToolBar *mToolBar;
     HbLabel *mNaviPane;
+    HbSearchPanel *mSearchPanel;
+
     QGraphicsLinearLayout *mMainLayout;
 
     // file info contains all needed information of selected file from file model
     QModelIndexList mClipboardIndexes;
     QModelIndexList mSelectionIndexes;
 
-    FileBrowserModel *mFileBrowserModel;
+    FbFileModel *mFbFileModel;
+    FileBrowserSortFilterProxyModel *mSortFilterProxyModel;
     OptionMenuActions mOptionMenuActions;
     ContextMenuActions mContextMenuActions;
     HbMenu *mContextMenu;
@@ -294,4 +245,4 @@ private:
 
 
 
-#endif /* FILEBROWSERVIEWH_H_ */
+#endif /* FBFILEVIEWH_H_ */

@@ -22,6 +22,6 @@
 (0x2001E61C), 4, 5, 2, {"QtLibs pre-release"}
 
 ; Executable and default resource files
-"/S60/non_public/S60_5_0_200906/epoc32/release/armv5/urel/STFUI.exe"    - "!:\sys\bin\STFUI.exe"
-"/S60/non_public/S60_5_0_200906/epoc32/data/z/resource/apps/STFUI.rsc"    - "!:\resource\apps\STFUI.rsc"
-"/S60/non_public/S60_5_0_200906/epoc32/data/z/private/10003a3f/import/apps/STFUI_reg.rsc"    - "!:\private\10003a3f\import\apps\STFUI_reg.rsc"
+"/epoc32/release/armv5/urel/STFUI.exe"    - "!:\sys\bin\STFUI.exe"
+"/epoc32/data/z/resource/apps/STFUI.rsc"    - "!:\resource\apps\STFUI.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/STFUI_reg.rsc"    - "!:\private\10003a3f\import\apps\STFUI_reg.rsc"

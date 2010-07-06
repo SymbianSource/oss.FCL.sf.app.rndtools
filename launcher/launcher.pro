@@ -45,7 +45,8 @@ symbian: {
 		
 		RSS_RULES += "group_name = \"RnD Tools\"";
 		
-		LIBS += -lapgrfx -lPlatformEnv -lxqutils -lxmlframework -lbafl -lshareui
+		LIBS += -lapgrfx -lPlatformEnv -lxqutils -lxmlframework -lbafl -lshareui -lws32 -lapparc -lefsrv -lcone
+
 
         TARGET.CAPABILITY = ReadUserData ReadDeviceData WriteUserData WriteDeviceData PowerMgmt AllFiles
         

@@ -188,12 +188,10 @@ void CCreatedTestSetMenuView::HandleListBoxEventL( CEikListBox* aListBox,
 		substracted.Set(substracted.Right(substracted.Length()-2));
 		// Creating new view containing 		
        	CTestSetMenuView* testSetMenu = (CTestSetMenuView*)AppUi()->View( TUid::Uid(ETestSetMenuViewId) ); 
-       	TInt	error = testSetMenu->LoadTestSetL( substracted );
-		AppUi()->HandleCommandL(ECmdGoToTestSetView);
-		
+       	User::LeaveIfError( testSetMenu->LoadTestSetL( substracted ) );
+		AppUi()->HandleCommandL(ECmdGoToTestSetView);		
         }
  
     }
-
 
 // End of File

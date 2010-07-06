@@ -69,8 +69,6 @@ void DlgOutput::CreateItem(QString index, QString item)
 
 void DlgOutput::CloseItem(QString index)
     {
-    int u = tabList.keys().indexOf(index);
-    
     delete tabList.value(index);
     tabList.remove(index);
     if (tabMain->count() == 0)
@@ -141,3 +139,4 @@ void DlgOutput::OnCaseOutputChanged(const IStfEventListener::CaseOutputCommand& 
 
     }
 
+// End of File

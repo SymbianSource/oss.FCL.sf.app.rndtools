@@ -356,12 +356,12 @@ NONSHARABLE_CLASS( CEngineVideoRecording ) : public CBase,
             TInt aError );
 
         void ViewFinderFrameReady( 
-            CFbsBitmap& aFrame ){};
+            CFbsBitmap& /*aFrame*/ ){};
 
         void ImageReady( 
-            CFbsBitmap* aBitmap, 
-            HBufC8*     aData, 
-            TInt        aError ){};
+            CFbsBitmap* /*aBitmap*/, 
+            HBufC8*     /*aData*/, 
+            TInt        /*aError*/ ){};
 
         void FrameBufferReady( 
             MFrameBuffer* /*aFrameBuffer*/, 
@@ -371,11 +371,11 @@ NONSHARABLE_CLASS( CEngineVideoRecording ) : public CBase,
         
         void HandleEvent(const TECAMEvent& aEvent);
 
-        void ViewFinderReady(MCameraBuffer& aCameraBuffer,TInt aError){};
+        void ViewFinderReady(MCameraBuffer& /*aCameraBuffer*/,TInt /*aError*/){};
 
-        void ImageBufferReady(MCameraBuffer& aCameraBuffer,TInt aError){};
+        void ImageBufferReady(MCameraBuffer& /*aCameraBuffer*/,TInt /*aError*/){};
     
-        void VideoBufferReady(MCameraBuffer& aCameraBuffer,TInt aError){};
+        void VideoBufferReady(MCameraBuffer& /*aCameraBuffer*/,TInt /*aError*/){};
     protected:  
 
         /**

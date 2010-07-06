@@ -17,6 +17,8 @@
 
 #include <HbMainWindow>
 #include <HbAction>
+#include <HbMessageBox>
+#include <HbLabel>
 
 #include "viewmanager.h"
 
@@ -30,6 +32,9 @@
 #include "memspykernelobjecttypeview.h"
 #include "memspykernelobjectview.h"
 #include "memspykernelobjectdetailview.h"
+#include "memspytrackingview.h"
+#include "memspyswmtview.h"
+#include "memspyheapdumpsview.h"
 
 template <typename T>
 static MemSpyView* factory(EngineWrapper &engine, ViewManager &viewManager)
@@ -45,7 +50,10 @@ MemSpyView* (*sFactories[])(EngineWrapper&, ViewManager&) = {
 	&factory<MemSpyThreadDetailView>,
 	&factory<MemSpyKernelObjectTypeView>,
 	&factory<MemSpyKernelObjectView>,
-	&factory<MemSpyKernelObjectDetailView>
+	&factory<MemSpyKernelObjectDetailView>,
+	&factory<MemSpyTrackingView>,
+	&factory<MemSpySwmtView>,
+	&factory<MemSpyHeapDumpsView>
 };
 
 
@@ -59,8 +67,30 @@ ViewManager::ViewManager(HbMainWindow &window, EngineWrapper &engine, QObject *p
 
 void ViewManager::showView(ViewIndex viewIndex, const QVariantMap &params)
 {
-	MemSpyView* view = sFactories[viewIndex](mEngine, *this);
-	view->initialize(params);
+    MemSpyView* view;
+    try {
+        view = sFactories[viewIndex](mEngine, *this);
+        view->initialize(params);
+    }
+    catch (std::exception& ex)
+    {
+        // show message box with exception
+        // TODO: qt_symbian_exception2Error shouldn't probably be here
+        QString error = tr("An error occured during the operation. Error code: %1").arg(
+                qt_symbian_exception2Error(ex));
+        
+        HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeWarning);
+        messageBox->setText(error);
+        HbLabel *header = new HbLabel(tr("Error"), messageBox);
+        messageBox->setHeadingWidget(header);
+        messageBox->setAttribute(Qt::WA_DeleteOnClose);
+        messageBox->setTimeout(HbPopup::StandardTimeout);
+        messageBox->open();
+        
+        delete view;
+        return;
+    }
+    
 	if (viewIndex != MainView) {
 		HbAction* action = new HbAction(Hb::BackNaviAction, this);
 		connect(action, SIGNAL(triggered()), this, SLOT(goBack()));

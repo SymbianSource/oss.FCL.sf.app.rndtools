@@ -37,38 +37,17 @@
 #include "MemSpyViewThreads.h"
 #include "MemSpyViewMainMenu.h"
 #include "MemSpyContainerObserver.h"
+#include "MemSpyUiUtils.h"
 
 // Constants
 const TInt KMemSpyMaxSearchTextLength = 30;
 const TInt KMemSpyMaxSearchTextLengthWithWildcards = KMemSpyMaxSearchTextLength + 4;
 
 
-/*
-CMemSpyViewProcesses::CMemSpyViewProcesses( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver )
-:   CMemSpyViewBase( aEngine, aObserver )
-    {
-    }
-
-
-CMemSpyViewProcesses::CMemSpyViewProcesses( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyProcess& aProcess )
-:   CMemSpyViewBase( aEngine, aObserver ), iCurrentProcess( &aProcess )
-    {
-    iCurrentProcess->Open();
-    }
-*/
-
 CMemSpyViewProcesses::CMemSpyViewProcesses( RMemSpySession& aSession, MMemSpyViewObserver& aObserver )
 :   CMemSpyViewBase( aSession, aObserver )
     {
     }
-
-/*
-CMemSpyViewProcesses::CMemSpyViewProcesses( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyProcess& aProcess )
-:   CMemSpyViewBase( aEngine, aObserver ), iCurrentProcess( &aProcess )
-    {
-    iCurrentProcess->Open();
-    }
-*/
 
 CMemSpyViewProcesses::CMemSpyViewProcesses( RMemSpySession& aEngine, MMemSpyViewObserver& aObserver, TProcessId aId )
 :   CMemSpyViewBase( aEngine, aObserver ), iCurrentProcessId( aId )
@@ -97,17 +76,18 @@ void CMemSpyViewProcesses::ConstructL( const TRect& aRect, CCoeControl& aContain
     iMatcherBuffer = HBufC::NewL( KMemSpyMaxSearchTextLengthWithWildcards );
     //
     iSearchField = CAknSearchField::NewL( *this, CAknSearchField::ESearch, NULL, KMemSpyMaxSearchTextLength );
+
     iSearchField->SetObserver( this );
     iSearchField->SetFocus( ETrue );
     iSearchField->SetComponentsToInheritVisibility( ETrue );
     //    
-    if  ( aSelectionRune )
+    if  ( iCurrentProcessId > 0 )
         {
 		TInt index = 0;
-		TProcessId selectedItem = aSelectionRune; //static_cast< TProcessId >( *aSelectionRune );
+	//	TProcessId selectedItem = aSelectionRune; //static_cast< TProcessId >( *aSelectionRune );
 		for( TInt i=0; i<iProcesses.Count();i++)
 			{
-			if( iProcesses[i]->Id() == selectedItem )
+			if( iProcesses[i]->Id() == iCurrentProcessId )
 				{
 				index = i;
 				}
@@ -119,7 +99,7 @@ void CMemSpyViewProcesses::ConstructL( const TRect& aRect, CCoeControl& aContain
             HandleListBoxItemSelectedL( index );
             }            
         }
-    else if ( iProcesses.Count() > 0 ) //TODO: to solve item selection when come back from previous view
+    else if ( iProcesses.Count() > 0 )
         {
         iListBox->SetCurrentItemIndex( 0 );
         HandleListBoxItemSelectedL( 0 );
@@ -164,7 +144,7 @@ CMemSpyViewBase* CMemSpyViewProcesses::PrepareParentViewL()
 
 CMemSpyViewBase* CMemSpyViewProcesses::PrepareChildViewL()
     {	
-    CMemSpyViewThreads* child = new(ELeave) CMemSpyViewThreads( iMemSpySession, iObserver, iProcesses[iListBox->CurrentItemIndex()]->Id() );
+    CMemSpyViewThreads* child = new(ELeave) CMemSpyViewThreads( iMemSpySession, iObserver, iProcesses[iListBox->CurrentItemIndex()]->Id(), 0 );
     CleanupStack::PushL( child );
     child->ConstructL( Rect(), *Parent() );
     CleanupStack::Pop( child );
@@ -379,9 +359,9 @@ void CMemSpyViewProcesses::SetListBoxModelL()
 	iModel = new (ELeave) CDesC16ArrayFlat( iProcesses.Count() + 1); //array for formated items
 	
 	_LIT( KTab, "\t" );
-	//iModel = FormatModel( iProcesses ); //TODO Format model method with advanced formatting
+	iModel = FormatModel( iProcesses ); //TODO Format model method with advanced formatting
 	
-	
+	/*
 	for( TInt i=0; i < iProcesses.Count(); i++ )
 		{
 		HBufC* tempName = HBufC::NewL( iProcesses[i]->Name().Length() + 16 );
@@ -393,7 +373,7 @@ void CMemSpyViewProcesses::SetListBoxModelL()
     	
     	CleanupStack::PopAndDestroy( tempName ); 
 		}			
-	
+	*/
 	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
     //listbox->Model()->SetItemTextArray( &iEngine.Container() );
     listbox->Model()->SetItemTextArray( iModel );
@@ -578,7 +558,7 @@ void CMemSpyViewProcesses::SelectListBoxItemByFindTextL()
 
 //Model formating methods
 //TODO: to be debbuged
-/*
+
 CDesCArrayFlat* CMemSpyViewProcesses::FormatModel( RArray<CMemSpyApiProcess*> aProcesses )
 	{		
 	model = new (ELeave) CDesC16ArrayFlat( iProcesses.Count() + 16 ); //array for formated items
@@ -592,17 +572,18 @@ CDesCArrayFlat* CMemSpyViewProcesses::FormatModel( RArray<CMemSpyApiProcess*> aP
 	    tempNamePtr.Copy( aProcesses[i]->Name() );
 		
 		TBuf<10> priority;
-		AppendPriority( priority, aProcesses[i]->Priority() );
+		TProcessPriority tempPriority = aProcesses[i]->Priority();
+		MemSpyUiUtils::AppendPriority( priority, tempPriority );
 		
 	    // Convert the full name to the format we want in the UI
 	    TBuf<KMaxFullName + 60> name;
 	    TMemSpyTruncateOverflow overflow; //included from EngineUtils TODO: to consider if this is needed to be removed or left there
-	    	    
-	    name.AppendFormat( KMemSpyProcessNameFormatSpecBasicName, &overflow, tempNamePtr, aProcesses[i]->SID() );
+	    TUint32 tempSID =  aProcesses[i]->SID();
+	    name.AppendFormat( KMemSpyProcessNameFormatSpecBasicName, &overflow, tempName, tempSID );	//tempNamePtr
 	    
 	    if( aProcesses[i]->ExitType() != EExitPending ) // instead of IsDead() method
 	    	{
-			AppendExitInfo( name, aProcesses[i]->ExitType(), aProcesses[i]->ExitReason(), aProcesses[i]->ExitCategory() );
+			MemSpyUiUtils::AppendExitInfo( name, aProcesses[i]->ExitType(), aProcesses[i]->ExitReason(), aProcesses[i]->ExitCategory() );
 	    	}
 	    else
 	        {
@@ -617,7 +598,7 @@ CDesCArrayFlat* CMemSpyViewProcesses::FormatModel( RArray<CMemSpyApiProcess*> aP
 	
 	return model;
 	}
-
+/*
 void CMemSpyViewProcesses::AppendPriority( TDes& aDes, TProcessPriority aPriority )
 	{
 	switch( aPriority )
@@ -674,7 +655,8 @@ void CMemSpyViewProcesses::AppendExitInfo( TDes& aDes, TExitType aType, TInt aEx
         aDes.AppendFormat( KAbnormalFormatSpec, &overflow, &aExitCategory, aExitReason );
         }
 	}
-
+*/
+/*
 void CMemSpyViewProcesses::AppendExitType( TDes& aDes, TExitType aType )
     {
     _LIT( KExitTypeKilled, "Killed" );
@@ -702,3 +684,4 @@ void CMemSpyViewProcesses::AppendExitType( TDes& aDes, TExitType aType )
         }
     }
 */
+

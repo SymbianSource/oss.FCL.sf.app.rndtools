@@ -18,7 +18,7 @@
 #ifndef MEMSPYKERNELOBJECTVIEW_H_
 #define MEMSPYKERNELOBJECTVIEW_H_
 
-#include "memspyview.h"
+#include "memspylistview.h"
 #include "enginewrapper.h"
 
 class MemSpyKernelObjectModel : public QAbstractListModel
@@ -37,16 +37,20 @@ private:
 };
 
 
-class MemSpyKernelObjectView : public MemSpyView
+class MemSpyKernelObjectView : public MemSpyListView
 {
 	Q_OBJECT
 
 public:
 	MemSpyKernelObjectView(EngineWrapper &engine, ViewManager &viewManager) 
-		: MemSpyView(engine, viewManager) {}
+		: MemSpyListView(engine, viewManager) {}
 
 protected:
 	virtual void initialize(const QVariantMap& params);
+	
+	virtual bool isBreadCrumbVisible() const;
+	            
+	virtual QString getBreadCrumbText() const;
 
 private slots:
 	void itemClicked(const QModelIndex& index);

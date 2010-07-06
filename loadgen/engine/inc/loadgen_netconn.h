@@ -22,7 +22,8 @@
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <DownloadMgrClient.h> 
+//#include <DownloadMgrClient.h> 
+//#include <downloadcontroller.h>
 
 #include "loadgen_loadbase.h"
 #include "loadgen_loadattributes.h"

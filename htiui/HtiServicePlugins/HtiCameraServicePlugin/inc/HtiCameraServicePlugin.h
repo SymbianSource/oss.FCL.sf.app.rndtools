@@ -49,7 +49,7 @@ class CHtiCameraServicePlugin : public CHTIServicePluginInterface,
         // commands
         enum TCommands
             {
-            ECmdInit                    = 0x01,
+            ECmdInitialize              = 0x01,
             ECmdPrepareVideoRecording   = 0x02,
             ECmdStartVideoRecording     = 0x05,
             ECmdPausingVideoRecording   = 0x06,
@@ -59,8 +59,8 @@ class CHtiCameraServicePlugin : public CHTIServicePluginInterface,
             ECmdGetZoom                 = 0x0a,
             ECmdSetZoom                 = 0x0b,
             
-            
-            EResultOk               = 0xFF // only for response message
+            ECmdUninitialize            = 0x51,
+            EResultOk                   = 0xFF // only for response message
             };
 
 
@@ -168,7 +168,8 @@ class CHtiCameraServicePlugin : public CHTIServicePluginInterface,
         virtual void MevroVideoRecordingComplete(TInt aError);
     
     private:
-        void HandleInitCmdL(const TDesC8& aData);
+        void HandleInitializeCmdL(const TDesC8& aData);
+        void HandleUninitializeCmdL(const TDesC8& aData);
         void HandlePrepareVideoRecordingCmdL(const TDesC8& aData);
         void HandleStartVideoRecordingCmdL( const TDesC8& aData );
         void HandlePausingVideoRecordingCmdL( const TDesC8& aData );

@@ -240,6 +240,9 @@ void CUITestServerStarterAppUi::HandleWsEventL( const TWsEvent& aEvent, CCoeCont
 					}
 				}
 				break;
+			default: 
+			    // Do nothing
+			    break;
 			}
 		}
 	else if ( aEvent.Type() == EEventPointer )
@@ -247,7 +250,7 @@ void CUITestServerStarterAppUi::HandleWsEventL( const TWsEvent& aEvent, CCoeCont
 		if ( iEventType == EPointerEvent )
 			{
 			PointerEventHandled();
-			}
+			}		
 		}
 	}
 
@@ -503,6 +506,5 @@ void CUITestServerStarterAppUi::NotifyAboutHandledPointerEvent( TRequestStatus* 
 	{
 	iEventStatus = aStatus;
 	}
-
 
 // End of File

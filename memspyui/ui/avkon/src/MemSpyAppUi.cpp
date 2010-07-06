@@ -257,13 +257,16 @@ void CMemSpyAppUi::HandleCommandL( TInt aCommand )
     case EMemSpyCmdToolsAbout:
         OnCmdAboutL();
         break;
-    //
+    //         
     case EMemSpyCmdPhoneInfoGeneralSummary:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityGeneralSummary );
-        break;
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityGeneralSummary );
+    	OnCmdPhoneInformationOperationL( OutputPhoneInfo );
+        break;        
     case EMemSpyCmdPhoneInfoGeneralDetailed:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityGeneralDetailed );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityGeneralDetailed );
+        OnCmdPhoneInformationOperationL( OutputDetailedPhoneInfo );
         break;
+    /*
     case EMemSpyCmdPhoneInfoGeneralHandles:
         OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityGeneralHandles );
         break;
@@ -271,30 +274,40 @@ void CMemSpyAppUi::HandleCommandL( TInt aCommand )
         OnCmdPhoneInformationOperationKernelContainersL();
         break;
     //
+    */
     case EMemSpyCmdPhoneInfoHeapInfoSummary:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityHeapInfo );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityHeapInfo );
+    	OnCmdPhoneInformationOperationL (OutputHeapInfo );
         break;
     case EMemSpyCmdPhoneInfoHeapInfoCompact:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EEntireDeviceHeapInfoCompact );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EEntireDeviceHeapInfoCompact );
+    	OnCmdPhoneInformationOperationL( OutputCompactHeapInfo );
         break;
     case EMemSpyCmdPhoneInfoHeapCellListing:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityHeapCellListing );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityHeapCellListing );
+        OnCmdPhoneInformationOperationL( OutputHeapCellListing );
         break;
+        
     case EMemSpyCmdPhoneInfoHeapDump:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityHeapData );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityHeapData );
+    	OnCmdPhoneInformationOperationL( OutputHeapData );
         break;
-    //
+    //		   		    		
     case EMemSpyCmdPhoneInfoStackInfo:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityStackInfo );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityStackInfo );
+        OnCmdPhoneInformationOperationL( OutputStackInfo );
         break;
     case EMemSpyCmdPhoneInfoStackInfoCompact:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EEntireDeviceStackInfoCompact );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EEntireDeviceStackInfoCompact );
+        OnCmdPhoneInformationOperationL( OutputCompactStackInfo );
         break;
     case EMemSpyCmdPhoneInfoStackDumpUser:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityStackDataUser );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityStackDataUser );
+    	OnCmdPhoneInformationOperationL( OutputUserStackData );
         break;
     case EMemSpyCmdPhoneInfoStackDumpKernel:
-        OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityStackDataKernel );
+        //OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::EPerEntityStackDataKernel );
+        OnCmdPhoneInformationOperationL( OutputKernelStackData );
         break;
 
     case EMemSpyCmdAutoCaptureToggle:
@@ -523,21 +536,26 @@ void CMemSpyAppUi::OnCmdOpenL()
     }
 
 
-void CMemSpyAppUi::OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::TOperation aOp )
-    {	/* TODO
+void CMemSpyAppUi::OnCmdPhoneInformationOperationL( TDeviceWideOperation aOperation )
+    {	
+	//
+	//CMemSpyDeviceWideOperationDialog::ExecuteLD( iMemSpySession, aOperation );
+	CMemSpyDwoTracker* tracker = CMemSpyDeviceWideOperationDialog::CreateDeviceWideOperation( iMemSpySession, aOperation );
+	tracker->Start();		
+	/*
 #ifdef _DEBUG
     RDebug::Printf( "[MemSpy] CMemSpyAppUi::OnCmdPhoneInformationOperationL() - START - aOp: %d, iRunningDeviceWideOperation: %d, iAutoCaptureTimer is active: %d", aOp, iRunningDeviceWideOperation, iAutoCaptureTimer->IsActive() );
 #endif
 
     if  ( !iRunningDeviceWideOperation )
-        {
-        //CMemSpyDeviceWideOperationDialog::ExecuteLD( iEngine, *this, aOp );
+        {        
 		CMemSpyDeviceWideOperationDialog::ExecuteLD( iMemSpySession, *this, aOp );
         }
 
 #ifdef _DEBUG
     RDebug::Printf( "[MemSpy] CMemSpyAppUi::OnCmdPhoneInformationOperationL() - END - aOp: %d, iRunningDeviceWideOperation: %d, iAutoCaptureTimer is active: %d", aOp, iRunningDeviceWideOperation, iAutoCaptureTimer->IsActive() );
-#endif*/
+#endif
+	*/
     }
 
 
@@ -639,7 +657,7 @@ void CMemSpyAppUi::AutoCaptureCallBackL()
     RDebug::Printf( "[MemSpy] CMemSpyAppUi::AutoCaptureCallBackL() - START - iAutoCaptureOperationType: %d, iAutoCaptureTimer is active: %d", iAutoCaptureOperationType, iAutoCaptureTimer->IsActive() );
 #endif
 
-    OnCmdPhoneInformationOperationL( iAutoCaptureOperationType );
+   // OnCmdPhoneInformationOperationL( iAutoCaptureOperationType );
 
 #ifdef _DEBUG
     RDebug::Printf( "[MemSpy] CMemSpyAppUi::AutoCaptureCallBackL() - END - iAutoCaptureOperationType: %d, iAutoCaptureTimer is active: %d", iAutoCaptureOperationType, iAutoCaptureTimer->IsActive() );
@@ -668,25 +686,15 @@ void CMemSpyAppUi::AutoCaptureCallBackL()
 
 void CMemSpyAppUi::OnCmdOutputToDebugL()
     {
-	/* TODO
-	iMemSpyAPI.OutputToDebug();
-	*/
-	/*
-    iEngine.InstallSinkL( ESinkTypeDebug );
-    MemSpyDocument().Settings().StoreSettingsL();
-    */
+	iMemSpySession.SwitchOutputSink( ESinkTypeDebug ); //set in engine
+	MemSpyDocument().Settings().SetSinkType( ESinkTypeDebug ); //set in settings
     }
 
 
 void CMemSpyAppUi::OnCmdOutputToFileL()
     {
-	/* TODO
-	iMemSpyAPI.OutputToFile();
-	*/
-	/*
-    iEngine.InstallSinkL( ESinkTypeFile );
-    MemSpyDocument().Settings().StoreSettingsL();
-    */
+	iMemSpySession.SwitchOutputSink( ESinkTypeFile ); //set in engine
+	MemSpyDocument().Settings().SetSinkType( ESinkTypeFile ); //set in settings
     }
 
 

@@ -24,7 +24,7 @@
 #include "creator_modulebase.h"
 
 static const TInt KPhonebookFieldLength = 128;
-static const TInt KCreateRandomAmountOfGroups = -9999;
+static const TInt KCreateRandomAmountOfGroups = 1;
 
 class CCreatorModuleBaseParameters;
 

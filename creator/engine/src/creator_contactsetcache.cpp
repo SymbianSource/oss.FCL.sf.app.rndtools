@@ -32,17 +32,17 @@ TInt CCreatorContactSet::LinkId() const
     return iLinkId;
     }
 
-void CCreatorContactSet::AppendL(QContactLocalId aContactLink)
+void CCreatorContactSet::AppendL(TUint32 aContactLink)
     {
     iContactLinks.AppendL(aContactLink);
     }
 
-RArray<QContactLocalId> CCreatorContactSet::ContactLinks()
+RArray<TUint32> CCreatorContactSet::ContactLinks()
     {
     return iContactLinks;
     }
 
-const RArray<QContactLocalId> CCreatorContactSet::ContactLinks() const
+const RArray<TUint32> CCreatorContactSet::ContactLinks() const
     {
     return iContactLinks;
     }
@@ -73,8 +73,8 @@ public:
     virtual ~CContactLinkCacheImp();
     virtual void AppendL(CCreatorContactSet* aContactSet); 
 
-    virtual RArray<QContactLocalId> ContactLinks(TInt aLinkId);
-    virtual const RArray<QContactLocalId> ContactLinks(TInt aLinkId) const;
+    virtual RArray<TUint32> ContactLinks(TInt aLinkId);
+    virtual const RArray<TUint32> ContactLinks(TInt aLinkId) const;
 
     virtual RPointerArray<CCreatorContactSet>& ContactSets();
     virtual const RPointerArray<CCreatorContactSet>& ContactSets() const;
@@ -85,7 +85,7 @@ private:
     void ConstructL();
     CContactLinkCacheImp();
     
-    RArray<QContactLocalId> iEmptyLinks;
+    RArray<TUint32> iEmptyLinks;
 
     RPointerArray<CCreatorContactSet> iContactSets;
     CCreatorContactSet* iDummyContactSet;
@@ -123,7 +123,7 @@ void CContactLinkCacheImp::AppendL(CCreatorContactSet* aContactSet)
     {
     iContactSets.AppendL(aContactSet);
     }
-RArray<QContactLocalId> CContactLinkCacheImp::ContactLinks(TInt aLinkId)
+RArray<TUint32> CContactLinkCacheImp::ContactLinks(TInt aLinkId)
     {
     for( TInt i = 0; i < iContactSets.Count(); ++i )
         {
@@ -135,7 +135,7 @@ RArray<QContactLocalId> CContactLinkCacheImp::ContactLinks(TInt aLinkId)
     return iEmptyLinks;
     }
 
-const RArray<QContactLocalId> CContactLinkCacheImp::ContactLinks(TInt aLinkId) const
+const RArray<TUint32> CContactLinkCacheImp::ContactLinks(TInt aLinkId) const
     {
     for( TInt i = 0; i < iContactSets.Count(); ++i )
         {

@@ -20,6 +20,8 @@
 #include <s32file.h> 
 #include <coemain.h>
 
+#include <driveinfo.h>
+
 #include <datacreator.rsg>
 
 #include "mainview.h"
@@ -31,12 +33,12 @@
 
 #include "creator_scriptentry.h"
 #include "creator_modulebase.h"
-#include "creator_browser.h"
+//#include "creator_browser.h"
 #include "creator_calendar.h"
 #include "creator_phonebookbase.h"
 #include "creator_note.h"
 #include "creator_log.h"
-#include "creator_connectionmethodbase.h"
+//#include "creator_connectionmethodbase.h"
 #include "creator_mailbox.h"
 //#include "creator_imps.h"
 #include "creator_message.h"
@@ -140,6 +142,7 @@ CCreatorEngine::~CCreatorEngine()
 
 	iEnv->DeleteResourceFile(iResourceFileId);
     
+	iMemoryDetailsList.Reset();
     delete iPictureFileArray;
     delete iSoundFileArray;
     delete iTempPath;
@@ -174,52 +177,49 @@ void CCreatorEngine::CopyFileL(const TFileName& aSourceFile, const TFileName& aT
 	
 void CCreatorEngine::RequestMemoryDetails() 
     {
-    // variables for memory and disk handling
-    TDriveNumber cDrive=EDriveC;
-    TDriveNumber dDrive=EDriveD;
-    TDriveNumber eDrive=EDriveE;
-    TVolumeInfo vinfo;
-    TBuf<16> cFree;
-    TBuf<16> dFree;
-    TBuf<16> eFree;
-    TBuf<16> cSize;
-    TBuf<16> dSize;
-    TBuf<16> eSize;
 
+	TDriveList dl;
+    // variables for memory and disk handling
+    TVolumeInfo vinfo;
+
+    //*************************************************************************
+   
+    //*************************************************************************
     // get an access to file server
     RFs& fsSession = CEikonEnv::Static()->FsSession();
 
-    // check the C-drive
-    fsSession.Volume(vinfo, cDrive);
-    iMemoryDetails.iCFree.Num(TInt64(vinfo.iFree/1024));
-    iMemoryDetails.iCSize.Num(TInt64(vinfo.iSize/1024));
-
-    // the same thing for D-drive
-    fsSession.Volume(vinfo, dDrive);
-	iMemoryDetails.iDFree.Num(TInt64(vinfo.iFree/1024));
-	iMemoryDetails.iDSize.Num(TInt64(vinfo.iSize/1024));
-
-    // the same thing for E-drive (MMC), if it exists 
-    if (MMC_OK())
-        {
-        fsSession.Volume(vinfo, eDrive);
-        iMemoryDetails.iEFree.Num(TInt64(vinfo.iFree/1024));
-		iMemoryDetails.iESize.Num(TInt64(vinfo.iSize/1024));
-
-        }
-	
-	else {
-		iMemoryDetails.iEFree = KEDriveError;
-		iMemoryDetails.iENotAvailable = ETrue;
-		}
+    fsSession.DriveList(dl);
+    
+    for(TInt driveNum = EDriveC; driveNum <= EDriveZ ; driveNum ++ )
+    	{
+		if( dl[driveNum] )
+			{
+			TMemoryDetails *memDet = new TMemoryDetails;
+			if(fsSession.Volume(vinfo, driveNum) == KErrNone)
+				{
+				memDet->iFree.Num(TInt64(vinfo.iFree/1024));
+				memDet->iSize.Num(TInt64(vinfo.iSize/1024));
+				}
+			else
+				{
+				memDet->iFree.Num( 0 );
+				memDet->iSize.Num( 0 );
+				}
+			User::LeaveIfError(fsSession.DriveToChar(driveNum,memDet->iDriveLetter));
+			iMemoryDetailsList.AppendL( memDet );
+			}
+    	}
+  
     // available work memory
     TMemoryInfoV1Buf memory;
     UserHal::MemoryInfo(memory);
     TInt64 freeMemBytes=(TInt64)(memory().iFreeRamInBytes);
     TInt64 sizeMemBytes=(TInt64)(memory().iTotalRamInBytes);
     TInt64 sizeWorkMemBytes = sizeMemBytes; 
-    iMemoryDetails.iHFree.Num(TInt64(freeMemBytes/1024));
-    iMemoryDetails.iHSize.Num(TInt64(sizeWorkMemBytes/1024));
+    TInt64 sizeRomBytes = (TInt64)(memory().iTotalRomInBytes);
+    iMemoryDetails.iRamFree.Num(TInt64(freeMemBytes/1024));
+    iMemoryDetails.iRamSize.Num(TInt64(sizeWorkMemBytes/1024));
+    iMemoryDetails.iRomSize.Num(TInt64(sizeRomBytes/1024));
     }
 
 // ---------------------------------------------------------------------------
@@ -304,11 +304,12 @@ void CCreatorEngine::RunL()
     TCreatorIds cmd = (TCreatorIds)iCommandArray->At(iCurrentEntry).iCommandId; 
     switch( cmd )
         {
+/*        
 	    case ECmdCreateBrowserBookmarkEntries: { iBrowser->CreateBookmarkEntryL(reinterpret_cast<CBrowserParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 	    case ECmdCreateBrowserBookmarkFolderEntries: { iBrowser->CreateBookmarkFolderEntryL(reinterpret_cast<CBrowserParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 	    case ECmdCreateBrowserSavedPageEntries: { iBrowser->CreateSavedDeckEntryL(reinterpret_cast<CBrowserParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 	    case ECmdCreateBrowserSavedPageFolderEntries: { iBrowser->CreateSavedDeckFolderEntryL(reinterpret_cast<CBrowserParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
-	    
+*/	    
         case ECmdCreateCalendarEntryAppointments: { iCalendar->CreateAppointmentEntryL(iCommandArray->At(iCurrentEntry).iParameters); } break;
 	    case ECmdCreateCalendarEntryEvents: { iCalendar->CreateEventEntryL(iCommandArray->At(iCurrentEntry).iParameters); } break;
 	    case ECmdCreateCalendarEntryAnniversaries: { iCalendar->CreateAnniversaryEntryL(iCommandArray->At(iCurrentEntry).iParameters); } break;
@@ -325,11 +326,11 @@ void CCreatorEngine::RunL()
 	    case ECmdCreateLogEntryMissedCalls: { iLogs->CreateMissedCallEntryL(reinterpret_cast<CLogsParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 	    case ECmdCreateLogEntryReceivedCalls: { iLogs->CreateReceivedCallEntryL(reinterpret_cast<CLogsParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
 	    case ECmdCreateLogEntryDialledNumbers: { iLogs->CreateDialledNumberEntryL(reinterpret_cast<CLogsParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
-
+/*
         case ECmdCreateMiscEntryAccessPoints: { iAccessPoints->CreateConnectionSettingsEntryL(iCommandArray->At(iCurrentEntry).iParameters); } break;
         case ECmdDeleteIAPs: { iAccessPoints->DeleteAllL(); } break;
         case ECmdDeleteCreatorIAPs: { iAccessPoints->DeleteAllCreatedByCreatorL(); } break;
-
+*/
         case ECmdCreateMiscEntryLandmarks: { iLandmarks->CreateLandmarkEntryL(reinterpret_cast<CLandmarkParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
         
 	    case ECmdCreateMessagingEntryMailboxes: { iMailboxes->CreateMailboxEntryL(reinterpret_cast<CMailboxesParameters*>(iCommandArray->At(iCurrentEntry).iParameters)); } break;
@@ -494,7 +495,8 @@ void CCreatorEngine::RunL()
             {
 //            iIMPS->DeleteAllCreatedByCreatorL();
             break;
-            }            
+            }
+/*            
         case ECmdDeleteBrowserBookmarks:
             {
             iBrowser->DeleteAllBookmarksL();
@@ -535,6 +537,7 @@ void CCreatorEngine::RunL()
             iBrowser->DeleteAllSavedPageFoldersCreatedByCreatorL();
             break;
             }
+*/            
         case ECmdDeleteCreatorFiles:
             {
             iFiles->DeleteAllCreatedByCreatorL();
@@ -723,12 +726,12 @@ void CCreatorEngine::StartEnginesL()
 
     // init all modules here
     TInt err(KErrNone);
-    TRAP(err, iBrowser = CCreatorBrowser::NewL(this));
+//    TRAP(err, iBrowser = CCreatorBrowser::NewL(this));
     TRAP(err, iCalendar = CCreatorInterimCalendar::NewL(this));
     TRAP(err, iPhonebook = (CCreatorPhonebookBase*)TCreatorFactory::CreatePhoneBookL(this)); 
     TRAP(err, iNotepad = CCreatorNotepad::NewL(this));
     TRAP(err, iLogs = CCreatorLogs::NewL(this));
-    TRAP(err, iAccessPoints = (CCreatorConnectionSettingsBase*)TCreatorFactory::CreateConnectionSettingsL(this));
+//    TRAP(err, iAccessPoints = (CCreatorConnectionSettingsBase*)TCreatorFactory::CreateConnectionSettingsL(this));
     TRAP(err, iMailboxes = CCreatorMailboxes::NewL(this));
     TRAP(err, iFiles = CCreatorFiles::NewL(this));
     TRAP(err, iMessages = CCreatorMessages::NewL(this));
@@ -767,8 +770,8 @@ void CCreatorEngine::ShutDownEnginesL()
     iFiles = NULL;
     delete iMailboxes;
     iMailboxes = NULL;
-    delete iAccessPoints;
-    iAccessPoints = NULL;
+ //   delete iAccessPoints;
+//    iAccessPoints = NULL;
     delete iLogs;
     iLogs = NULL;
     delete iNotepad;
@@ -777,8 +780,8 @@ void CCreatorEngine::ShutDownEnginesL()
     iPhonebook = NULL;
     delete iCalendar;
     iCalendar = NULL;
-    delete iBrowser;
-    iBrowser = NULL;
+ //   delete iBrowser;
+ //   iBrowser = NULL;
     delete iLandmarks;
     iLandmarks = NULL;
 
@@ -945,14 +948,14 @@ void CCreatorEngine::QueryDialogClosedL( TBool aPositiveAction, TInt aUserData )
             AppendToCommandArrayL( ECmdDeleteContacts, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteContactGroups, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCalendarEntries, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteBrowserBookmarks, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteBrowserBookmarkFolders, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteBrowserSavedPages, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteBrowserSavedPageFolders, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteBrowserBookmarks, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteBrowserBookmarkFolders, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteBrowserSavedPages, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteBrowserSavedPageFolders, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteLogs, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteMessages, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteIAPs, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteIMPSs, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteIAPs, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteIMPSs, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteNotes, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteLandmarks, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorFiles, NULL, 1 );
@@ -964,15 +967,17 @@ void CCreatorEngine::QueryDialogClosedL( TBool aPositiveAction, TInt aUserData )
             AppendToCommandArrayL( ECmdDeleteCreatorContacts, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorContactGroups, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorCalendarEntries, NULL, 1 );
+            /*
             AppendToCommandArrayL( ECmdDeleteCreatorBrowserBookmarks, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorBrowserBookmarkFolders, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorBrowserSavedPages, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorBrowserSavedPageFolders, NULL, 1 );
+            */
             AppendToCommandArrayL( ECmdDeleteCreatorFiles, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorLogs, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorMessages, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteCreatorIAPs, NULL, 1 );
-            AppendToCommandArrayL( ECmdDeleteCreatorIMPSs, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteCreatorIAPs, NULL, 1 );
+            //AppendToCommandArrayL( ECmdDeleteCreatorIMPSs, NULL, 1 );
             AppendToCommandArrayL( ECmdDeleteCreatorLandmarks, NULL, 1 );
             
             // started exucuting delete commands
@@ -997,7 +1002,8 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
     // set the home module
     switch(aCommand)
         {
-	    case ECmdCreateBrowserBookmarkEntries:
+/*
+        case ECmdCreateBrowserBookmarkEntries:
 	    case ECmdCreateBrowserBookmarkFolderEntries:
 	    case ECmdCreateBrowserSavedPageEntries:
 	    case ECmdCreateBrowserSavedPageFolderEntries:
@@ -1013,7 +1019,7 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
             iUsedOptionsMenuModule = iBrowser;
             }
             break;
-	    
+*/	    
         case ECmdCreateCalendarEntryAppointments:
 	    case ECmdCreateCalendarEntryEvents:
 	    case ECmdCreateCalendarEntryAnniversaries:
@@ -1054,7 +1060,7 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
             iUsedOptionsMenuModule = iLogs;
             }
             break;
-
+/*
 	    case ECmdCreateMiscEntryAccessPoints:
 	    case ECmdDeleteIAPs:
 	    case ECmdDeleteCreatorIAPs:
@@ -1062,7 +1068,7 @@ void CCreatorEngine::ExecuteOptionsMenuCommandL(TInt aCommand)
             iUsedOptionsMenuModule = iAccessPoints;
             }
             break;
-
+*/
 	    case ECmdCreateMessagingEntryMailboxes:
 	    case ECmdDeleteMailboxes:
 	    case ECmdDeleteCreatorMailboxes:
@@ -1835,7 +1841,8 @@ TUint32 CCreatorEngine::AccessPointNameToIdL(const TDesC& aAPName, TBool aAnyIfN
     {
     LOGSTRING("Creator: CCreatorEngine::AccessPointNameToIdL");
     // Accespoint impl moved from engine to accespoint implementations for supporting 3.0-3.1 and 3.2->
-    return iAccessPoints->AccessPointNameToIdL(aAPName, aAnyIfNotFound );
+    //return iAccessPoints->AccessPointNameToIdL(aAPName, aAnyIfNotFound );
+    return 0;
     }
 
 static CCreatorEngine::TTestDataPath SoundFiles[] = {

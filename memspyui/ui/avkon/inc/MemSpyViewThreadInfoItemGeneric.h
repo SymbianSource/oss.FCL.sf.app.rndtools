@@ -52,7 +52,8 @@ public: // API
     CMemSpyThread& Thread() const;
     CMemSpyThreadInfoContainer& Container() const;
     CMemSpyThreadInfoItemBase& InfoItem() const;
-
+    TThreadId ThreadId() { return iThreadId; }
+    
 public: // From CMemSpyViewBase
     void RefreshL();
     TMemSpyViewType ViewType() const;

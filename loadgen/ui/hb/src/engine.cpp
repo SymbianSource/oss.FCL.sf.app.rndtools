@@ -24,7 +24,7 @@
 #include "loadgen_cpuload.h"
 #include "loadgen_memoryeat.h"
 #include "loadgen_phonecall.h"
-#include "loadgen_netconn.h"
+//#include "loadgen_netconn.h"
 #include "loadgen_keypress.h"
 #include "loadgen_pointerevent.h"
 #include "loadgen_messages.h"
@@ -530,11 +530,12 @@ void CEngine::DoStartNewLoadL(TInt aCommand)
             item = CPhoneCall::NewL(iPhoneCallAttributes, iReferenceNumber);
             break;
             }
-        case ELoadGenCmdNewLoadNetConn:
+/*        case ELoadGenCmdNewLoadNetConn:
             {
             item = CNetConn::NewL(iNetConnAttributes, iReferenceNumber);
             break;
             }
+*/            
         case ELoadGenCmdNewLoadKeyPress:
             {
             item = CKeyPress::NewL(iKeyPressAttributes, iReferenceNumber);
@@ -1022,6 +1023,7 @@ void CEngine::ChangePhoneCallAttributes(TPhoneCallAttributes aAttributes)
 
 TNetConnAttributes CEngine::GetNetConnAttributes()
 	{ 
+/*  
 	if (iEditExistingLoad == EFalse)
 		{	
 		return iNetConnAttributes; 
@@ -1031,12 +1033,14 @@ TNetConnAttributes CEngine::GetNetConnAttributes()
 		CLoadBase* aItem = iLoadItemList->At(iCurrentItemIndex);
 		return (static_cast<CNetConn*>(aItem)->Attributes());
 		}
+*/		
 	}
 
 // --------------------------------------------------------------------------------------------		
 	
 void CEngine::ChangeNetConnAttributes(TNetConnAttributes aAttributes)
 	{
+/*    
 	if (iEditExistingLoad == EFalse) 
 		{
 		iNetConnAttributes = aAttributes; 
@@ -1045,7 +1049,8 @@ void CEngine::ChangeNetConnAttributes(TNetConnAttributes aAttributes)
 		{
 		CLoadBase* aItem = iLoadItemList->At(iCurrentItemIndex);
 		static_cast<CNetConn*>(aItem)->SetAttributes(aAttributes);
-		}	
+		}
+*/			
 	}
 	
 // --------------------------------------------------------------------------------------------	

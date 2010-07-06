@@ -884,7 +884,7 @@ TPtrC TEventUtil::GetKeyScanCodeName( TInt aKeyScanCode )
 	int keyScanCodeNamesCount = (sizeof( keyScanCodeNames )/sizeof(TText*));
 	
 	for ( int i = 0; i < keyScanCodeNamesCount; i++ ) {
-		if ( keyScanCodes[ i ] == aKeyScanCode ) 
+		if ( keyScanCodes[ i ] == (TUint)aKeyScanCode ) 
 			{
 			return keyScanCodeNames[ i ];
 			}

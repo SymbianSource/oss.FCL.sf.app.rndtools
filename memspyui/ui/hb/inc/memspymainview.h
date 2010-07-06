@@ -18,17 +18,18 @@
 #ifndef MEMSPYMAINVIEW_H_
 #define MEMSPYMAINVIEW_H_
 
-#include "memspyview.h"
+#include "memspylistview.h"
 
-class MemSpyMainView : public MemSpyView
+class MemSpyMainView : public MemSpyListView
 {
     Q_OBJECT
     
 public:
 	MemSpyMainView(EngineWrapper &engine, ViewManager &viewManager) 
-		: MemSpyView(engine, viewManager) {}
+		: MemSpyListView(engine, viewManager) {}
 protected:
 	virtual void initialize(const QVariantMap& params);
+	virtual bool isBreadCrumbVisible() const;
 	
 public slots:
 	void itemClicked(const QModelIndex& index);

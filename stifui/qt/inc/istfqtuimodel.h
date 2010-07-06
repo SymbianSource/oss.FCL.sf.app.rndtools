@@ -53,3 +53,5 @@ public:
 };
 
 #endif // ISTFQTUIMODEL_H
+
+// End of File

@@ -30,15 +30,13 @@ class QSignalMapper;
 class MemoryDetails
 {
 public:
-    QString         mCFree;
-    QString         mDFree;
-    QString         mEFree;
-    QString         mHFree;
-	QString         mCSize;
-	QString         mDSize;
+	QString 		mFree;
+	QString			mSize;
+	QString			mDriveLetter;
+	
+    QString         mRamFree;
 	bool			mENotAvailable;
-	QString         mESize;
-	QString         mHSize;
+	QString         mRamSize;
 };
 
 /**
@@ -195,6 +193,7 @@ private:
 	
 	
 	MemoryDetails mMemoryDetails;
+	QList<MemoryDetails> mMemoryDetailsList;
     // signal mapper
     QSignalMapper *mSm;    
 };

@@ -55,8 +55,6 @@ QVariant MemSpyKernelObjectModel::data(const QModelIndex &index, int role) const
 
 void MemSpyKernelObjectView::initialize(const QVariantMap& params)
 {
-	MemSpyView::initialize(params);
-	
 	QStringList list = QStringList() << "Threads" << "Processes" << "Chunks" << "Libraries" <<
 			"Semaphores" << "Mutexes" << "Timers" << "Servers" << "Sessions" << "Logical Devices" <<
 			"Physical Devices" << "Logical Channels" << "Change Notifiers" << "Undertakers" <<
@@ -66,16 +64,31 @@ void MemSpyKernelObjectView::initialize(const QVariantMap& params)
 	
 	setTitle(list.at(type));
 	
+	MemSpyView::initialize(params);
+	
 	//mListView.setModel(new MemSpyKernelObjectTypeModel(mEngine, this));
 	mListView.setModel(new MemSpyKernelObjectModel(mEngine, type, this));
 	
 	connect(&mListView, SIGNAL(activated(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
 }
 
+bool MemSpyKernelObjectView::isBreadCrumbVisible() const
+{
+    return true;
+}
+            
+QString MemSpyKernelObjectView::getBreadCrumbText() const
+{
+    return tr("Kernel Objects");
+}
+
+
 void MemSpyKernelObjectView::itemClicked(const QModelIndex& index)
 {
 	QVariantMap map;
 	map.insert("details", getDetails(static_cast<MemSpyKernelObject*>(qVariantValue<void*>(index.data(Qt::UserRole)))));
+	map.insert("typeName", title());
+	map.insert("objectName", static_cast<MemSpyKernelObject*>(qVariantValue<void*>(index.data(Qt::UserRole)))->nameDetail());
     mViewManager.showView(KernelObjectDetailView, map);
 }
 

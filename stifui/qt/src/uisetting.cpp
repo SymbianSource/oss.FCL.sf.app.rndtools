@@ -65,6 +65,8 @@ void UiSetting::loadDefault()
     settingList.clear();
     settingList.insert(KShowOutput, getDefaultValue(KShowOutput));
     settingList.insert(KStyleSheet, getDefaultValue(KStyleSheet));
+    settingList.insert(KFilter, getDefaultValue(KFilter));
+    settingList.insert(KFilterCaseSens, getDefaultValue(KFilterCaseSens));
     //add mor default setting here.
     }
 
@@ -78,6 +80,14 @@ QString UiSetting::getDefaultValue(const QString& item)
     else if(item == KStyleSheet)
         {
         result = ":/qss/coffee.qss";
+        }
+    else if(item == KFilter)
+        {
+        result = "";
+        }
+    else if(item == KFilterCaseSens)
+        {
+        result = "false";
         }
     return result;
     }
@@ -102,6 +112,8 @@ bool UiSetting::load()
                 {
                 item = line.left(index).trimmed();
                 value = line.right(line.length() - index  -1);
+                if(item == KFilter) //For filter do not care about stored value
+                    value = "";
                 settingList.insert(item, value);
                 }
             }
@@ -131,3 +143,4 @@ bool UiSetting::save()
     return true;    
     }
 
+// End of File

@@ -109,3 +109,5 @@ class CUITestServerStarterApplication : public CAknApplication
 
 
 #endif /*UITESTSERVERSTARTERAPPLICATION_H_*/
+
+// End of File

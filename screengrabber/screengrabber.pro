@@ -49,7 +49,7 @@ symbian: {
         
     BLD_INF_RULES.prj_extensions += screengrabber_buildstubsis_extension
         
-		LIBS += -lestor -lws32 -lPlatformEnv -limageconversion  -lapgrfx -lcommonengine  -lfbscli -lgdi -leikcore -lbafl
+		LIBS += -lestor -lws32 -lPlatformEnv -limageconversion  -lapgrfx -lcommonengine  -lfbscli -lgdi -leikcore -lbafl -lefsrv -lapparc -lcone
 
 		HEADERS += inc/sgengine.h \
    				   inc/enginewrapper.h \

@@ -38,7 +38,7 @@ public:
     //CMemSpyViewThreadInfoItemList( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThread& aThread );
 	CMemSpyViewThreadInfoItemList( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcess, TThreadId aThread );
     ~CMemSpyViewThreadInfoItemList();
-    void ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune = NULL );
+    void ConstructL( const TRect& aRect, CCoeControl& aContainer, TMemSpyThreadInfoItemType iType);
 
 public: // API
     const CMemSpyThreadInfoItemBase& CurrentInfoItem() const;

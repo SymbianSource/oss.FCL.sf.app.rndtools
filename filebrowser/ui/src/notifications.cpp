@@ -38,7 +38,7 @@ void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QStr
 void Notifications::showAboutNote()
 {
     showMessageBox(HbMessageBox::MessageTypeInformation,
-                   "Version 5.0.1 - 21st May 2010. Copyright © 2010 Nokia Corporation"
+                   "Version 5.1.0 - 18th June 2010. Copyright © 2010 Nokia Corporation"
                         "and/or its subsidiary(-ies). All rights reserved."
                         "Licensed under Eclipse Public License v1.0.",
                    "About File Browser"
@@ -49,21 +49,23 @@ void Notifications::showAboutNote()
 
 void Notifications::showInformationNote(const QString &text, const QString &title)
 {
-    showMessageBox(HbMessageBox::MessageTypeInformation, text, title, false);
+    showMessageBox(HbMessageBox::MessageTypeInformation, text, title, 3000);
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::showErrorNote(const QString &text, bool noTimeout)
 {
-    showMessageBox(HbMessageBox::MessageTypeWarning, text, "", noTimeout ? HbPopup::NoTimeout : HbPopup::StandardTimeout);
+    showMessageBox(HbMessageBox::MessageTypeWarning, text, "",
+                   noTimeout ? HbPopup::NoTimeout : 3000 /*HbPopup::StandardTimeout*/);
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::showConfirmationNote(const QString &text, bool noTimeout)
 {
-    showMessageBox(HbMessageBox::MessageTypeWarning, text, "", noTimeout ? HbPopup::NoTimeout : HbPopup::ConfirmationNoteTimeout);
+    showMessageBox(HbMessageBox::MessageTypeInformation, text, "",
+                   noTimeout ? HbPopup::NoTimeout : 3000 /*HbPopup::ConfirmationNoteTimeout*/);
 }
 
 // ---------------------------------------------------------------------------

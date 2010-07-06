@@ -15,40 +15,48 @@
 *
 */
 
-#ifndef FILEBROWSERMAINWINDOW_H_
-#define FILEBROWSERMAINWINDOW_H_
+#ifndef FBMAINWINDOW_H_
+#define FBMAINWINDOW_H_
 
 #include <hbmainwindow.h>
 
 class HbApplication;
+class HbView;
+
 class EngineWrapper;
-class FileBrowserView;
+class FbDriveView;
+class FbFileView;
 class SettingsView;
 class EditorView;
 class SearchView;
 
-class FileBrowserMainWindow : public HbMainWindow
-    {
+class FbMainWindow : public HbMainWindow
+{
     Q_OBJECT
 
 public:
-    explicit FileBrowserMainWindow(QWidget *parent = 0);
-    virtual ~FileBrowserMainWindow();
+    explicit FbMainWindow(QWidget *parent = 0);
+    virtual ~FbMainWindow();
     
     void init();
 
 private slots:
-    void openFileBrowserView();
+    void openPreviousBrowserView();
+    void openFileBrowserView(bool);
+    void openDriveView();
+    void openFileView();
     void openSettingsView();
     void openEditorView(const QString &, bool);
     void openSearchView(const QString &);
     
 private:
-    EngineWrapper* mEngineWrapper;
-    FileBrowserView* mFileBrowserView;
-    SettingsView* mSettingsView;
-    EditorView* mEditorView;
-    SearchView* mSearchView;
-    };
+    EngineWrapper *mEngineWrapper;
+    FbDriveView *mDriveView;
+    FbFileView *mFileView;
+    SettingsView *mSettingsView;
+    EditorView *mEditorView;
+    SearchView *mSearchView;
+    HbView *mPreviousView;
+};
 
-#endif /* FILEBROWSERMAINWINDOW_H_ */
+#endif /* FBMAINWINDOW_H_ */

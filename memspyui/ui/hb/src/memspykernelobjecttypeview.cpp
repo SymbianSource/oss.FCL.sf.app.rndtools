@@ -24,6 +24,10 @@ MemSpyKernelObjectTypeModel::MemSpyKernelObjectTypeModel(EngineWrapper &engine, 
 	QAbstractListModel(parent),
 	mObjectTypes(engine.getKernelObjectTypes())
 {
+    mKernelObjectNames << "Threads" << "Processes" << "Chunks" << "Libraries" <<
+        "Semaphores" << "Mutexes" << "Timers" << "Servers" << "Sessions" << "Logical Devices" <<
+        "Physical Devices" << "Logical Channels" << "Change Notifiers" << "Undertakers" <<
+        "Message Queues" << "Property Refs." << "Conditional Vars.";
 }
 
 MemSpyKernelObjectTypeModel::~MemSpyKernelObjectTypeModel()
@@ -41,7 +45,7 @@ QVariant MemSpyKernelObjectTypeModel::data(const QModelIndex &index, int role) c
 {
 	if (role == Qt::DisplayRole) {
 		QStringList lines;
-		lines << mObjectTypes.at(index.row())->name();
+		lines << mKernelObjectNames.at(index.row());
 		lines << QString("%1, %2").
 			arg(tr("%n item(s)", "", mObjectTypes.at(index.row())->count())).
 			arg(formatSize(mObjectTypes.at(index.row())->size()));
@@ -70,9 +74,9 @@ QString MemSpyKernelObjectTypeModel::formatSize(qint64 size) const
 
 void MemSpyKernelObjectTypeView::initialize(const QVariantMap& params)
 {
-	MemSpyView::initialize(params);
-	
 	setTitle(tr("Kernel Objects"));
+		
+	MemSpyView::initialize(params);
 			
 	mListView.setModel(new MemSpyKernelObjectTypeModel(mEngine, this));
 	

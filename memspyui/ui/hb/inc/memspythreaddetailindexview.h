@@ -18,21 +18,26 @@
 #ifndef MEMSPYTHREADDETAILINDEXVIEW_H_
 #define MEMSPYTHREADDETAILINDEXVIEW_H_
 
-#include "memspyview.h"
+#include "memspylistview.h"
 #include "enginewrapper.h"
 
 class HbMenu;
 
-class MemSpyThreadDetailIndexView : public MemSpyView
+class MemSpyThreadDetailIndexView : public MemSpyListView
 {
 	Q_OBJECT
 	
 public:
 	MemSpyThreadDetailIndexView(EngineWrapper &engine, ViewManager &viewManager) 
-		: MemSpyView(engine, viewManager) {}
+		: MemSpyListView(engine, viewManager) {}
 protected:
 	virtual void initialize(const QVariantMap& params);
+	
 	virtual HbMenu* createToolMenu();
+	
+	virtual bool isBreadCrumbVisible() const;
+	    
+	virtual QString getBreadCrumbText() const;
 
 private slots:
 	void changePriority();
@@ -41,6 +46,8 @@ private slots:
 private:
 	ThreadId mThreadId;
 	HbMenu *mPriorityMenu;
+	QString mProcessName;
+	QString mThreadName;
 };
 
 #endif /* MEMSPYTHREADDETAILINDEXVIEW_H_ */

@@ -624,7 +624,7 @@ void CMemSpyViewKernelObjects::OnCmdPanicL()
 void CMemSpyViewKernelObjects::CreateTabsL()
     {
 	TMemSpyDriverContainerType type = iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Type();
-	const TPtrC pType( TypeAsString( type ) );
+	const TPtrC pType( MemSpyUiUtils::TypeAsString( type ) );
 	
 	CEikStatusPane* statusPane = static_cast<CAknAppUi*> ( iEikonEnv->EikAppUi() )->StatusPane();
 	TUid uid;
@@ -634,89 +634,6 @@ void CMemSpyViewKernelObjects::CreateTabsL()
 	iNaviPane->PushL(*iNavDecorator); 		
     }
 
-TPtrC CMemSpyViewKernelObjects::TypeAsString( TMemSpyDriverContainerType aType )
-	{
-	 _LIT( KTypeUnknown, "Unknown Type" );
-	 _LIT( KTypeThread, "Thread" );
-	 _LIT( KTypeProcess, "Process" );
-	 _LIT( KTypeChunk, "Chunk" );
-	 _LIT( KTypeLibrary, "Library" );
-	 _LIT( KTypeSemaphore, "Semaphore" );
-	 _LIT( KTypeMutex, "Mutex" );
-	 _LIT( KTypeTimer, "Timer" );
-	 _LIT( KTypeServer, "Server" );
-	 _LIT( KTypeSession, "Session" );
-	 _LIT( KTypeLogicalDevice, "Logical Device" );
-	 _LIT( KTypePhysicalDevice, "Physical Device" );
-	 _LIT( KTypeLogicalChannel, "Logical Channel" );
-	 _LIT( KTypeChangeNotifier, "Change Notifier" );
-	 _LIT( KTypeUndertaker, "Undertaker" );
-	 _LIT( KTypeMsgQueue, "Msg. Queue" );
-	 _LIT( KTypePropertyRef, "Property Ref." );
-	 _LIT( KTypeCondVar, "Conditional Var." );
-	 //
-	 TPtrC pType( KTypeUnknown );
-	 //
-	 switch( aType )
-		{
-	    case EMemSpyDriverContainerTypeThread:
-	    	pType.Set( KTypeThread );
-	    	break;
-	    case EMemSpyDriverContainerTypeProcess:
-	        pType.Set( KTypeProcess );
-	        break;
-	    case EMemSpyDriverContainerTypeChunk:
-	        pType.Set( KTypeChunk );
-	        break;
-	    case EMemSpyDriverContainerTypeLibrary:
-	        pType.Set( KTypeLibrary );
-	        break;
-	    case EMemSpyDriverContainerTypeSemaphore:
-	        pType.Set( KTypeSemaphore );
-	        break;
-	    case EMemSpyDriverContainerTypeMutex:
-	        pType.Set( KTypeMutex );
-	        break;
-	    case EMemSpyDriverContainerTypeTimer:
-	        pType.Set( KTypeTimer );
-	        break;
-	    case EMemSpyDriverContainerTypeServer:
-	        pType.Set( KTypeServer );
-	        break;
-	    case EMemSpyDriverContainerTypeSession:
-	        pType.Set( KTypeSession );
-	        break;
-	    case EMemSpyDriverContainerTypeLogicalDevice:
-	        pType.Set( KTypeLogicalDevice );
-	        break;
-	    case EMemSpyDriverContainerTypePhysicalDevice:
-	        pType.Set( KTypePhysicalDevice );
-	        break;
-	    case EMemSpyDriverContainerTypeLogicalChannel:
-	        pType.Set( KTypeLogicalChannel );
-	        break;
-	    case EMemSpyDriverContainerTypeChangeNotifier:
-	        pType.Set( KTypeChangeNotifier );
-	        break;
-	    case EMemSpyDriverContainerTypeUndertaker:
-	        pType.Set( KTypeUndertaker );
-	        break;
-	    case EMemSpyDriverContainerTypeMsgQueue:
-	        pType.Set( KTypeMsgQueue );
-	        break;
-	    case EMemSpyDriverContainerTypePropertyRef:
-	        pType.Set( KTypePropertyRef );
-	        break;
-	    case EMemSpyDriverContainerTypeCondVar:
-	        pType.Set( KTypeCondVar );
-	        break;
-	        
-	    default:
-	        break;
-		}
-	    //
-	return pType;
-	}
 
 void CMemSpyViewKernelObjects::DetailsL()
     {

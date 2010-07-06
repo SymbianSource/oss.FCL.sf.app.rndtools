@@ -102,13 +102,11 @@ CMemSpyViewBase* CMemSpyViewKernel::PrepareChildViewL()
     const TInt index = iListBox->CurrentItemIndex();
     //
     if  ( index == 0 )
-        {
-        //child = new(ELeave) CMemSpyViewKernelContainers( iEngine, iObserver );
+        {        
 		child = new(ELeave) CMemSpyViewKernelContainers( iMemSpySession, iObserver );
         }
     else if ( index == 1 )
-        {
-        //child = new(ELeave) CMemSpyViewKernelHeap( iEngine, iObserver );
+        {        
 		child = new(ELeave) CMemSpyViewKernelHeap( iMemSpySession, iObserver );
         }
 	

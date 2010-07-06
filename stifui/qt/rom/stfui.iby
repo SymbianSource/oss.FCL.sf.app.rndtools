@@ -19,15 +19,15 @@
 #ifndef __STIF_UI_IBY__
 #define __STIF_UI_IBY__
 
-S60_APP_EXE(Stifqtui)
+S60_APP_EXE(Stfqtui)
 
 #ifdef S60_UPGRADABLE_APP_REG_RSC
-  S60_UPGRADABLE_APP_REG_RSC(Stifqtui)
+  S60_UPGRADABLE_APP_REG_RSC(Stfqtui)
 #else
-  S60_APP_AIF_RSC(Stifqtui)
+  S60_APP_AIF_RSC(Stfqtui)
 #endif
 
-S60_APP_RESOURCE(Stifqtui)
+S60_APP_RESOURCE(Stfqtui)
 
 #endif
 // End of File

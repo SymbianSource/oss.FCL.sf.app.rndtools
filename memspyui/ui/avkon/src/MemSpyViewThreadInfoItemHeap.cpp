@@ -26,11 +26,13 @@
 #include <memspy/engine/memspyengineobjectthreadinfocontainer.h>
 #include <memspy/engine/memspyenginehelperprocess.h>
 #include <memspy/engine/memspyenginehelperheap.h>
+#include <memspysession.h>
 
 // User includes
 #include "MemSpyContainerObserver.h"
 #include "MemSpyViewThreads.h"
 #include "MemSpyViewThreadInfoItemHeap.h"
+#include "MemSpyAppUi.h" 
 
 
 /*
@@ -74,19 +76,19 @@ TBool CMemSpyViewThreadInfoItemHeap::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapDataL()
     {
-    //iEngine.HelperHeap().OutputHeapDataUserL( Thread() ); //TODO
+	iMemSpySession.OutputThreadHeapDataL( ThreadId() );    
     }
 
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapCellListingL()
     {
-    //iEngine.HelperHeap().OutputCellListingUserL( Thread() ); //TODO
+    iMemSpySession.OutputThreadCellListL( ThreadId() );
     }
 
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapInfoL()
     {
-    //iEngine.HelperHeap().OutputHeapInfoUserL( Thread() ); //TODO
+	iMemSpySession.OutputHeapInfoUserL( ThreadId() );    
     }
 
 

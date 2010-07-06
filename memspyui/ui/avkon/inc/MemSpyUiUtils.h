@@ -20,13 +20,17 @@
 
 // System includes
 #include <e32std.h>
+#include <e32const.h>
 
 // Engine includes
 #include <memspy/engine/memspyengineutils.h>
 #include <memspy/engine/memspyengineobjectthreadinfoobjects.h>
 
+typedef TBuf<20> TMemSpySizeText;
+
 _LIT( KTab, "\t" );
-	
+
+//ThreadInfoItemList view types
 _LIT( KTypeUnknown, "Unknown Type" );
 _LIT( KGeneral, "General" );
 _LIT( KHeap, "Heap" );
@@ -50,6 +54,26 @@ _LIT( KUndertakers, "Undertakers" );
 _LIT( KLogicalDrivers, "Logical Device Drivers" );
 _LIT( KPhysicalDrivers, "Physical Device Drivers" );	
 
+//Kernel Object types
+_LIT( KTypeThread, "Thread" );
+_LIT( KTypeProcess, "Process" );
+_LIT( KTypeChunk, "Chunk" );
+_LIT( KTypeLibrary, "Library" );
+_LIT( KTypeSemaphore, "Semaphore" );
+_LIT( KTypeMutex, "Mutex" );
+_LIT( KTypeTimer, "Timer" );
+_LIT( KTypeServer, "Server" );
+_LIT( KTypeSession, "Session" );
+_LIT( KTypeLogicalDevice, "Logical Device" );
+_LIT( KTypePhysicalDevice, "Physical Device" );
+_LIT( KTypeLogicalChannel, "Logical Channel" );
+_LIT( KTypeChangeNotifier, "Change Notifier" );
+_LIT( KTypeUndertaker, "Undertaker" );
+_LIT( KTypeMsgQueue, "Msg. Queue" );
+_LIT( KTypePropertyRef, "Property Ref." );
+_LIT( KTypeCondVar, "Conditional Var." );
+
+
 class MemSpyUiUtils : public MemSpyEngineUtils
     {
 public:
@@ -57,6 +81,13 @@ public:
     static void GetErrorText( TDes& aBuf, TInt aError );
     static HBufC* FormatItem( const TDesC& aCaption );
     static TDesC& ThreadInfoItemNameByType( TMemSpyThreadInfoItemType aType );
+    static void AppendPriority( TDes& aDes, TProcessPriority aPriority );
+    static void AppendExitInfo( TDes& aDes, TExitType aType, TInt aExitReason, const TDesC& aExitCategory  );
+    static void AppendExitType( TDes& aDes, TExitType aType );
+    
+    //for Kernel Objects
+    static TPtrC TypeAsString( TMemSpyDriverContainerType aType );
+    static TMemSpySizeText FormatSizeText( const TInt64& aValue, TInt aDecimalPlaces, TBool aExtraRounding = EFalse );
     };
 
 

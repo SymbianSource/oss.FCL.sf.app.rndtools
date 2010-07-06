@@ -24,9 +24,7 @@
 #include <w32std.h>
 #include <badesca.h>
 #include <coedef.h>
-#include <AknServerApp.h>
 #include <msvapi.h>
-#include <AknProgressDialog.h>
 #include <tz.h>
 #include "FB.hrh"
 
@@ -40,16 +38,10 @@ _LIT(KErrRdDir, "c:\\resource\\");
 // FORWARD DECLARATIONS
 class CEngine;
 class CFileBrowserFileOps;
-class CAknIconArray;
-class TAknsItemID;
 class CDocumentHandler;
-//class CAknWaitDialog;
-//class CAknProgressDialog;
 class CEikProgressInfo;
 class CFBFileOpClient;
-//class CAknProgressDialog;
 class CEikProgressInfo;
-class CAknOpenFileService;
 class CMessageDigest;
 
 // CLASS DECLARATIONS
@@ -182,7 +174,7 @@ typedef CArrayFixSeg<TCommand> CCommandArray;
 
 
 
-class CFileBrowserFileUtils : public CActive, public MAknServerAppExitObserver, public MMsvSessionObserver//, public MProgressDialogCallback
+class CFileBrowserFileUtils : public CActive, public MMsvSessionObserver
 	{
 private:
     enum TState // active object states
@@ -208,9 +200,6 @@ private: // from CActive
 	void RunL();
         TInt RunError(TInt aError);
 	void DoCancel();
-
-private: // from MAknServerAppExitObserver
-    void HandleServerAppExit(TInt aReason);
 
 private: // from MMsvSessionObserver
     void HandleSessionEventL(TMsvSessionEvent aEvent, TAny* aArg1, TAny* aArg2, TAny* aArg3);
@@ -346,10 +335,10 @@ private:
     TState                          iState;
     CEngine*                        iEngine;
     CFileBrowserFileOps*            iFileOps;
-//    CAknWaitDialog*                 iWaitDialog;
+
     TBool                           isWaitDialog;
     TBool                           isProgressDialog;
-//    CAknProgressDialog*             iProgressDialog;
+
     CEikProgressInfo*               iProgressInfo;
     CCommandArray*                  iCommandArray;
     TInt                            iCurrentEntry;
@@ -375,7 +364,7 @@ private:
     CFileEntryList*                 iCurrentSelectionList;
     TSearchAttributes               iSearchAttributes;
     CDocumentHandler*               iDocHandler;
-    CAknOpenFileService*            iOpenFileService;
+
     RFile                           iMsgStoreWalkFile;
     TInt                            iPrevFolderIndex;
     TFileName                       iPrevFolderName;

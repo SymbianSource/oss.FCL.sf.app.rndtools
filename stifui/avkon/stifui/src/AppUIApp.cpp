@@ -67,5 +67,4 @@ CApaDocument* CAppUIApp::CreateDocumentL()
 		return EikStart::RunApplication(NewApplication);
 		}
 
-
 // End of File

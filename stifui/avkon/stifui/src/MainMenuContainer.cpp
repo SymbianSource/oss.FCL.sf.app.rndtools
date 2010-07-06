@@ -214,4 +214,4 @@ void CMainMenuContainer::SaveActiveLine()
 	((CMenuListBox*)iListBox)->SaveFocusPosition();
 	}
 
-// End of File  
+// End of File

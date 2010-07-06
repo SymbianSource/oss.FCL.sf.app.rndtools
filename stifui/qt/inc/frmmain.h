@@ -96,6 +96,8 @@ private:
     UiSetting* uiSetting; 
     bool layoutType;
     QTreeWidgetItem* lastItemSelected;
+    QString currentFilter;
+    QString currentFilterCaseSens;
 
 private: //UI Components
     QWidget* centerWidget;
@@ -199,3 +201,5 @@ private slots:
 };
 
 #endif // FrmMain_H
+
+// End of File

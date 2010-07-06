@@ -137,4 +137,4 @@ void CUIStoreHandler::Update( CStartedTestCase* aTestCase, TInt aStatus )
 // ================= OTHER EXPORTED FUNCTIONS =================================
 // None
 
-//  End of File
+// End of File

@@ -19,7 +19,7 @@
 #include "engine.h"
 #include "FBFileUtils.h"
 #include "notifications.h"
-#include "filebrowserview.h"
+#include "fbfileview.h"
 #include "searchview.h"
 #include "filebrowsersettings.h"
 #include "settingsview.h"
@@ -739,7 +739,7 @@ void EngineWrapper::ShowProgressDialog(const TDesC& aDescText, TInt aMinimum, TI
     const QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
     if (!mProgressDialog) {
         mProgressDialog = new HbProgressDialog(HbProgressDialog::WaitDialog);
-        QObject::connect(mProgressDialog, SIGNAL(cancelled ()), this, SLOT(progressDialogCancelled()));
+        QObject::connect(mProgressDialog, SIGNAL(cancelled()), this, SLOT(progressDialogCancelled()));
     }
 
     mProgressDialog->setText(qText);
@@ -751,8 +751,11 @@ void EngineWrapper::ShowProgressDialog(const TDesC& aDescText, TInt aMinimum, TI
 
 void EngineWrapper::CancelProgressDialog()
 {
-    if (mProgressDialog)
+    if (mProgressDialog) {
+        QObject::disconnect(mProgressDialog, SIGNAL(cancelled()), this, SLOT(progressDialogCancelled()));
         mProgressDialog->cancel();
+        QObject::connect(mProgressDialog, SIGNAL(cancelled()), this, SLOT(progressDialogCancelled()));
+    }
 }
 
 void EngineWrapper::SetProgressValue(TInt aValue)
@@ -771,7 +774,7 @@ void EngineWrapper::ShowWaitDialog(const TDesC& aDescText)
     const QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
     if (!mWaitDialog) {
         mWaitDialog = new HbProgressDialog(HbProgressDialog::WaitDialog);
-        QObject::connect(mWaitDialog, SIGNAL(cancelled ()), this, SLOT(waitDialogCancelled()));
+        QObject::connect(mWaitDialog, SIGNAL(cancelled()), this, SLOT(waitDialogCancelled()));
     }
 
     mWaitDialog->setText(qText);

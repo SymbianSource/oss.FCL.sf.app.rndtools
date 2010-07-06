@@ -30,7 +30,10 @@ enum ViewIndex {
 	ThreadDetailView,
 	KernelObjectTypeView,
 	KernelObjectView,
-	KernelObjectDetailView
+	KernelObjectDetailView,
+	TrackingView,
+	SwmtView,
+	HeapDumpsView
 };
 
 class HbMainWindow;

@@ -18,7 +18,7 @@
 &EN
 
 ; Using UID of HtiFramework project
-#{"HTI"},(0x1020DEB6),2,24,0
+#{"HTI"},(0x1020DEB6),2,25,0
 
 ; Localised Vendor name
 %{"Nokia"}
@@ -95,6 +95,9 @@
 
 ; HTI watchdog
 ""- "z:\sys\bin\HtiWatchDog.exe"
+
+; HTI Restart
+""- "z:\sys\bin\HtiRestart.exe"
 
 ; HTI device reboot
 ""- "z:\sys\bin\HtiDeviceRebootUI.exe"

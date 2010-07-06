@@ -60,3 +60,5 @@ private slots:
     };
 
 #endif /* DLGREPEATRUN_H_ */
+
+// End of File

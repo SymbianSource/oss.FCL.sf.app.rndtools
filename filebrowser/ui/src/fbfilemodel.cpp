@@ -15,7 +15,7 @@
 *
 */
 
-#include "filebrowsermodel.h"
+#include "fbfilemodel.h"
 #include "enginewrapper.h"
 #include "fileentry.h"
 #include "driveentry.h"
@@ -29,7 +29,7 @@
 /**
   Constructs a file browser custom system model with the given \a engineWrapper and \a parent.
   */
-FileBrowserModel::FileBrowserModel(EngineWrapper *engineWrapper, QObject *parent) :
+FbFileModel::FbFileModel(EngineWrapper *engineWrapper, QObject *parent) :
     QAbstractListModel(parent),
     mEngineWrapper(engineWrapper),
     mFileIconProvider(0)
@@ -40,7 +40,7 @@ FileBrowserModel::FileBrowserModel(EngineWrapper *engineWrapper, QObject *parent
 /**
   Destroys this file browser custom system model.
   */
-FileBrowserModel::~FileBrowserModel()
+FbFileModel::~FbFileModel()
 {  
     if (mFileIconProvider) {
         delete mFileIconProvider;
@@ -50,7 +50,7 @@ FileBrowserModel::~FileBrowserModel()
 /**
   \reimp
   */
-int FileBrowserModel::rowCount(const QModelIndex &parent) const
+int FbFileModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return mEngineWrapper->itemCount();
@@ -59,7 +59,7 @@ int FileBrowserModel::rowCount(const QModelIndex &parent) const
 /**
   \reimp
   */
-QVariant FileBrowserModel::data(const QModelIndex &index, int role) const
+QVariant FbFileModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid() || index.model() != this)
         return QVariant();
@@ -68,25 +68,25 @@ QVariant FileBrowserModel::data(const QModelIndex &index, int role) const
     case Qt::EditRole:
     case Qt::DisplayRole: {
             QStringList listItem;
-            if (mEngineWrapper->isDriveListViewActive()) {
-                DriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
-                if (mEngineWrapper->settings().fileViewMode() == EFileViewModeSimple)
-                {
-                    const QString SimpleDriveEntry("%1: <%2>");
-                    listItem /*<< driveEntry.IconId() */
-                            << SimpleDriveEntry.arg(driveEntry.driveLetter())
-                                               .arg(driveEntry.mediaTypeString());
-                } else if (mEngineWrapper->settings().fileViewMode() == EFileViewModeExtended) {
-                    const QString SimpleDriveEntry("%1: <%2>");
-                    const QString ExtendedDriveEntry("%1/%2 kB");
-                    listItem /*<< driveEntry.IconId()*/
-                            << SimpleDriveEntry.arg(driveEntry.driveLetter())
-                                               .arg(driveEntry.mediaTypeString())
-                            << ExtendedDriveEntry.arg(QString::number(driveEntry.volumeInfoFree()/1024))
-                                                 .arg(QString::number(driveEntry.volumeInfoSize()/1024));
-
-                }
-            } else {
+//            if (mEngineWrapper->isDriveListViewActive()) {
+//                DriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
+//                if (mEngineWrapper->settings().fileViewMode() == EFileViewModeSimple)
+//                {
+//                    const QString SimpleDriveEntry("%1: <%2>");
+//                    listItem /*<< driveEntry.IconId() */
+//                            << SimpleDriveEntry.arg(driveEntry.driveLetter())
+//                                               .arg(driveEntry.mediaTypeString());
+//                } else if (mEngineWrapper->settings().fileViewMode() == EFileViewModeExtended) {
+//                    const QString SimpleDriveEntry("%1: <%2>");
+//                    const QString ExtendedDriveEntry("%1/%2 kB");
+//                    listItem /*<< driveEntry.IconId()*/
+//                            << SimpleDriveEntry.arg(driveEntry.driveLetter())
+//                                               .arg(driveEntry.mediaTypeString())
+//                            << ExtendedDriveEntry.arg(QString::number(driveEntry.volumeInfoFree()/1024))
+//                                                 .arg(QString::number(driveEntry.volumeInfoSize()/1024));
+//
+//                }
+//            } else {
                 FileEntry fileEntry(mEngineWrapper->getFileEntry(index));
                 if (mEngineWrapper->settings().fileViewMode() == EFileViewModeSimple)
                 {
@@ -105,22 +105,22 @@ QVariant FileBrowserModel::data(const QModelIndex &index, int role) const
                     listItem /*<< fileEntry.IconId()*/
                             << fileEntry.name() << extraData << fileEntry.attributesString();
                 }
-            }
+//            }
             return listItem;
         }
     case Qt::DecorationRole: {
             if (mEngineWrapper) {
                 QIcon icon;
-                if (mEngineWrapper->isDriveListViewActive()) {
-                    icon = mFileIconProvider->icon(QFileIconProvider::Drive);
-                } else {
+//                if (mEngineWrapper->isDriveListViewActive()) {
+//                    icon = mFileIconProvider->icon(QFileIconProvider::Drive);
+//                } else {
                     FileEntry fileEntry(mEngineWrapper->getFileEntry(index));
                     if (fileEntry.isDir()) {
                         icon = mFileIconProvider->icon(QFileIconProvider::Folder);
                     } else {
                         icon = mFileIconProvider->icon(QFileIconProvider::File);
                     }
-                }
+//                }
                 return QVariant(icon);
             }
         }
@@ -132,7 +132,7 @@ QVariant FileBrowserModel::data(const QModelIndex &index, int role) const
 /**
   \reimp
   */
-QVariant FileBrowserModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant FbFileModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_UNUSED(section)
     Q_UNUSED(orientation)

@@ -154,20 +154,20 @@ void CEngine::LoadSettingsL()
     iSettings.iRememberLastPath = EFalse;
     iSettings.iLastPath = KNullDesC;
     iSettings.iRememberFolderSelection = ETrue;
-#if 0 // TODO
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && !defined __S60_32__)
-    if ( AknLayoutUtils::PenEnabled() )
-        {
-        iSettings.iEnableToolbar = ETrue;
-        }
-    else
-        {
-        iSettings.iEnableToolbar = EFalse;
-        }
-#else
-    iSettings.iEnableToolbar = EFalse;
-#endif
-#endif // TODO
+//#if 0 // TODO
+//#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && !defined __S60_32__)
+//    if ( AknLayoutUtils::PenEnabled() )
+//        {
+//        iSettings.iEnableToolbar = ETrue;
+//        }
+//    else
+//        {
+//        iSettings.iEnableToolbar = EFalse;
+//        }
+//#else
+//    iSettings.iEnableToolbar = EFalse;
+//#endif
+//#endif // TODO
 
     iSettings.iSupportNetworkDrives = EFalse;
     iSettings.iBypassPlatformSecurity = EFalse;
@@ -329,7 +329,7 @@ void CAsyncWaiter::DoCancel()
         User::RequestComplete( s, KErrCancel );
         }
 
-    //CAknEnv::StopSchedulerWaitWithBusyMessage( iWait );
+        //CAknEnv::StopSchedulerWaitWithBusyMessage( iWait );
 	iWait.AsyncStop();
 	}
 
