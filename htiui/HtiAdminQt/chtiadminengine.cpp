@@ -121,6 +121,7 @@ void CHtiAdminEngine::ConstructL(HtiEngineWrapper *aEngineWrapper)
     iHtiCfg = CHtiCfg::NewL();
     
     CheckStatusesL();
+    StartTimer();
     }
 
 // ---------------------------------------------------------------------------
@@ -594,15 +595,6 @@ void CHtiAdminEngine::UpdateStatusL()
             case EExitPending:
                 {
                 iEngineWrapper->updateStatus(HtiEngineWrapper::Running);
-		
-                // start timer to watch the status
-                if ( !iPeriodic )
-                    {
-                    iPeriodic = CPeriodic::NewL( CActive::EPriorityStandard );
-                    iPeriodic->Start( 5 * 1000 * 1000,
-                                      5 * 1000 * 1000,
-                                      TCallBack( TimerCallBackL, this ) );
-                    }
                 }
                 break;
 
@@ -610,22 +602,16 @@ void CHtiAdminEngine::UpdateStatusL()
             case EExitTerminate:
                 {
                 iEngineWrapper->updateStatus(HtiEngineWrapper::Stopped);
-                KillTimer();
                 }
                 break;
 
             case EExitPanic:
                 {
                 iEngineWrapper->updateStatus(HtiEngineWrapper::Panic);
-                KillTimer();
                 }
                 break;
             };
         prs.Close();
-        }
-    else
-        {
-        KillTimer();
         }
     }
 
@@ -646,6 +632,18 @@ void CHtiAdminEngine::KillHtiWatchDogL()
         }
     }
 
+// ---------------------------------------------------------------------------
+void CHtiAdminEngine::StartTimer()
+    {
+    // start timer to watch the status
+    if ( !iPeriodic )
+        {
+        iPeriodic = CPeriodic::NewL( CActive::EPriorityIdle );
+        iPeriodic->Start( 1 * 1000 * 1000,
+                          10 * 1000 * 1000,
+                          TCallBack( TimerCallBackL, this ) );
+        }
+    }
 // ---------------------------------------------------------------------------
 void CHtiAdminEngine::KillTimer()
     {

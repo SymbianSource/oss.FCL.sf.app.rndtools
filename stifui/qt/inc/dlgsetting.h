@@ -25,6 +25,8 @@ class QTabWidget;
 class QGridLayout;
 class QCheckBox;
 class QPushButton;
+class QLabel;
+class QLineEdit;
 QT_END_NAMESPACE
 
 class DlgSetting : public QDialog {    
@@ -40,6 +42,9 @@ private:
     QPushButton* btnOk;
     QPushButton* btnCancel;
     QCheckBox* chkShowoutput;
+    QLabel* lblFilter;
+    QLineEdit* ledFilter;
+    QCheckBox* chkFilterCaseSens;
     
 private slots:
     void on_btnOk_clicked();
@@ -51,3 +56,5 @@ private:
     };
 
 #endif /* DLGSETTING_H_ */
+
+// End of File

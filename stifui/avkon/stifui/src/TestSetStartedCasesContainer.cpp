@@ -446,7 +446,6 @@ void CTestSetStartedCasesContainer::RemoveSelectedExecutionsL()
 //
 void CTestSetStartedCasesContainer::RemoveAllExecutionsInViewL()
     {
-    TInt exutionsInViewCount = iStartedTestsPtrs.Count();
     iStartedTestsPtrs.Reset(); //Empties the array, does not delete the objects whose pointers are contained in the array
     HandleItemRemovalL();
 
@@ -463,4 +462,4 @@ void CTestSetStartedCasesContainer::SaveActiveLine()
 	((CMenuListBox*)iListBox)->SaveFocusPosition();
 	}
 
-// End of File  
+// End of File

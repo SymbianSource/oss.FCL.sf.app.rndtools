@@ -54,5 +54,3 @@ class CAppUIApp : public CAknApplication
 #endif
 
 // End of File
-
-// End of File

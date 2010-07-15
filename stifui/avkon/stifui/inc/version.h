@@ -20,10 +20,12 @@
 
 #define STIFUI_MAJOR_VERSION 7
 #define STIFUI_MINOR_VERSION 3
-#define STIFUI_BUILD_VERSION 34
+#define STIFUI_BUILD_VERSION 35
 
-#define STIFUI_REL_DATE "1st June 2010"
+#define STIFUI_REL_DATE "15th June 2010"
 
 #define TO_UNICODE(text) _L(text) 
 
 #endif /*VERSION_H_*/
+
+// End of File

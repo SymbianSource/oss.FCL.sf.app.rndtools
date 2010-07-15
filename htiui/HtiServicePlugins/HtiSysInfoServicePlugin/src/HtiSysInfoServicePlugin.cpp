@@ -31,6 +31,10 @@
 #include <AknSkinsInternalCRKeys.h>
 #include <AknsSkinUID.h>
 #include <AknsSrvClient.h>
+#include <AknFepInternalCRKeys.h>
+#include <AknFepGlobalEnums.h> //For chinese input modes
+#include <CommonEngineDomainCRKeys.h>
+#include <featmgr.h>
 #include <bautils.h>
 #include <btengsettings.h>
 #include <btengdomaincrkeys.h>
@@ -61,6 +65,8 @@ const TInt KTimeDataLength = 7;
 const TInt KMaxBtNameLength = 30;
 const TInt KDateTimeFormatCmdLength = 6;
 
+const TInt KFepChineseInputModeLength = 10;
+
 _LIT( KTempFilePath, "\\" );
 _LIT( KTempFileName, "HtiTempFile.tmp" );
 _LIT( KMatchFileName, "HtiTempFile.tmp*" );
@@ -83,6 +89,7 @@ _LIT8( KErrDescrDeleteTempFile, "Error deleting temp file" );
 _LIT8( KErrDescrSysUtil, "SysUtil failed" );
 _LIT8( KErrDescrSetTime, "Setting time failed" );
 _LIT8( KErrDescrDateTimeFormat, "Setting date and time formats failed" );
+_LIT8( KErrDescrSetLanguage, "Setting language failed");
 _LIT8( KErrDescrGetNetworkModes, "Getting network modes failed" );
 _LIT8( KErrDescrSetNetworkMode, "Setting network mode failed" );
 _LIT8( KErrDescrIrActivation, "IR activation failed" );
@@ -130,6 +137,8 @@ enum TSysInfoCommand
     ESysInfoSetHomeTime =     0x20,
     ESysInfoGetHomeTime =     0x21,
     ESetDateTimeFormat =      0x22,
+    
+    ESetLanguage =            0x25,
 
     ELightStatus =            0x30,
     ELightOn =                0x31,
@@ -164,6 +173,17 @@ enum TSysInfoCommand
     EActivateSkin =           0x80
     };
 
+enum TGSNumberModes
+    {
+    EGSNbrModeLatin, EGSNbrModeArabic = 1, EGSNbrModeIndic = 1
+    };
+
+// Number mode type
+enum TGSNumberModeType
+    {
+    EGSNbrModeTypeArabic, EGSNbrModeTypeIndic, EGSNbrModeTypeEasternArabic
+    // for Urdu & Farsi languages
+    };
 
 //------------------------------------------------------------------------------
 // Create instance of concrete ECOM interface implementation
@@ -211,6 +231,8 @@ CHtiSysInfoServicePlugin::~CHtiSysInfoServicePlugin()
     iAllowSSProperty.Close();
 #endif 
     delete iAllowSSSubscriber;
+    
+    FeatureManager::UnInitializeLib();
     }
 
 //------------------------------------------------------------------------------
@@ -221,6 +243,8 @@ void CHtiSysInfoServicePlugin::ConstructL()
     HTI_LOG_TEXT( "CHtiSysInfoServicePlugin::ConstructL" );
     User::LeaveIfError( iFs.Connect() );
     iFileMan = CFileMan::NewL( iFs );
+    
+    FeatureManager::InitializeLibL();
     }
 
 //------------------------------------------------------------------------------
@@ -350,6 +374,12 @@ void CHtiSysInfoServicePlugin::ProcessMessageL(const TDesC8& aMessage,
                 {
                 HTI_LOG_TEXT( "ESetDateTimeFormat" );
                 HandleSetDateTimeFormatL( aMessage );
+                }
+                break;
+            case ESetLanguage:
+                {
+                HTI_LOG_TEXT("ESetLanguage");
+                HandleSetLanguageL( aMessage);
                 }
                 break;
             case ELightStatus:
@@ -2850,6 +2880,160 @@ void CHtiSysInfoServicePlugin::HandleActivateSkinL( const TDesC8& aMessage )
     HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleActivateSkinL" );
     }
 
+//------------------------------------------------------------------------------
+// CHtiSysInfoServicePlugin::HandleSetLanguageL
+//------------------------------------------------------------------------------
+void CHtiSysInfoServicePlugin::HandleSetLanguageL( const TDesC8& aMessage )
+    {
+    HTI_LOG_FUNC_IN( "CHtiSysInfoServicePlugin::HandleSetLanguageL" );
+    if ( aMessage.Length() != 3 )
+        {
+        iDispatcher->DispatchOutgoingErrorMessage( KErrArgument,
+                KErrDescrArgument, KSysInfoServiceUid );
+        return;
+        }
+    
+    TInt language = aMessage[1] + ( aMessage[2] << 8 );
+    if(language < 0)
+        {
+        iDispatcher->DispatchOutgoingErrorMessage( KErrArgument,
+                KErrDescrSetLanguage, KSysInfoServiceUid );
+        return;
+        }
+    HTI_LOG_FORMAT( "Set language to %d", language );
+    
+    // Never set Language code 0 to HAL
+    if (language != 0)
+        {
+        User::LeaveIfError(HAL::Set(HAL::ELanguageIndex, language));
+        }
+    
+    CRepository* commonEngineRepository = CRepository::NewL(
+            KCRUidCommonEngineKeys);
+    CleanupStack::PushL(commonEngineRepository);
+    
+    User::LeaveIfError(commonEngineRepository->Set(KGSDisplayTxtLang, language));
+
+    CleanupStack::PopAndDestroy();
+
+    TBool nbrModeSaved = EFalse;
+    if (language == ELangArabic || User::Language() == ELangArabic)
+        {
+        //numberMode = EGSNumberModeArabicIndic;
+        SetDefaultNumberModeL(EGSNbrModeArabic, EGSNbrModeTypeArabic);
+        nbrModeSaved = ETrue;
+        }
+    else if ((language == ELangUrdu || User::Language() == ELangUrdu)
+            || (language == ELangFarsi || User::Language() == ELangFarsi))
+        {
+        //numberMode = EGSNumberModeEasternArabicIndic;
+        SetDefaultNumberModeL(EGSNbrModeLatin, EGSNbrModeTypeEasternArabic);
+        nbrModeSaved = ETrue;
+        }
+    else if (language == ELangHindi || User::Language() == ELangHindi
+            || language == ELangMarathi || User::Language() == ELangMarathi)
+        {
+        //numberMode = EGSNumberModeIndic;
+        SetDefaultNumberModeL(EGSNbrModeLatin, EGSNbrModeTypeIndic);
+        nbrModeSaved = ETrue;
+        }
+
+    //if number mode is not set above, then set it to Latin with respective
+    //number mode types. This part might be executed when Automatic is
+    //selected and the SIM card does not support the language.
+    if (!nbrModeSaved)
+        {
+        TInt nbrModeType = EGSNbrModeTypeIndic;
+        if (language == ELangArabic || User::Language() == ELangArabic)
+            {
+            nbrModeType = EGSNbrModeTypeArabic;
+            }
+        else if ((language == ELangUrdu || User::Language() == ELangUrdu)
+                || (language == ELangFarsi || User::Language() == ELangFarsi))
+            {
+            nbrModeType = EGSNbrModeTypeEasternArabic;
+            }
+
+        //EGSNumberModeLatin is true in both cases;
+        SetDefaultNumberModeL(EGSNbrModeLatin, nbrModeType);
+        }
+    
+    // Change input language
+    CRepository* aknFepRepository = CRepository::NewL( KCRUidAknFep );
+    CleanupStack::PushL(aknFepRepository);
+    User::LeaveIfError(  aknFepRepository->Set( KAknFepInputTxtLang,
+                                                language ));
+    // Change input method for Chinese variants
+    if( FeatureManager::FeatureSupported( KFeatureIdChinese ) )
+        {
+        TBuf<KFepChineseInputModeLength> conversion;
+        if( language == ELangPrcChinese )
+            {
+            conversion.Num( EPinyin, EHex );
+            User::LeaveIfError( aknFepRepository->Set( KAknFepChineseInputMode, conversion ) );
+            }
+        else if( language == ELangHongKongChinese )
+            {
+            conversion.Num( EStroke, EHex );
+            User::LeaveIfError( aknFepRepository->Set( KAknFepChineseInputMode, conversion ) );
+            }
+        else if( language == ELangTaiwanChinese )
+            {
+            conversion.Num( EZhuyin, EHex );
+            User::LeaveIfError( aknFepRepository->Set( KAknFepChineseInputMode, conversion ) );
+            }
+        }
+    CleanupStack::PopAndDestroy();
+    
+    iReply = HBufC8::NewL( 1 );
+    iReply->Des().Append( 0 );
+    HTI_LOG_FUNC_OUT( "CHtiSysInfoServicePlugin::HandleSetLanguageL" );
+    }
+
+void CHtiSysInfoServicePlugin::SetDefaultNumberModeL(TInt aMode, TInt aNbrModeType)
+    {
+
+    CRepository* localeRepository = CRepository::NewL(KCRUidLocaleSettings);
+    CleanupStack::PushL(localeRepository);
+    if (aNbrModeType == EGSNbrModeTypeArabic || aNbrModeType
+            == EGSNbrModeTypeEasternArabic)
+        {
+        localeRepository->Set(KSettingsDefaultNumberMode, aMode);
+        }
+    else
+        {
+        localeRepository->Set(KSettingsIndicDefaultNumberMode, aMode);
+        }
+    CleanupStack::PopAndDestroy();
+
+    TLocale locale;
+    if (aMode == EGSNbrModeLatin)
+        {
+        locale.SetDigitType(EDigitTypeWestern);
+        }
+    else
+        {
+        //if aMode <> EGSNbrModeLatin, then it should be either latin or arabic. However
+        //as EGSNbrModeArabic and EGsNbrModeIndic both have a value = 1, we can't use
+        //that constant for below comparison. Hence, need to depend on the 2nd param.
+        switch (aNbrModeType)
+            {
+            case EGSNbrModeTypeArabic:
+                locale.SetDigitType(EDigitTypeArabicIndic);
+                break;
+            case EGSNbrModeTypeIndic:
+                locale.SetDigitType(EDigitTypeDevanagari);
+                break;
+            case EGSNbrModeTypeEasternArabic:
+                locale.SetDigitType(EDigitTypeEasternArabicIndic);
+                break;
+            default:
+                break;
+            }
+        }
+
+    locale.Set();
+    }
 //------------------------------------------------------------------------------
 // CHtiSysInfoServicePlugin::ParseTimeDataL
 //------------------------------------------------------------------------------

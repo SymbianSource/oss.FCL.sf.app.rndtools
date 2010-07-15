@@ -159,5 +159,3 @@ void CMainMenuView::DoDeactivate()
     }
 
 // End of File
-
-// End of File

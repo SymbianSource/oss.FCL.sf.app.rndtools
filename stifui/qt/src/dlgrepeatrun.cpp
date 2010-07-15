@@ -129,3 +129,5 @@ void DlgRepeatRun::on_rdoGiveLoopTimes_stateChanged(bool checked)
         lineEdit->setReadOnly(false);
         }
     }
+
+// End of File

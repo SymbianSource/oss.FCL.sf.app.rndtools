@@ -65,6 +65,7 @@ LIBRARY         hwrmlightclient.lib
 LIBRARY         sysutil.lib
 LIBRARY         tzclient.lib
 LIBRARY         flogger.lib
+LIBRARY	        featmgr.lib // Chinese support
 
 SMPSAFE
 

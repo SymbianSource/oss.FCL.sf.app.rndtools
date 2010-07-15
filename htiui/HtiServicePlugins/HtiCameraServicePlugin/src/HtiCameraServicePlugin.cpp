@@ -44,6 +44,7 @@ const static TUid KCameraServiceUid = { 0x2002EA9E };
 _LIT8( KErrorNoCommand, "ERROR: No command given" );
 _LIT8( KErrorUnknownCmd, "ERROR: Unknown Camera Service command" );
 _LIT8( KErrorInitFailed, "ERROR: Failed to init");
+_LIT8( KErrorUninitialized, "ERROR: Uninitialized");
 _LIT8( KErrInvalidateParameters, "ERROR: Invalidate parameters");
 _LIT8( KErrQualityLevel, "ERROR: Invalidate quality level");
 _LIT8( KErrorPrepareVideoRecordingFailed, "ERROR: Prepare video recording failed");
@@ -83,7 +84,6 @@ CHtiCameraServicePlugin::CHtiCameraServicePlugin():iIsBusy(EFalse), iError(0),
 void CHtiCameraServicePlugin::ConstructL()
     {
     HTI_LOG_TEXT( "CHtiCameraServicePlugin::ConstructL" );
-    iVideoRecordingEngine = CEngineVideoRecording::NewL(*this, 0);
     iWaiter = new ( ELeave ) CActiveSchedulerWait;
     }
 
@@ -106,8 +106,11 @@ CHtiCameraServicePlugin* CHtiCameraServicePlugin::NewL()
 // Destructor
 CHtiCameraServicePlugin::~CHtiCameraServicePlugin()
     {
-    delete iVideoRecordingEngine;
-    iVideoRecordingEngine = NULL;
+    if(iVideoRecordingEngine)
+        {
+        delete iVideoRecordingEngine;
+        iVideoRecordingEngine = NULL;
+        }
     
     delete iWaiter;
     iWaiter = NULL;
@@ -146,8 +149,11 @@ void CHtiCameraServicePlugin::ProcessMessageL( const TDesC8& aMessage,
 
     switch (command)
         {
-        case ECmdInit:
-            TRAP(err, HandleInitCmdL(aMessage.Right( aMessage.Length() - 1 )));
+        case ECmdInitialize:
+            TRAP(err, HandleInitializeCmdL(aMessage.Right( aMessage.Length() - 1 )));
+            break;
+        case ECmdUninitialize:
+            TRAP(err, HandleUninitializeCmdL(aMessage.Right( aMessage.Length() - 1 )));
             break;
         case ECmdPrepareVideoRecording:
             TRAP(err, HandlePrepareVideoRecordingCmdL(aMessage.Right( aMessage.Length() - 1 )));
@@ -187,9 +193,9 @@ void CHtiCameraServicePlugin::ProcessMessageL( const TDesC8& aMessage,
     HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::ProcessMessageL" );
     }
 
-void CHtiCameraServicePlugin::HandleInitCmdL( const TDesC8& aData )
+void CHtiCameraServicePlugin::HandleInitializeCmdL( const TDesC8& aData )
     {
-    HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::HandleInitCmdL" );
+    HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::HandleInitializeCmdL" );
     if(aData.Length() != 0)
         {
         SendErrorMessageL(KErrArgument, KErrInvalidateParameters);
@@ -197,6 +203,13 @@ void CHtiCameraServicePlugin::HandleInitCmdL( const TDesC8& aData )
         }
     
     HTI_LOG_TEXT("Initializes Camera Application Engine");
+    if(iVideoRecordingEngine)
+        {
+        delete iVideoRecordingEngine;
+        iVideoRecordingEngine = NULL;
+        }
+    
+    iVideoRecordingEngine = CEngineVideoRecording::NewL(*this, 0);
     iVideoRecordingEngine->InitL();
     iWaiter->Start();
     if(iError != KErrNone)
@@ -211,9 +224,30 @@ void CHtiCameraServicePlugin::HandleInitCmdL( const TDesC8& aData )
         SendOkMsgL(KNullDesC8);
         }
 
-    HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::HandleInitCmdL" );
+    HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::HandleInitializeCmdL" );
     }
 
+void CHtiCameraServicePlugin::HandleUninitializeCmdL(const TDesC8& aData)
+    {
+    HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::HandleUninitializeCmdL" );
+    if(aData.Length() != 0)
+        {
+        SendErrorMessageL(KErrArgument, KErrInvalidateParameters);
+        return;
+        }
+    
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
+        return;
+        }
+    
+    delete iVideoRecordingEngine;
+    iVideoRecordingEngine = NULL;
+    
+    SendOkMsgL(KNullDesC8);
+    HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::HandleUninitializeCmdL" );
+    }
 
 void CHtiCameraServicePlugin::HandlePrepareVideoRecordingCmdL( const TDesC8& aData )
     {
@@ -221,6 +255,12 @@ void CHtiCameraServicePlugin::HandlePrepareVideoRecordingCmdL( const TDesC8& aDa
     if(aData.Length() < 2 || aData[1] != aData.Length() -2)
         {
         SendErrorMessageL(KErrArgument, KErrInvalidateParameters);
+        return;
+        }
+    
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
         return;
         }
     
@@ -267,6 +307,12 @@ void CHtiCameraServicePlugin::HandleStartVideoRecordingCmdL( const TDesC8& aData
         return;
         }
     
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
+        return;
+        }
+    
     HTI_LOG_TEXT("Start video recording...");
     iVideoRecordingEngine->StartVideoRecording();
     
@@ -291,6 +337,12 @@ void CHtiCameraServicePlugin::HandlePausingVideoRecordingCmdL( const TDesC8& aDa
         return;
         }
     
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
+        return;
+        }
+    
     HTI_LOG_TEXT("Pausing video recording");
     iVideoRecordingEngine->PauseVideoRecording();
     if(iError != KErrNone)
@@ -310,6 +362,12 @@ void CHtiCameraServicePlugin::HandleResumeVideoRecordingCmdL( const TDesC8& aDat
     if(aData.Length() != 0)
         {
         SendErrorMessageL(KErrArgument, KErrInvalidateParameters);
+        return;
+        }
+    
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
         return;
         }
     
@@ -336,6 +394,12 @@ void CHtiCameraServicePlugin::HandleStopVideoRecordingCmdL( const TDesC8& aData 
         return;
         }
     
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
+        return;
+        }
+    
     HTI_LOG_TEXT("Stop video recording");
     iVideoRecordingEngine->StopVideoRecording();
     if(iError != KErrNone)
@@ -358,6 +422,12 @@ void CHtiCameraServicePlugin::HandleCloseVideoRecordingCmdL( const TDesC8& aData
         return;
         }
     
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
+        return;
+        }
+    
     HTI_LOG_TEXT("Close video recording");
     iVideoRecordingEngine->CloseVideoRecording();
     SendOkMsgL(KNullDesC8);
@@ -370,6 +440,12 @@ void CHtiCameraServicePlugin::HandleGetZoomCmdL( const TDesC8& aData )
     if(aData.Length() != 0)
         {
         SendErrorMessageL(KErrArgument, KErrInvalidateParameters);
+        return;
+        }
+    
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
         return;
         }
     
@@ -401,6 +477,12 @@ void CHtiCameraServicePlugin::HandleSetZoomCmdL( const TDesC8& aData )
     if(aData.Length() != 5)
         {
         SendErrorMessageL(KErrArgument, KErrInvalidateParameters);
+        return;
+        }
+    
+    if(iVideoRecordingEngine == NULL)
+        {
+        SendErrorMessageL(KErrNotReady, KErrorUninitialized);
         return;
         }
     
@@ -515,7 +597,7 @@ void CHtiCameraServicePlugin::MevroInitComplete( TInt aError )
     {
     HTI_LOG_FUNC_IN( "CHtiCameraServicePlugin::MevroInitComplete" );
     HTI_LOG_FORMAT("aError = %d", aError);
-    iError = aError;
+    iError = aError; 
     iWaiter->AsyncStop();
     HTI_LOG_FUNC_OUT( "CHtiCameraServicePlugin::MevroInitComplete" );
     }

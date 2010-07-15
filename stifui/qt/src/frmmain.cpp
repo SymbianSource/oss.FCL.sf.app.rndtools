@@ -108,6 +108,51 @@ void FrmMain::paintEvent(QPaintEvent* event)
 void FrmMain::setSetting()
     {
     controller->SetShowOutput(uiSetting->ReadSetting(KShowOutput) == "true");    
+    // Apply filter changes
+    QString newFilter = uiSetting->ReadSetting(KFilter);
+    QString newFilterCaseSens = uiSetting->ReadSetting(KFilterCaseSens); 
+    if(currentFilter != newFilter || currentFilterCaseSens != newFilterCaseSens)
+        {
+        // Store new filter for further use
+        currentFilter = newFilter;
+        currentFilterCaseSens = newFilterCaseSens;
+        
+        // Create and setup regular expression for wildcard searching
+        QRegExp filter;
+        filter.setPattern((newFilter == "") ? ("*") : (tr("*") + newFilter + tr("*")));
+        filter.setCaseSensitivity((newFilterCaseSens == "true") ? (Qt::CaseSensitive) : (Qt::CaseInsensitive));
+        filter.setPatternSyntax(QRegExp::Wildcard);
+
+        // Go through top level entries (modules)
+        bool isAnythingHidden = false;
+        for(int i = 0; i < treeModuleList->topLevelItemCount(); i++)
+            {
+            QTreeWidgetItem* top = treeModuleList->topLevelItem(i);
+            // And through test cases for each module
+            for(int j = 0; j < top->childCount(); j++)
+                {                
+                QTreeWidgetItem *child = top->child(j);
+                // Remove first three chars to get valid test case title
+                QString title = (child->text(0)).mid(3);
+                // Check if title is matching to filter and show or hide it
+                if(filter.exactMatch(title))
+                    {
+                    child->setHidden(false);
+                    }
+                else
+                    {
+                    child->setHidden(true);
+                    child->setText(0, child->text(0).replace(0, 3, UNSELECTITEMHEADER));
+                    isAnythingHidden = true;
+                    }
+                }
+            }
+
+        if(isAnythingHidden)
+            treeModuleList->headerItem()->setText(0, tr("Module List (filtered)"));
+        else
+            treeModuleList->headerItem()->setText(0, tr("Module List"));
+        }
     }
 
 void FrmMain::OnGetMessage(const QString& aMessage)
@@ -801,11 +846,13 @@ void FrmMain::on_actSelectAll_triggered()
     QTreeWidgetItem* item = treeModuleList->topLevelItem(index);
     while (item != 0)
         {
-        item->setText(0, item->text(0).replace(0,3, header));
+        if(!item->isHidden())
+            item->setText(0, item->text(0).replace(0,3, header));
         for (int i = 0; i < item->childCount(); i++)
             {
             QTreeWidgetItem* child = item->child(i);
-            child->setText(0,child->text(0).replace(0,3,header));
+            if(!child->isHidden())
+                child->setText(0,child->text(0).replace(0,3,header));
             }
         index++;
         item = treeModuleList->topLevelItem(index);
@@ -844,6 +891,8 @@ void FrmMain::on_actCollapseAll_triggered()
 void FrmMain::on_actSetting_triggered()
     {
     DlgSetting dlgSet(uiSetting);
+    currentFilter = uiSetting->ReadSetting(KFilter);
+    currentFilterCaseSens = uiSetting->ReadSetting(KFilterCaseSens);
     int result = dlgSet.exec();
     if(result == QDialog::Accepted)
         {
@@ -1108,4 +1157,4 @@ void FrmMain::on_actOutput_triggered()
     controller->SetShowOutput(true);
     }
 
-
+// End of File

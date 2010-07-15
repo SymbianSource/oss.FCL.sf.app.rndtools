@@ -61,3 +61,5 @@ private:
     QString moduleName;
 };
 #endif // CSTFCASE_H
+
+// End of File

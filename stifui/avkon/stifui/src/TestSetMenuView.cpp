@@ -550,5 +550,4 @@ void CTestSetMenuView::RemoveSelectedTestCasesL()
         }
     }
 
-
 // End of File

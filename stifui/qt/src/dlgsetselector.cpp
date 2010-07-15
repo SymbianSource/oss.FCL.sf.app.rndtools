@@ -112,3 +112,5 @@ void DlgSetSelector::on_btnCancel_clicked()
     {
     this->reject();
     }
+
+// End of File

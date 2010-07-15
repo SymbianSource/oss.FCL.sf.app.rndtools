@@ -33,6 +33,16 @@ void DlgSetting::SetupUI()
     chkShowoutput = new QCheckBox(this);
     chkShowoutput->setText(tr("Show output in execution."));
     chkShowoutput->setChecked(setting->ReadSetting(KShowOutput) == "true");
+    
+    lblFilter = new QLabel(this);
+    lblFilter->setText(tr("Filter for displayed titles."));
+    ledFilter = new QLineEdit(this);
+    ledFilter->setFrame(true);
+    ledFilter->setText(setting->ReadSetting(KFilter));
+    chkFilterCaseSens = new QCheckBox(this);
+    chkFilterCaseSens->setText(tr("Filter is case sensitive."));
+    chkFilterCaseSens->setChecked(setting->ReadSetting(KFilterCaseSens) == "true");
+    
     QWidget *toolWidget = new QWidget(this);
     QGridLayout *toolLayout = new QGridLayout(this);
     
@@ -51,7 +61,10 @@ void DlgSetting::SetupUI()
     
     mainLayout->addWidget(nullWidget, 0, 0);
     mainLayout->addWidget(chkShowoutput, 1, 0);
-    mainLayout->addWidget(toolWidget, 3, 0);    
+    mainLayout->addWidget(lblFilter, 3, 0);
+    mainLayout->addWidget(ledFilter, 4, 0);
+    mainLayout->addWidget(chkFilterCaseSens, 5, 0);
+    mainLayout->addWidget(toolWidget, 7, 0); 
     
     }
 
@@ -65,6 +78,8 @@ void DlgSetting::on_btnOk_clicked()
         {
         setting->SetSetting(KShowOutput, "false");    
         }
+    setting->SetSetting(KFilter, ledFilter->text());
+    setting->SetSetting(KFilterCaseSens, (chkFilterCaseSens->checkState() == Qt::Checked) ? ("true") : ("false"));
     this->accept();
     }
 
@@ -72,3 +87,5 @@ void DlgSetting::on_btnCancel_clicked()
     {
     this->reject();
     }
+
+// End of File

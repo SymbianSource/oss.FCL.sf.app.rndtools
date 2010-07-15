@@ -407,3 +407,5 @@ void StfQtUIController::FireOnSetListChanged()
             listener->OnSetListChanged();
             }
     }
+
+// End of File
