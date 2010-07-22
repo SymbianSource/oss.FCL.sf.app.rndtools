@@ -21,12 +21,41 @@
 // System includes
 #include <AknProgressDialog.h>
 #include <AknWaitDialog.h>
+#include <e32cmn.h>
 
 // Engine includes
 #include <memspy/engine/memspydevicewideoperations.h>
+#include <memspyengineclientinterface.h>
+#include <memspysession.h>
+
+//#include "MemSpyAppUi.h"
 
 // Classes referenced
-class CMemSpyEngine;
+//class RMemSpySession;
+
+enum TDeviceWideOperation
+{
+	OutputPhoneInfo = 0,
+	    
+	OutputDetailedPhoneInfo,
+	    
+	OutputHeapInfo,
+	    
+	OutputCompactHeapInfo,
+	    
+	OutputHeapCellListing,
+	    
+	OutputHeapData,
+	    
+	OutputStackInfo,
+	    
+	OutputCompactStackInfo,
+	    
+	OutputUserStackData,
+	    
+	OutputKernelStackData
+};
+
 
 class MMemSpyDeviceWideOperationDialogObserver
     {
@@ -37,15 +66,94 @@ public:
     };
 
 
+class CMemSpyDwoProgressTracker : public CActive, public MProgressDialogCallback
+{
+public:
+	CMemSpyDwoProgressTracker(RMemSpySession &aSession);
+	
+	virtual ~CMemSpyDwoProgressTracker();
+	
+	void Start();
+	
+	void Cancel();
+	
+	TMemSpyDeviceWideOperationProgress Progress() { return iProgress; }
+	
+	CAknProgressDialog* ProgressDialog() { return iProgressDialog; }
+	
+	void UpdateProcessDialogL( TInt aProgress, const TDesC& aProgressText );
+
+protected: // from CActive
+	
+	void DialogDismissedL(TInt aButtonId);
+	
+	virtual void RunL();
+	 
+	virtual void DoCancel();
+	 
+	virtual TInt RunError(TInt aError);
+	
+private:
+	TMemSpyDeviceWideOperationProgress iProgress;
+	RMemSpySession iSession;	
+	
+	CEikProgressInfo* iProgressInfo;
+	CAknProgressDialog* iProgressDialog;		
+};
+
+
+
+
+
+
+class CMemSpyDwoTracker : public CActive
+{	
+public:	
+	CMemSpyDwoTracker(RMemSpySession &aSession, TDeviceWideOperation aOperation);
+	
+	virtual ~CMemSpyDwoTracker();
+	
+	void Start();
+	
+	void Cancel();		
+	
+protected: // from CActive
+	
+	virtual void RunL();
+	 
+	virtual void DoCancel();
+	 
+	virtual TInt RunError(TInt aError);		
+	
+private:
+	RMemSpySession iSession;
+	CMemSpyDwoProgressTracker *iProgressTracker;	
+	TDeviceWideOperation iOperation;
+};
+
+
+
+
+
+
+
 class CMemSpyDeviceWideOperationDialog : public CBase, public MProgressDialogCallback, public MMemSpyDeviceWideOperationsObserver
     {
 public:
-    static void ExecuteLD( CMemSpyEngine& aEngine, MMemSpyDeviceWideOperationDialogObserver& aObserver, CMemSpyDeviceWideOperations::TOperation aOperation );
+    //static void ExecuteLD( CMemSpyEngine& aEngine, MMemSpyDeviceWideOperationDialogObserver& aObserver, CMemSpyDeviceWideOperations::TOperation aOperation );
+	//static void ExecuteLD( RMemSpySession& aSession, MMemSpyDeviceWideOperationDialogObserver& aObserver, CMemSpyDeviceWideOperations::TOperation aOperation );
+	static void ExecuteLD( RMemSpySession& aSession, TDeviceWideOperation aOp );
     ~CMemSpyDeviceWideOperationDialog();
+    
+    //added
+    static CMemSpyDwoTracker* CreateDeviceWideOperation( RMemSpySession& aSession, TDeviceWideOperation aOp );
 
 private:
-    CMemSpyDeviceWideOperationDialog( CMemSpyEngine& aEngine, MMemSpyDeviceWideOperationDialogObserver& aObserver );
-    void ExecuteL( CMemSpyDeviceWideOperations::TOperation aOperation );
+    //CMemSpyDeviceWideOperationDialog( CMemSpyEngine& aEngine, MMemSpyDeviceWideOperationDialogObserver& aObserver );
+    //CMemSpyDeviceWideOperationDialog( RMemSpySession& aSession, MMemSpyDeviceWideOperationDialogObserver& aObserver );
+    CMemSpyDeviceWideOperationDialog( RMemSpySession& aSession );
+    //void ExecuteL( CMemSpyDeviceWideOperations::TOperation aOperation );
+    void ExecuteL( TDeviceWideOperation aOp );
 
 public: // API
     void Cancel();
@@ -60,13 +168,13 @@ private: // Internal methods
     void SetDialogCaptionL( const TDesC& aText );
 
 private: // Member data
-    CMemSpyEngine& iEngine;
-    MMemSpyDeviceWideOperationDialogObserver& iObserver;
+    //CMemSpyEngine& iEngine;
+    RMemSpySession iSession;	
+    //MMemSpyDeviceWideOperationDialogObserver& iObserver;
     TBool iForcedCancel;
     CEikProgressInfo* iProgressInfo;
     CAknProgressDialog* iProgressDialog;
-    CMemSpyDeviceWideOperations* iOperation;
+    CMemSpyDeviceWideOperations* iOperation;        
     };
-
 
 #endif

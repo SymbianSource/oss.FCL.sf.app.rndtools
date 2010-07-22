@@ -43,7 +43,12 @@ LIBRARY     apgrfx.lib
 LIBRARY     apparc.lib
 LIBRARY     apmime.lib
 LIBRARY     ws32.lib
+#if ( SYMBIAN_VERSION_SUPPORT < SYMBIAN_4 )
 LIBRARY     swinstcli.lib
+#else
+LIBRARY     sif.lib       // USIF
+LIBRARY     scrclient.lib // SCR
+#endif
 LIBRARY     sisregistryclient.lib
 LIBRARY     javaregistryclient.lib
 LIBRARY     widgetregistryclient.lib

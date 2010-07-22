@@ -157,4 +157,3 @@ void CStartedCasesMenuView::DoDeactivate()
     }
 
 // End of File
-

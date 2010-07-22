@@ -25,7 +25,7 @@
 
 class CCreatorModuleBaseParameters;
 
-class CCreatorCalendarBase : public CBase, public MCreatorModuleBase{
+class CCreatorCalendarBase : public CCreatorModuleBase{
 public:
 
 

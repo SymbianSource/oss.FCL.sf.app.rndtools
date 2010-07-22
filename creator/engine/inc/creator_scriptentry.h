@@ -23,13 +23,11 @@
 #define __FILEUTILS_H__
 
 
-#include "engine.h"
-
 #include <e32base.h>
 #include <f32file.h>
 #include <badesca.h>
-#include <aknglobalnote.h>
-#include <akniconarray.h> 
+#include <AknGlobalNote.h>
+#include <AknIconArray.h> 
 #include <aknmemorycardui.mbg>
 #include <msvapi.h>
 
@@ -43,8 +41,13 @@ public:
     static TInt FindFilesRecursiveL(CDesCArrayFlat* aFileArray, const TDesC& aFileName, const TDesC& aPath);
 };
 
-class CCommandParser : public CBase, public MMsvSessionObserver
+class CCommandParser : public CBase, public MMsvSessionObserver, MUIObserver
     {
+enum TCommandParserStatus{
+    EGetingScript,
+    EGetingRandomDataFile
+};
+
 public:
     static CCommandParser* NewL(CCreatorEngine* aEngine);
     static CCommandParser* NewLC(CCreatorEngine* aEngine);
@@ -65,19 +68,32 @@ private:
     void HandleSessionEventL(TMsvSessionEvent aEvent, TAny* aArg1, TAny* aArg2, TAny* aArg3); // from MMsvSessionObserver
 
 public:
+    /**
+     * Called when some dialog in UI is closed
+     *
+     * @since S60 10.1
+     * @param aPositiveAction ETrue if "Ok", "Yes" or other "positive" button was pressed
+     * @param aUserData number that was passed to UI before dialog was opened
+     * @return None.
+     */
+    virtual void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData);
+    
+public:
     void OpenScriptL();
-    TBool OpenScriptL(RFile& aScriptFile);
-    TBool GetRandomDataFilenameL(TDes& aFilename);
+    TBool OpenScriptL(MCommandParserObserver* aObserver);
+    TBool GetRandomDataFilenameL(MCommandParserObserver* aObserver);
 
 private:
     CCreatorEngine* iEngine;
     CDesCArrayFlat* iSearchArray;
-
+    TInt iSelectedItem;
+    
     TInt iParserPosition;
     TInt iParserOldPosition;
 
     HBufC8* iReadBuf;
 
+    MCommandParserObserver* iObserver;
     };
 
 

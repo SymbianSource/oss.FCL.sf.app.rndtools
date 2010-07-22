@@ -11,7 +11,7 @@
 *
 * Contributors:
 * 
-* Description: STIF QT UI version declaration
+* Description: STIF version declaration
 *
 */
 
@@ -20,10 +20,12 @@
 
 #define STIF_MAJOR_VERSION 7
 #define STIF_MINOR_VERSION 3
-#define STIF_BUILD_VERSION 26
+#define STIF_BUILD_VERSION 35
 
-#define STIF_REL_DATE "09th Feb 2010"
+#define STIF_REL_DATE "15th June 2010"
 
 #define TO_UNICODE(text) _L(text) 
 
 #endif /*VERSION_H_*/
+
+// End of File

@@ -25,7 +25,7 @@
 #include <hbmessagebox.h>
 #include <qgraphicslinearlayout.h>
 #include "enginewrapper.h"
-#include "settingsView.h"
+#include "settingsview.h"
 #include "mainview.h"
 #include "notifications.h"
 #include "hbtoolbar.h"

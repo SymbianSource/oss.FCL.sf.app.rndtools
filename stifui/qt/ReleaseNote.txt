@@ -1,11 +1,11 @@
 ========================================================================
-RELEASE NOTE FOR STIFQTUI - STIF_201016 (7.3.31)
+RELEASE NOTE FOR STFUI_201024 (7.3.35)
 ========================================================================
 
 Product Description:
 ====================
-STIFQTUI is Series QT UI application for STIF project.
-STIF is a test harness for testing Symbian components.
+STFUI is Series QT UI application for STF/STIF project.
+STF/STIF is a test harness for testing Symbian components.
 This widely used test framework can be used for both test case implementation and test cases execution.
 
 Features :

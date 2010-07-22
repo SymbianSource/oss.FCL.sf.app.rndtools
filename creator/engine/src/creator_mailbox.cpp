@@ -134,18 +134,21 @@ CCreatorMailboxes::~CCreatorMailboxes()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorMailboxes::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorMailboxes::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorMailboxes::AskDataFromUserL");
+    
+    CCreatorModuleBase::AskDataFromUserL( aCommand );//ignore retval
+    
     if ( aCommand == ECmdDeleteMailboxes )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all mailboxes?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all mailboxes?"), this, ECreatorModuleDelete );
         }
     else if ( aCommand ==  ECmdDeleteCreatorMailboxes )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all mailboxes created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all mailboxes created with Creator?"), this, ECreatorModuleDelete );
         }
-    return iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?"));
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog( &iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorModuleStart );
     }
 
 

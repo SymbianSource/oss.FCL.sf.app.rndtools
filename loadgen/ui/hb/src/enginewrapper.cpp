@@ -19,6 +19,7 @@
 #include <hbmainwindow.h>
 //#include <hbcommonnote.h>
 #include <hbpopup.h>
+#include <hbaction.h>
 
 #include <QString>
  #include <QStringList>
@@ -136,8 +137,7 @@ void EngineWrapper::loadEdit(int rowIndex)
 
 void EngineWrapper::StopLoadYesNoDialogClosed(HbAction *action)
 {
-    HbMessageBox *dlg = static_cast<HbMessageBox*>(sender());
-    if(action == dlg->primaryAction()){
+    if( action && !action->text().compare("yes", Qt::CaseInsensitive) ){
         const CArrayFix<TInt>* selectionIndexes = NULL;
         try{
             QT_TRAP_THROWING( selectionIndexes = QueryListSelectedIndexesOrCurrentItemL() );

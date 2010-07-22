@@ -16,20 +16,21 @@
  */
 
 #include "memspymainview.h"
-#include "viewManager.h"
+#include "viewmanager.h"
 
 #include <QStringListModel>
 #include <QDebug>
 
 void MemSpyMainView::initialize(const QVariantMap& params)
 {
+	setTitle("MemSpy");
+	
 	MemSpyView::initialize(params);
 	
-	setTitle("MemSpy");
 	QStringList items = QStringList() 
 			<< tr("Processes & Threads") 
-			<< tr("Kernel Objects"); 
-			//<< tr("Kernel Heap");
+			<< tr("Kernel Objects")
+			<< tr("Tracking");
 	mListView.setModel(new QStringListModel(items, this));
     
 	QObject::connect(&mListView, SIGNAL(released(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
@@ -38,7 +39,12 @@ void MemSpyMainView::initialize(const QVariantMap& params)
 void MemSpyMainView::itemClicked(const QModelIndex& index)
 {
 	Q_UNUSED(index);
-	ViewIndex indexes[] = { ProcessView, KernelObjectTypeView, KernelObjectTypeView };
+	ViewIndex indexes[] = { ProcessView, KernelObjectTypeView, TrackingView };
     mViewManager.showView(indexes[index.row()]);
+}
+
+bool MemSpyMainView::isBreadCrumbVisible() const
+{
+	return false;
 }
 

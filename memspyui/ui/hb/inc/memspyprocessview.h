@@ -20,7 +20,7 @@
 
 #include <QAbstractListModel>
 
-#include "memspyview.h"
+#include "memspylistview.h"
 #include "enginewrapper.h"
 
 
@@ -35,17 +35,28 @@ public:
 	
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
+	void refresh();
+	
 private:
+	EngineWrapper& mEngine;
+	
 	QList<MemSpyProcess*> mProcesses;
+	
+	QMap<int, QString> mPriorityMap;
 };
 
-class MemSpyProcessView : public MemSpyView
+class MemSpyProcessView : public MemSpyListView
 {
     Q_OBJECT
     
 public:
-	MemSpyProcessView(EngineWrapper &engine, ViewManager &viewManager) 
-			: MemSpyView(engine, viewManager) {}
+	MemSpyProcessView(EngineWrapper &engine, ViewManager &viewManager) : 
+        MemSpyListView(engine, viewManager),
+		mModel(0)
+	{}
+	
+public slots:
+    virtual void refresh();
 	
 protected:
 	void initialize(const QVariantMap& params);
@@ -55,6 +66,9 @@ protected:
 	
 private slots:
 	void itemClicked(const QModelIndex& index);
+	
+private:
+	MemSpyProcessModel* mModel;
 };
 
 #endif /* MEMSPYPROCESSVIEW_H_ */

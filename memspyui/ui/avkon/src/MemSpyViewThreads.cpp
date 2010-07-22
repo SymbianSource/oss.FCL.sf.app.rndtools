@@ -38,15 +38,8 @@
 
 
 
-/*
-CMemSpyViewThreads::CMemSpyViewThreads( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyProcess& aProcess )
-:   CMemSpyViewBase( aEngine, aObserver ), iParentProcess( aProcess )
-    {
-    iParentProcess.Open();
-    }
-*/
-CMemSpyViewThreads::CMemSpyViewThreads( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aId )
-:   CMemSpyViewBase( aSession, aObserver ), iParentProcessId( aId )
+CMemSpyViewThreads::CMemSpyViewThreads( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aId, TThreadId aThreadId )
+:   CMemSpyViewBase( aSession, aObserver ), iParentProcessId( aId ), iCurrentThreadId( aThreadId )
     {    
     }
 
@@ -58,30 +51,33 @@ CMemSpyViewThreads::~CMemSpyViewThreads()
  
 void CMemSpyViewThreads::ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune )
     {
+	iMemSpySession.GetThreadsL( iParentProcessId, iThreads );
+	
     _LIT( KTitle, "Threads" );
     SetTitleL( KTitle );
     //
     CMemSpyViewBase::ConstructL( aRect, aContainer, aSelectionRune );
-    //
-    if  ( aSelectionRune )
-        {
-		iListBox->SetCurrentItemIndex( 0 ); //for now
-		HandleListBoxItemSelectedL( 0 );
-		/* TODO: 
-        CMemSpyThread* selectedItem = reinterpret_cast< CMemSpyThread* >( aSelectionRune );
-        const TInt index = iParentProcess.ThreadIndexById( selectedItem->Id() );
-        if  ( index >= 0 && index < iListBox->Model()->NumberOfItems() )
-            {
-            iListBox->SetCurrentItemIndex( index );
-            HandleListBoxItemSelectedL( index );
-            }
-        */		
+    //    
+    if( iCurrentThreadId > 0 )
+        {		
+		for( TInt i = 0; i < iThreads.Count() ; i++ )
+			{
+			if( iThreads[i]->Id() == iCurrentThreadId )
+				{
+				const TInt index = i;
+				if  ( index >= 0 && index < iListBox->Model()->NumberOfItems() )
+					{
+					iListBox->SetCurrentItemIndex( index );
+					HandleListBoxItemSelectedL( index );
+					}
+				}			
+			}
         }
-    //else if ( iParentProcess.Count() > 0 )
-    //    {
-        iListBox->SetCurrentItemIndex( 0 );
-        HandleListBoxItemSelectedL( 0 );
-    //    }
+    else if( iThreads.Count() > 0 )
+    	{
+		iListBox->SetCurrentItemIndex( 0 );
+		HandleListBoxItemSelectedL( 0 );
+    	}		
     }
 
 
@@ -122,14 +118,12 @@ CMemSpyViewBase* CMemSpyViewThreads::PrepareParentViewL()
 
 
 CMemSpyViewBase* CMemSpyViewThreads::PrepareChildViewL()
-    {
-	/*
-    CMemSpyViewThreadInfoItemList* child = new(ELeave) CMemSpyViewThreadInfoItemList( iEngine, iObserver, *iCurrentThread );
+    {	
+    CMemSpyViewThreadInfoItemList* child = new(ELeave) CMemSpyViewThreadInfoItemList( iMemSpySession, iObserver, iParentProcessId, iCurrentThreadId );
     CleanupStack::PushL( child );
-    child->ConstructL( Rect(), *Parent() );
+    child->ConstructL( Rect(), *Parent(), EMemSpyThreadInfoItemTypeFirst );
     CleanupStack::Pop( child );
-    return child;
-    */
+    return child;    
     }
 
 
@@ -333,16 +327,13 @@ void CMemSpyViewThreads::OnCmdSetPriorityL( TInt aCommand )
 
 void CMemSpyViewThreads::OnCmdInfoHandlesL()
     {
-	/*
-    CMemSpyThread& thread = CurrentThread();
-    thread.InfoContainerForceSyncronousConstructionL().PrintL();
-    */
+	iMemSpySession.OutputThreadInfoHandlesL( iCurrentThreadId );	
     }
 
 
 void CMemSpyViewThreads::SetListBoxModelL()
     {
-	iMemSpySession.GetThreadsL( iParentProcessId, iThreads );
+	//iMemSpySession.GetThreadsL( iParentProcessId, iThreads );
 	
 	iModel = new (ELeave) CDesC16ArrayFlat( iThreads.Count() ); //array for formated items
 		
@@ -361,8 +352,7 @@ void CMemSpyViewThreads::SetListBoxModelL()
 	    	CleanupStack::PopAndDestroy( tempName ); 
 			}			
 	
-    CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-    //listbox->Model()->SetItemTextArray( &iParentProcess );
+    CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );    
     listbox->Model()->SetItemTextArray( iModel );
     listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
     }

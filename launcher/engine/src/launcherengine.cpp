@@ -1033,7 +1033,7 @@ void CLauncherEngine::AnalyseDLLsL( const TDesC& aFileName )
     if (iBCLogFile.Open(iEnv->FsSession(), iBCLogFilePath, EFileWrite) != KErrNone)
         {
         iEnv->FsSession().MkDirAll(iLogFilePath);
-        iBCLogFile.Replace(iEnv->FsSession(), iBCLogFilePath, EFileWrite);
+        User::LeaveIfError( iBCLogFile.Replace(iEnv->FsSession(), iBCLogFilePath, EFileWrite) );
         }
     else
         {
@@ -1099,9 +1099,14 @@ void CLauncherEngine::DoBCAnalysisL()
 void CLauncherEngine::CancelBCAnalysis()
     {
     LOGSTRING("Launcher: CLauncherEngine::CancelBCAnalysis");
-    iXMLParser->Cancel();
+    if( iXMLParser )
+        {
+        iXMLParser->Cancel();
+        }
     iLauncherUI->PrintText(_L("\nAnalysis cancelled.\n\n"));
-
+    WriteInitialStuffToTheLogL(_L("Analysis cancelled by user"), iBCLogFile);
+    iLogWriteBuf->Des().Zero();
+    iBCLogFile.Close();
     }
 
 // ---------------------------------------------------------------------------

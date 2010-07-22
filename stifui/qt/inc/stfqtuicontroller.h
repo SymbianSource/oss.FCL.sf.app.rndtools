@@ -35,13 +35,14 @@ public: //Implement IStfQtUIController.
     QList<QString> GetCaseListByModule(const QString& moduleName);
     CSTFCase GetCase(const QString& moduleName, const int index);
     void RunCases(const QList<CSTFCase>& caseList, const TSTFCaseRunningType& type);
-    void AddCaseToSet(const QList<CSTFCase>& aCase, const QString& setName);
+    void RepeatRunCases(const QList<CSTFCase>& aCaseList, const bool aIsLoopInfinitely, const int aLoopTimes = 1);
+    bool AddCaseToSet(const QList<CSTFCase>& aCase, const QString& setName);
     
     //for set
     QList<QString> GetSetList();
     QList<QString> GetCaseListBySet(const QString& setName);
-    void CreateSet(const QString& setName);
-    void DeleteSet(const QString& setName);
+    bool CreateSet(QString& setName);
+    bool DeleteSet(const QString& setName);
     void RunSets(const QString& setName, const TSTFCaseRunningType& type);
     
     //for Started
@@ -49,6 +50,7 @@ public: //Implement IStfQtUIController.
     void ResumeCase();
     void AbortCase();
     bool ShowOutput();
+    CSTFCase GetRunningCase(int index);
     void SetShowOutput(bool isShow);
     
     //for staticstic
@@ -57,6 +59,10 @@ public: //Implement IStfQtUIController.
     //listener
     void AddStfEventListener(IStfEventListener* listener);
     void RemoveStfEventListener(IStfEventListener* listener);
+    
+    //for repeat execution setting
+    void InitRepeatSetting(const bool aIsLoopInfinitely, const int aLoopTimes);
+    void ResetRepeatSetting();
 
 public://implement IStifCaseUpdateListener
     void OnGetCaseUpdated(CStartedTestCase* aCase, CSTFCase& stfcase, int flags);
@@ -67,8 +73,11 @@ private: //Fire event
     void FireOnSetListChanged();
     void FireOnCaseOutputChanged(IStfEventListener::CaseOutputCommand cmd, int index, QString msg);
     
-private://help methods
+private:
+    // help methods
     CSTFModule GetModuleByName(const QString& moduleName);
+    // Repeat execution cases
+    void Execution();
     
 private:
     CStifExecutor* executor;
@@ -76,11 +85,21 @@ private:
     QList<IStfEventListener*> listenerList;
     bool isShowOutput;
     
+    // repeat run case related member 
+    // repeat execution case list   
+    QList<CSTFCase> repeatRunCaseList;
+    // current position of the case list
+    int iCurrentRunPos;
+    // is loop infinitely
+    bool isLoopInfinitely;
+    // loop times
+    int loopTimes;
     
-        
     };
 
 
 
 
 #endif /* STFQTUICONTROLLER_H_ */
+
+// End of File

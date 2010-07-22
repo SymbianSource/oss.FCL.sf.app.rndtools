@@ -73,3 +73,5 @@ class CMenuListBox : public CAknSingleStyleListBox
     };
 
 #endif /*MENULISTBOX_H_*/
+
+// End of File

@@ -27,14 +27,14 @@
 
 // Classes referenced
 class CMemSpyEngineActiveObjectArray;
-
+class RMemSpySession;
 
 
 class CMemSpyViewThreadInfoItemActiveObjectBase : public CMemSpyViewThreadInfoItemGeneric
     {
 public:
-    CMemSpyViewThreadInfoItemActiveObjectBase( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer );
-
+    CMemSpyViewThreadInfoItemActiveObjectBase( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType );
+    
 public: // From CMemSpyViewBase
     TBool HandleCommandL( TInt aCommand );
 
@@ -55,7 +55,7 @@ private: // Command handlers
 class CMemSpyViewThreadInfoItemActiveObject : public CMemSpyViewThreadInfoItemActiveObjectBase
     {
 public:
-    CMemSpyViewThreadInfoItemActiveObject( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer );
+    CMemSpyViewThreadInfoItemActiveObject( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType );
     void ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune = NULL );
 
 public: // From CMemSpyViewBase

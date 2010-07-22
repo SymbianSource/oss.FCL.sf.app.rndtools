@@ -21,7 +21,7 @@
 #include <hbdocumentloader.h>
 
 #include "enginewrapper.h"
-#include "commonactions.h"
+#include "commonActions.h"
 #include "applicationview.h"
 #include "outputview.h"
 #include "launchermainwindow.h"

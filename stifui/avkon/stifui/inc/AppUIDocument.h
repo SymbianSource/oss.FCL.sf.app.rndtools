@@ -69,5 +69,3 @@ class CAppUIDocument : public CAknDocument
 #endif
 
 // End of File
-
-// End of File

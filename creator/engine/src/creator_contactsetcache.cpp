@@ -32,9 +32,31 @@ TInt CCreatorContactSet::LinkId() const
     return iLinkId;
     }
 
+void CCreatorContactSet::AppendL(TUint32 aContactLink)
+    {
+    iContactLinks.AppendL(aContactLink);
+    }
+
+RArray<TUint32> CCreatorContactSet::ContactLinks()
+    {
+    return iContactLinks;
+    }
+
+const RArray<TUint32> CCreatorContactSet::ContactLinks() const
+    {
+    return iContactLinks;
+    }
+
+
+TInt CCreatorContactSet::NumberOfExistingContacts() const
+    {
+    return iNumOfExistingContacts;
+    }
 
 CCreatorContactSet::~CCreatorContactSet()
     {
+    iContactLinks.Reset();
+    iContactLinks.Close();
     }
 
 
@@ -50,6 +72,10 @@ public:
     static CContactLinkCacheImp* NewL();
     virtual ~CContactLinkCacheImp();
     virtual void AppendL(CCreatorContactSet* aContactSet); 
+
+    virtual RArray<TUint32> ContactLinks(TInt aLinkId);
+    virtual const RArray<TUint32> ContactLinks(TInt aLinkId) const;
+
     virtual RPointerArray<CCreatorContactSet>& ContactSets();
     virtual const RPointerArray<CCreatorContactSet>& ContactSets() const;
     virtual const CCreatorContactSet& ContactSet(TInt aLinkId) const;
@@ -58,6 +84,9 @@ public:
 private:
     void ConstructL();
     CContactLinkCacheImp();
+    
+    RArray<TUint32> iEmptyLinks;
+
     RPointerArray<CCreatorContactSet> iContactSets;
     CCreatorContactSet* iDummyContactSet;
 };
@@ -83,6 +112,9 @@ CContactLinkCacheImp::CContactLinkCacheImp()
 
 CContactLinkCacheImp::~CContactLinkCacheImp()
     {
+    iEmptyLinks.Reset();// just in case...
+    iEmptyLinks.Close();
+
     iContactSets.ResetAndDestroy();
     iContactSets.Close();
     delete iDummyContactSet;
@@ -91,6 +123,30 @@ void CContactLinkCacheImp::AppendL(CCreatorContactSet* aContactSet)
     {
     iContactSets.AppendL(aContactSet);
     }
+RArray<TUint32> CContactLinkCacheImp::ContactLinks(TInt aLinkId)
+    {
+    for( TInt i = 0; i < iContactSets.Count(); ++i )
+        {
+        if( iContactSets[i]->LinkId() == aLinkId )
+            {
+            return iContactSets[i]->ContactLinks();
+            }
+        }
+    return iEmptyLinks;
+    }
+
+const RArray<TUint32> CContactLinkCacheImp::ContactLinks(TInt aLinkId) const
+    {
+    for( TInt i = 0; i < iContactSets.Count(); ++i )
+        {
+        if( iContactSets[i]->LinkId() == aLinkId )
+            {
+            return iContactSets[i]->ContactLinks();
+            }
+        }
+    return iEmptyLinks;
+    }
+
 
 const CCreatorContactSet& CContactLinkCacheImp::ContactSet(TInt aLinkId) const
     {

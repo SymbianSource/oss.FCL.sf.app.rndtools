@@ -22,6 +22,7 @@
 #include "creator_note.h" 
 #include "creator_traces.h"
 
+
 const TInt KCreatorDiskSpaceNeededForSingleDeletion( 8192 );
 _LIT( KCreatorNotepadFile, "c:Notepad.dat" );
 
@@ -71,36 +72,42 @@ void CCreatorNotepad::ConstructL(CCreatorEngine* aEngine)
     LOGSTRING("Creator: CCreatorNotepad::ConstructL");
 
     iEngine = aEngine;
-
-    iNotepadApi = new NotesEditor();
-    //iNotepadApi = CNotepadApi::NewL();
+    iNotepadWrapper = CCreatorNotepadWrapper::NewL();
     }
 
 CCreatorNotepad::~CCreatorNotepad()
     {
     LOGSTRING("Creator: CCreatorNotepad::~CCreatorNotepad");
     
-    delete iNotepadApi;
-    
     if (iParameters)
+        {
         delete iParameters;
+        iParameters;
+        }
+    
+    if (iNotepadWrapper)
+    	{
+		delete iNotepadWrapper;
+    	}
     }
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorNotepad::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorNotepad::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorNotepad::AskDataFromUserL");
 
+    CCreatorModuleBase::AskDataFromUserL(aCommand);
+        
     if ( aCommand == ECmdDeleteNotes )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Notes?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all Notes?"), this, ECreatorModuleDelete );
         }
     
     // By Creator not supported because 
     // note id is not available via Notepad API
 
-    return iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?"));
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog( &iEntriesToBeCreated, _L("How many entries to create?"), EFalse,  this, ECreatorModuleStart );
     }
 
 
@@ -126,10 +133,7 @@ TInt CCreatorNotepad::CreateNoteEntryL(CNotepadParameters *aParameters)
     
     TInt err = KErrNone;
 
-    //iNotepadApi->AddContentL(parameters->iNoteText->Des());
-    QString textNote = QString::fromUtf16(parameters->iNoteText->Ptr(),parameters->iNoteText->Length());
-    iNotepadApi->edit(textNote);
-    iNotepadApi->close(NotesEditor::CloseWithSave);
+    iNotepadWrapper->CreateNoteL(parameters->iNoteText->Des());
     
     return err;
     }
@@ -138,53 +142,7 @@ TInt CCreatorNotepad::CreateNoteEntryL(CNotepadParameters *aParameters)
 void CCreatorNotepad::DeleteAllL()
     {
     LOGSTRING("Creator: CCreatorNotepad::DeleteAllL");
-    QList<AgendaEntry> ael;
-    AgendaUtil::FilterFlags filter = AgendaUtil::FilterFlags(AgendaUtil::IncludeNotes);
-
-    iAgendaUtil = new AgendaUtil();
-    ael = iAgendaUtil->fetchAllEntries(filter);
-    for(int i=0 ; i<ael.count() ; i++)
-    	{
-        iAgendaUtil->deleteEntry(ael[i].id());
-    	}
-    delete iAgendaUtil;
-    // Open Notes db
- /*   RDbs dbs;
-    User::LeaveIfError( dbs.Connect() );
-    CleanupClosePushL( dbs );
-    RDbNamedDatabase db;
-    TInt openErr( db.Open( dbs, KCreatorNotepadFile, KCreatorNotepadFormat ) );
-    CleanupClosePushL( db );
-    
-    if ( openErr && openErr !=  KErrNotFound )
-        {
-        User::Leave( openErr );
-        }
-    
-    // do not leave if openErr == KErrNotFound, 
-    // it means there is no notes (file) created -> no need to delete
-    
-    if ( openErr !=  KErrNotFound )
-        {
-        TInt retval = iFs.ReserveDriveSpace( KDefaultDrive, KCreatorDiskSpaceNeededForSingleDeletion );
-        if ( retval == KErrNone )
-            {
-            retval = iFs.GetReserveAccess( KDefaultDrive );
-            }
-
-        // Delete all Notes. Ignore rowCount returnvalue
-        db.Execute( KCreatorNotepadDeleteAllSQL );            
-        
-        User::LeaveIfError( db.Compact() );
-        
-        if ( retval == KErrNone )
-            {
-            retval = iFs.ReleaseReserveAccess( KDefaultDrive );
-            }
-        }
-    
-    CleanupStack::PopAndDestroy( &db );
-    CleanupStack::PopAndDestroy( &dbs );*/
+    iNotepadWrapper->DeleteAllL();
     }
 
 //----------------------------------------------------------------------------

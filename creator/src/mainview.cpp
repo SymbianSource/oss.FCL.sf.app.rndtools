@@ -509,30 +509,31 @@ void MainView::createMemoryInfoText()
     // get memory details from engine;
     mMemoryDetails = mEngineWrapper.GetMemoryDetails();
 	
-    if (layout != NULL) {
-        HbTextEdit* edit = new HbTextEdit(this);
-        if(edit != NULL) {
-			if (mMemoryDetails.mENotAvailable == false) {
-            edit->setPlainText(QString("\n\nFree RAM Memory:\n %1 of %2 kB \n\nFree disk memory: \nC: %3 of %4 kB \nD: %5 of %6 kB \nE: %7 of %8 kB")
-					.arg(mMemoryDetails.mHFree).arg(mMemoryDetails.mHSize)
-					.arg(mMemoryDetails.mCFree).arg(mMemoryDetails.mCSize)
-					.arg(mMemoryDetails.mDFree).arg(mMemoryDetails.mDSize)
-					.arg(mMemoryDetails.mEFree).arg(mMemoryDetails.mESize));
-			}
-			else {
-			edit->setPlainText(QString("\n\nFree RAM Memory:\n %1 of %2 kB \n\nFree disk memory: \nC: %3 of %4 kB \nD: %5 of %6 kB \nE: %7")
-					.arg(mMemoryDetails.mHFree).arg(mMemoryDetails.mHSize)
-					.arg(mMemoryDetails.mCFree).arg(mMemoryDetails.mCSize)
-					.arg(mMemoryDetails.mDFree).arg(mMemoryDetails.mDSize)
-					.arg(mMemoryDetails.mEFree));
-			}
-            edit->setReadOnly(true);
+    QList<MemoryDetails> memDet = mEngineWrapper.GetMemoryDetailsList();
+    
+    if (layout != NULL) 
+    	{
+		HbLabel* edit = new HbLabel(this);
+        //HbTextEdit* edit = new HbTextEdit(this);
+        if(edit != NULL) 
+        	{
+        QString text = QString("<BR><BR>Free RAM Memory:<BR> %1 of %2 kB").arg(mMemoryDetails.mRamFree).arg(mMemoryDetails.mRamSize);	
+        //QString text = QString("\n\nFree RAM Memory:\n %1 of %2 kB").arg(mMemoryDetails.mRamFree).arg(mMemoryDetails.mRamSize);
+			for(int i=0 ; i < memDet.count() ; i++ )
+				{
+			text += QString("<BR><BR>Free %1: Memory:<BR> %2 of %3 kB").arg(memDet[i].mDriveLetter).arg(memDet[i].mFree).arg(memDet[i].mSize);//text += QString("\n\nFree %1: Memory:\n %2 of %3 kB").arg(memDet[i].mDriveLetter).arg(memDet[i].mFree).arg(memDet[i].mSize);
+				}
+			edit->setTextWrapping(Hb::TextWordWrap);
+			edit->setHtml(text);
+			//edit->setPlainText(text);
+                	
+            //edit->setReadOnly(true);
             //edit->setCursorHidden(true);
-            //edit->setAttribute(Qt::WA_InputMethodEnabled, false);
+            edit->setAttribute(Qt::WA_InputMethodEnabled, false);
             layout->addItem(edit);
             layout->setContentsMargins(5, 5, 5, 5);
             this->setLayout(layout);
-        }
+        	}
         
     }
     

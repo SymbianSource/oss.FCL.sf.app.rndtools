@@ -21,9 +21,14 @@ INCLUDEPATH += ./inc
 load(hb.prf)
 symbian:CONFIG -= symbian_i18n
 
-HEADERS += ./inc/filebrowsermainwindow.h \
-           ./inc/filebrowserview.h \
-           ./inc/filebrowsermodel.h \
+HEADERS += ./inc/fbmainwindow.h \
+           ./inc/fbdrivelistviewitem.h \
+           ./inc/fbdrivemodel.h \
+           ./inc/fbdriveview.h \
+           ./inc/fbfilelistviewitem.h \
+           ./inc/fbfilemodel.h \
+           ./inc/fbfileview.h \
+           ./inc/filebrowsersortfilterproxymodel.h \
            ./inc/menuaction.h \
            ./inc/filebrowsersettings.h \
            ./inc/settingsview.h \
@@ -34,9 +39,14 @@ HEADERS += ./inc/filebrowsermainwindow.h \
            ./inc/fileentry.h \
            ./inc/driveentry.h
 SOURCES += ./src/main.cpp \
-           ./src/filebrowsermainwindow.cpp \
-           ./src/filebrowserview.cpp \
-           ./src/filebrowsermodel.cpp \
+           ./src/fbmainwindow.cpp \
+           ./src/fbdrivelistviewitem.cpp \
+           ./src/fbdrivemodel.cpp \
+           ./src/fbdriveview.cpp \
+           ./src/fbfilelistviewitem.cpp \
+           ./src/fbfilemodel.cpp \
+           ./src/fbfileview.cpp \
+           ./src/filebrowsersortfilterproxymodel.cpp \
            ./src/settingsview.cpp \
            ./src/editorview.cpp \
            ./src/searchview.cpp \

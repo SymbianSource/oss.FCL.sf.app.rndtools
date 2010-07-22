@@ -26,18 +26,25 @@
 #include <memspy/engine/memspyengineobjectthreadinfocontainer.h>
 #include <memspy/engine/memspyenginehelperprocess.h>
 #include <memspy/engine/memspyenginehelperheap.h>
+#include <memspysession.h>
 
 // User includes
 #include "MemSpyContainerObserver.h"
 #include "MemSpyViewThreads.h"
 #include "MemSpyViewThreadInfoItemHeap.h"
+#include "MemSpyAppUi.h" 
 
 
-
+/*
 CMemSpyViewThreadInfoItemHeap::CMemSpyViewThreadInfoItemHeap( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
 :   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeHeap )
     {
     }
+*/
+CMemSpyViewThreadInfoItemHeap::CMemSpyViewThreadInfoItemHeap( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemGeneric( aSession, aObserver, aProcId, aId , EMemSpyThreadInfoItemTypeHeap )
+    {
+    } 
 
 
 TBool CMemSpyViewThreadInfoItemHeap::HandleCommandL( TInt aCommand )
@@ -69,19 +76,19 @@ TBool CMemSpyViewThreadInfoItemHeap::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapDataL()
     {
-    iEngine.HelperHeap().OutputHeapDataUserL( Thread() );
+	iMemSpySession.OutputThreadHeapDataL( ThreadId() );    
     }
 
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapCellListingL()
     {
-    iEngine.HelperHeap().OutputCellListingUserL( Thread() );
+    iMemSpySession.OutputThreadCellListL( ThreadId() );
     }
 
 
 void CMemSpyViewThreadInfoItemHeap::OnCmdHeapInfoL()
     {
-    iEngine.HelperHeap().OutputHeapInfoUserL( Thread() );
+	iMemSpySession.OutputHeapInfoUserL( ThreadId() );    
     }
 
 
@@ -89,6 +96,6 @@ void CMemSpyViewThreadInfoItemHeap::DynInitMenuPaneL( TInt aResourceId, CEikMenu
     {
     if  ( aResourceId == R_MEMSPY_MENUPANE )
         {
-        aMenuPane->SetItemDimmed( EMemSpyCmdHeap, Thread().IsDead() );
+        //aMenuPane->SetItemDimmed( EMemSpyCmdHeap, Thread().IsDead() ); //TODO
         }
     }

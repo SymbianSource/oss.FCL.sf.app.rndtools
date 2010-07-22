@@ -56,7 +56,7 @@ void CMemSpyViewKernelContainers::ConstructL( const TRect& aRect, CCoeControl& a
     {
     _LIT( KTitle, "Kernel Objects" );
     SetTitleL( KTitle );
-    //
+    //    
     CMemSpyViewBase::ConstructL( aRect, aContainer, aSelectionRune );
     }
 
@@ -107,9 +107,10 @@ void CMemSpyViewKernelContainers::SetListBoxModelL()
 		{
 		TInt count = iKernelObjects[i]->Count();
 		TInt size = iKernelObjects[i]->Size();
-		const TMemSpySizeText sizeText( MemSpyEngineUtils::FormatSizeText( size, 0 ) ); //TODO: is this OK to call Engine Utils?
+		const TMemSpySizeText sizeText( MemSpyUiUtils::FormatSizeText( size, 0 ) );
 								
-		HBufC* tempName = HBufC::NewL( iKernelObjects[i]->Name().Length() + 32 ); //TODO: to removed this bulharic constant
+		HBufC* tempName = HBufC::NewL( iKernelObjects[i]->Name().Length() + 32 );
+		
 		CleanupStack::PushL( tempName );
 		TPtr tempNamePtr( tempName->Des() );
 		tempNamePtr.Copy( iKernelObjects[i]->Name() );									
@@ -117,7 +118,7 @@ void CMemSpyViewKernelContainers::SetListBoxModelL()
 		_LIT(KNameFormat, "\t%S\t\t%d item");
 		TPtr pName( tempName->Des() );
 		//
-		const TPtrC pType( TypeAsString( iKernelObjects[i]->Type() ) );
+		const TPtrC pType( MemSpyUiUtils::TypeAsString( iKernelObjects[i]->Type() ) );
 		//
 		pName.Format( KNameFormat, &pType, count );
 		//
@@ -126,7 +127,7 @@ void CMemSpyViewKernelContainers::SetListBoxModelL()
 			pName.Append( _L("s") );
 			}
 
-		pName.AppendFormat( _L(", %S"), &sizeText ); // TODO: to create some ServerUtils class with formating methods for size and type!
+		pName.AppendFormat( _L(", %S"), &sizeText );
 		
 		model->AppendL( pName );
 		
@@ -136,19 +137,6 @@ void CMemSpyViewKernelContainers::SetListBoxModelL()
 	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );	
 	listbox->Model()->SetItemTextArray( model );
 	listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
-
-	/*
-    // Take ownership of new model
-    CMemSpyEngineHelperKernelContainers& kernelContainerManager = iEngine.HelperKernelContainers();
-    CMemSpyEngineGenericKernelObjectContainer* model = kernelContainerManager.ObjectsAllL();
-    delete iModel;
-    iModel = model;
-    
-    // Set up list box
-    CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-    listbox->Model()->SetItemTextArray( model );
-    listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
-    */
     }
 
 
@@ -173,94 +161,5 @@ TBool CMemSpyViewKernelContainers::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewKernelContainers::OnCmdOutputAllContainerContentsL()
     {
-	/* TODO
-    CMemSpyEngineOutputSink& sink = iEngine.Sink();
-    iModel->OutputL( sink );
-    */
+	iMemSpySession.OutputAllContainerContents();		
     }
-
-//formating methods
-TPtrC CMemSpyViewKernelContainers::TypeAsString( TMemSpyDriverContainerType aType )
-    {
-    _LIT( KTypeUnknown, "Unknown Type" );
-    _LIT( KTypeThread, "Thread" );
-    _LIT( KTypeProcess, "Process" );
-    _LIT( KTypeChunk, "Chunk" );
-    _LIT( KTypeLibrary, "Library" );
-    _LIT( KTypeSemaphore, "Semaphore" );
-    _LIT( KTypeMutex, "Mutex" );
-    _LIT( KTypeTimer, "Timer" );
-    _LIT( KTypeServer, "Server" );
-    _LIT( KTypeSession, "Session" );
-    _LIT( KTypeLogicalDevice, "Logical Device" );
-    _LIT( KTypePhysicalDevice, "Physical Device" );
-    _LIT( KTypeLogicalChannel, "Logical Channel" );
-    _LIT( KTypeChangeNotifier, "Change Notifier" );
-    _LIT( KTypeUndertaker, "Undertaker" );
-    _LIT( KTypeMsgQueue, "Msg. Queue" );
-    _LIT( KTypePropertyRef, "Property Ref." );
-    _LIT( KTypeCondVar, "Conditional Var." );
-     //
-    TPtrC pType( KTypeUnknown );
-    //
-    switch( aType )
-        {
-    case EMemSpyDriverContainerTypeThread:
-        pType.Set( KTypeThread );
-        break;
-    case EMemSpyDriverContainerTypeProcess:
-        pType.Set( KTypeProcess );
-        break;
-    case EMemSpyDriverContainerTypeChunk:
-        pType.Set( KTypeChunk );
-        break;
-    case EMemSpyDriverContainerTypeLibrary:
-        pType.Set( KTypeLibrary );
-        break;
-    case EMemSpyDriverContainerTypeSemaphore:
-        pType.Set( KTypeSemaphore );
-        break;
-    case EMemSpyDriverContainerTypeMutex:
-        pType.Set( KTypeMutex );
-        break;
-    case EMemSpyDriverContainerTypeTimer:
-        pType.Set( KTypeTimer );
-        break;
-    case EMemSpyDriverContainerTypeServer:
-        pType.Set( KTypeServer );
-        break;
-    case EMemSpyDriverContainerTypeSession:
-        pType.Set( KTypeSession );
-        break;
-    case EMemSpyDriverContainerTypeLogicalDevice:
-        pType.Set( KTypeLogicalDevice );
-        break;
-    case EMemSpyDriverContainerTypePhysicalDevice:
-        pType.Set( KTypePhysicalDevice );
-        break;
-    case EMemSpyDriverContainerTypeLogicalChannel:
-        pType.Set( KTypeLogicalChannel );
-        break;
-    case EMemSpyDriverContainerTypeChangeNotifier:
-        pType.Set( KTypeChangeNotifier );
-        break;
-    case EMemSpyDriverContainerTypeUndertaker:
-        pType.Set( KTypeUndertaker );
-        break;
-    case EMemSpyDriverContainerTypeMsgQueue:
-        pType.Set( KTypeMsgQueue );
-        break;
-    case EMemSpyDriverContainerTypePropertyRef:
-        pType.Set( KTypePropertyRef );
-        break;
-    case EMemSpyDriverContainerTypeCondVar:
-        pType.Set( KTypeCondVar );
-        break;
-        
-    default:
-        break;
-        }
-    //
-    return pType;
-    }
-

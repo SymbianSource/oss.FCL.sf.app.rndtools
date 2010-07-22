@@ -16,7 +16,6 @@
 */
 
 #include "settingsview.h"
-#include "filebrowsermainwindow.h"
 #include "enginewrapper.h"
 #include "filebrowsersettings.h"
 
@@ -37,8 +36,7 @@ const QString NoText = QString("No");
 const QString acceptActionText = "OK";
 const QString rejectActionText = "Cancel";
 
-SettingsView::SettingsView(FileBrowserMainWindow &mainWindow, EngineWrapper &engineWrapper) :
-    mMainWindow(mainWindow),
+SettingsView::SettingsView(EngineWrapper &engineWrapper) :
     mEngineWrapper(engineWrapper),
     mForm(0),
     mDisplayModeItem(0),
@@ -229,35 +227,6 @@ void SettingsView::constructMenu()
 {
     
 }
-//
-//void SettingsView::displayModeChanged()
-//{
-//}
-//
-//void SettingsView::fileViewChanged()
-//{
-//
-//}
-//
-//void SettingsView::subDirectoryInfoChanged()
-//{
-//}
-//
-//void SettingsView::associatedIconsChanged()
-//{
-//}
-//
-//void SettingsView::rememberFolderOnExitChanged()
-//{
-//}
-//
-//void SettingsView::rememberLastFolderChanged()
-//{
-//}
-//
-//void SettingsView::showToolbarChanged()
-//{
-//}
 
 void SettingsView::accept()
 {

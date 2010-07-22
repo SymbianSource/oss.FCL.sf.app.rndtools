@@ -24,7 +24,7 @@
 #include <badesca.h>
 #include <engine.h>
 
- #include <QObject> // for iProgressNote signal connect
+#include <QObject> // for iProgressNote signal connect
 
 
 class MainView;
@@ -32,6 +32,7 @@ class MemoryDetails;
 class HbProgressDialog;
 class HbPopup;
 class HbCommonNote;
+class HbAction;
 
 
 /**
@@ -63,6 +64,11 @@ public:
 	* Get memory details
 	*/
 	MemoryDetails GetMemoryDetails();
+	
+	/**
+	 * Get memory details list
+	 */
+	QList<MemoryDetails> GetMemoryDetailsList();
 	
 public: 
     
@@ -102,37 +108,37 @@ public:
 	/**
 	* Create entries query dialog
 	*/
-	TBool EntriesQueryDialog(TInt& aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero = EFalse);
+	TBool EntriesQueryDialog(TInt* aNumberOfEntries, const TDesC& aPrompt, TBool aAcceptsZero, MUIObserver* aObserver, TInt aUserData);
 
 	/**
 	* Create time query dialog
 	*/    
-    TBool TimeQueryDialog(TTime aTime, const TDesC& aPrompt);
+    TBool TimeQueryDialog(TTime* aTime, const TDesC& aPrompt, MUIObserver* aObserver, TInt aUserData);
 
 	/**
 	* Create yes or no query dialog
 	*/    
-    TBool YesNoQueryDialog(const TDesC& aPrompt);
+    TBool YesNoQueryDialog(const TDesC& aPrompt, MUIObserver* aObserver, int userData);
 	
 	/**
 	* Popup list dialog for selecting item from dialog list
 	*/
-	bool PopupListDialog(const TDesC& aPrompt, CDesCArray* aFileNameArray, TInt& aIndex); 
+	TBool PopupListDialog(const TDesC& aPrompt, const CDesCArray* aFileNameArray, TInt* aIndex, MUIObserver* aObserver, TInt aUserData); 
 	
 	/**
 	* Directory query dialog
 	*/
-	bool DirectoryQueryDialog(const TDesC& aPrompt, TFileName& aDirectory);
+	TBool DirectoryQueryDialog(const TDesC& aPrompt, TDes& aDirectory, MUIObserver* aObserver, TInt aUserData);
 	
 	/**
 	* Create list query single-selection dialog
 	*/
-	bool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt& aIndex);
+	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, TInt* aSeletedItem, MUIObserver* aObserver, TInt aUserData);
 
 	/**
 	* Create list query multi-selection dialog
 	*/
-	bool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aIndexes);
+	TBool ListQueryDialog(const TDesC& aPrompt, TListQueryId aId, CArrayFixFlat<TInt>* aSelectedItems, MUIObserver* aObserver, TInt aUserData);
 	
 	
 	/**
@@ -145,7 +151,7 @@ private slots:
 	/**
 	* progress dialog cancelled
 	*/
-	void ProgressDialogCancelled();    
+	void ProgressDialogCancelled();
 	
 private:
     
@@ -156,6 +162,7 @@ private:
     /* progress dialog that is shown */
     HbProgressDialog* iProgressDialog;
     
+    MCreatorModuleBase *iModule;
 };
 
 #endif //ENGINEWRAPPER_H

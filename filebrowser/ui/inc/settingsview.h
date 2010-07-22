@@ -22,7 +22,6 @@
 
 class HbDataForm;
 class HbDataFormModelItem;
-class FileBrowserMainWindow;
 class EngineWrapper;
 class FileBrowserSettings;
 
@@ -31,9 +30,10 @@ class SettingsView : public HbView
     Q_OBJECT
 
 public:
-    SettingsView(FileBrowserMainWindow &mainWindow, EngineWrapper &engineWrapper);
+    SettingsView(EngineWrapper &engineWrapper);
     virtual ~SettingsView();
 
+    void initDataForm();
 signals:
     void finished(bool ok);
 
@@ -51,14 +51,12 @@ public slots:
     void reject();
 
 private:
-    void initDataForm();
     void createToolbar();
     void constructMenu();
     void loadSettings(const FileBrowserSettings &settings);
     void saveSettings(FileBrowserSettings &settings);
 
 private:
-    FileBrowserMainWindow &mMainWindow;
     EngineWrapper &mEngineWrapper;
 
     HbDataForm *mForm;

@@ -22,8 +22,11 @@
 #include <HbListView>
 #include <QVariantMap>
 
+class HbLabel;
+class HbProgressDialog;
 class EngineWrapper;
 class ViewManager;
+
 
 class MemSpyView : public HbView
 {
@@ -44,21 +47,32 @@ protected:
 	
 	virtual bool isRefreshable() const;
 	
+	virtual bool isBreadCrumbVisible() const;
+	
+	virtual QString getBreadCrumbText() const;
+	
+	virtual HbWidget* createCentralWidget() = 0;
+	
 public slots:
 
 	virtual void initialize(const QVariantMap& params);
 
 	virtual void refresh();
 	
+	void showSettings();
+	
 	void showAbout();
 	
-protected:
+private slots:
 	
-	HbListView mListView;
+	void closeSettings();
+		
+protected:
 	
 	EngineWrapper &mEngine;
 	
 	ViewManager &mViewManager;
+	
 	
 private:
 	HbMenu* mOutputMenu;
@@ -67,6 +81,7 @@ private:
 	HbMenu* mOutputStackInfoMenu;
 	HbToolBar* mToolBar;
 	
+	HbLabel* mBreadCrumb;
 };
 
 #endif /* MEMSPYVIEW_H_ */

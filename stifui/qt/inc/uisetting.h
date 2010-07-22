@@ -18,6 +18,11 @@
 #define UISETTING_H_
 #include <QHash>
 
+const QString KShowOutput = "showoutput";
+const QString KStyleSheet = "StyleSheet";
+const QString KFilter = "filter";
+const QString KFilterCaseSens = "filtercasesens";
+
 class UiSetting
     {
 public:
@@ -32,9 +37,12 @@ private:
     bool load();
     bool save();
     void loadDefault();
+    QString getDefaultValue(const QString& item);
     
 private:
     QHash<QString, QString> settingList;
     };
 
 #endif /* UISETTING_H_ */
+
+// End of File

@@ -24,17 +24,32 @@
 #include "creator_modulebase.h"
 
 static const TInt KPhonebookFieldLength = 128;
-static const TInt KCreateRandomAmountOfGroups = -9999;
+static const TInt KCreateRandomAmountOfGroups = 1;
 
 class CCreatorModuleBaseParameters;
 
-class CCreatorPhonebookBase : public CBase, public MCreatorModuleBase{
+class CCreatorPhonebookBase : public CCreatorModuleBase
+{
+enum TCreatorPhonebookStatus{
+    ECreatorPhonebookDelete = 0,
+    ECreatorPhonebookStart,
+    ECreatorPhonebookGetContactFields,
+    ECreatorPhonebookGetPhoneNumbersCount,
+    ECreatorPhonebookGetUrlsCount,
+    ECreatorPhonebookGetEmailsCount,
+    ECreatorPhonebookContactsAllFields,
+    ECreatorPhonebookGetGroupFields,
+    ECreatorPhonebookGetContactsInGroup
+};
+
 public:
 
     virtual TInt CreateContactEntryL(CCreatorModuleBaseParameters *aParameters) = 0;    
     virtual TInt CreateGroupEntryL(CCreatorModuleBaseParameters *aParameters) = 0;
     virtual TInt CreateSubscribedContactEntryL(CCreatorModuleBaseParameters *aParameters) = 0;
-    virtual TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    virtual TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    virtual void QueryDialogClosedL(TBool aPositiveAction, TInt aUserData); //from MUIObserver
+
 //    virtual TBool IsActive() = 0;
 //    virtual void CancelOperation() = 0;
     virtual void DeleteAllGroupsL() = 0;
@@ -48,6 +63,7 @@ protected:
     TInt iNumberOfEmailAddressFields;
     TInt iContactsInGroup;    
     TBool iDefaultFieldsSelected;
+    TBool iAddAllFields;
 };
 
 

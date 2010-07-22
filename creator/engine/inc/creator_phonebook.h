@@ -17,66 +17,21 @@
 
 
 
-
-
 #ifndef __CREATORPHONEBOOK_H__
 #define __CREATORPHONEBOOK_H__
 
-#include "engine.h"
 #include "creator_phonebookbase.h"
 #include "creator_randomdatafield.h"
+#include "creator_phonebookwrapper.h"
 
 
-//#include <qmobilityglobal.h> //defines Q_SFW_EXPORT
-//#include <xqservicerequest.h>
-
-#include <QString>
-#include <qglobal.h>
-#include <QTime>
-#include <qtcontacts.h>
-//#include <qcontactmanager.h>
-//#include <qcontactname.h>
-//#include <qcontactid.h>
-//#include <qcontactphonenumber.h>
-//#include <qcontacturl.h>
-//#include <qcontactemailaddress.h>
-//#include <qcontact.h>
-
-//#include <e32base.h>
-//#include <cntdef.h>
-//#include <cntdb.h>
-//#include <cntitem.h>
-//#include <cntfldst.h>
-//#include <cntview.h>
-//#include <cvpbkcontactmanager.h>
-//#include <pbkfields.hrh>
-//#include <cpbk2imagemanager.h>
-//#include <mvpbkcontactstorelistobserver.h>
-//#include <mvpbkbatchoperationobserver.h>
-//#include <mvpbkcontactfindobserver.h>
-//#include <mvpbkcontactobserver.h>
-//#include <mpbk2imageoperationobservers.h>
-//#include <vpbkeng.rsg>
-//#include <cvpbkcontactlinkarray.h>
-//#include <MVPbkContactViewObserver.h>
-QTM_USE_NAMESPACE
 
 class CCreatorEngine;
 class CCreatorModuleBaseParameters;
 
-//class QContactManager;
-//class QContact;
-//class QContactId;
-//class QContactData;
-//class QContactName;
-
-//class MVPbkStoreContact;  //to change
-//class MVPbkContactStore;	//to change
-//class CAsyncWaiter;			//to change - remove
 class CContactDatabase;	
-//class MVPbkContactLinkArray;	//to change
 class CPhonebookParameters;	
-
+class CCreatorPhonebookWrapper;
 
 class CCreatorPhonebook : public CCreatorPhonebookBase 
     {
@@ -90,7 +45,6 @@ private:
     void ConstructL(CCreatorEngine* aEngine); // from MCreatorModuleBase
 
 public:  
-    virtual TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries);
     TInt CreateContactEntryL(CCreatorModuleBaseParameters *aParameters);    
     TInt CreateGroupEntryL(CCreatorModuleBaseParameters *aParameters);
     TInt CreateSubscribedContactEntryL(CCreatorModuleBaseParameters *aParameters); 
@@ -101,57 +55,47 @@ public:
     void DeleteAllGroupsL();
     void DeleteAllGroupsCreatedByCreatorL();
     
+    void TestPrintOut(CPhonebookParameters* aParam);
+    
 private:
     
-    void InitializeContactParamsL(/*CCreatorModuleBaseParameters* aParameters*/);
-    TBool IsContactGroupL(/*const MVPbkContactLink& aLink*/);																								//modify
-    void StoreLinksForDeleteL( RArray<TUint32>& aLinks, TUid aStoreUid );														//modify
-    void DeleteContactsL( QList<QContactLocalId>& contacts /*MVPbkContactLinkArray* aContacts, TBool aGroup*/ );																//modify
+    void InitializeContactParamsL();
+    TBool IsContactGroupL( TUint32& aLink );
+    void StoreLinksForDeleteL( RArray<TUint32>& aLinks, TUid aStoreUid );
+    void DeleteContactsL( RArray<TUint32>& aContactsToDelete, TUid aStoreUid );
     void DeleteItemsCreatedWithCreatorL( TUid aStoreUid );
     void DoDeleteItemsCreatedWithCreatorL( TUid aStoreUid, CDictionaryFileStore* aStore );
-    TBool HasOtherThanGroupsL( /*MVPbkContactLinkArray* aContacts */);																			//modify
+    TBool HasOtherThanGroupsL();
     
-    QContactDetail CreateContactDetail(QString aDetail, QString aFieldContext, QString aFieldString, TInt aRand );
 
 private:
-	
-    QContactManager* iContactMngr;//CVPbkContactManager* iContactManager;
+	CCreatorPhonebookWrapper* iPhonebookWrapper;
     TInt iOpCounter;
     
     CPhonebookParameters* iParameters;
     
-    static QString iPhoneNumberFields[];
     static TInt iUrlFields[];
     static TInt iEmailFields[];
-    TBool iAddAllFields;
-    //QList<QContactLocalId> 
-    RArray<TUint32> iContactLinkArray;//CVPbkContactLinkArray* iContactLinkArray;	//modify
-    RArray<TUint32>  iContactsToDelete;	//CVPbkContactLinkArray* iContactsToDelete;	//modify
-    RArray<TUint32>  iContactGroupsToDelete;	//CVPbkContactLinkArray* iContactGroupsToDelete;	//modify
+    
+    RArray<TUint32> iContactLinkArray;
+    RArray<TUint32>  iContactsToDelete;	
+    RArray<TUint32>  iContactGroupsToDelete;	
     
     RArray<TUint32> iPreviousDeleteLinks;
-    //RPointerArray<MVPbkContactLinkArray> iPreviousDeleteLinks;  //modify
     
 private:
 	//new variables
 	/// Ref: the target of the copy
-	QContact* iStore;     //MVPbkContactStore* iStore;  
-    
-    //CAsyncWaiter* iWaiter;	//remove
+  
     
     /// Own: Contact database for this store
     CContactDatabase* iContactDb;    
-    
     //Contacts found in contacts db.
-    QList<QContactId>* iContactResults;//MVPbkContactLinkArray* iContactResults;
-    // Contact groups that are found in the store. These are used in filtering
-    // the groups from the find results.
-    QList<QContactId>* iContactGroupsInStore;//MVPbkContactLinkArray* iContactGroupsInStore;
     
     };
 
 /**
- * Virtual phonebook parameters
+ * phonebook parameters
  */
     
 
@@ -163,15 +107,16 @@ public:
 	TInt CPhonebookParameters::ScriptLinkId() const;
 	void CPhonebookParameters::SetScriptLinkId(TInt aLinkId);
 
-	QList<QContactDetail> iContactFields;//	RPointerArray<CCreatorContactField> iContactFields;
+	TCreatorContactFields iContactFields;
 
-    QString iGroupName;//HBufC*  iGroupName;
-    TInt    iContactsInGroup;
+    HBufC*  iGroupName; 	
+    TInt iContactsInGroup;
     TInt iNumberOfPhoneNumberFields;
     TInt iNumberOfURLFields;
     TInt iNumberOfEmailAddressFields;
     TInt iContactSetPtr;
-    RArray<TLinkIdParam> iLinkIds; //QList<QContactId> iLinkIds;// For contactgroup. Stores the linked contact ids.
+    RArray<TLinkIdParam> iLinkIds; // For contactgroup. Stores the linked contact ids.
+    
     
 public:
     CPhonebookParameters();
@@ -182,5 +127,16 @@ private:
     };
 
 
+class CCreatorContactField : public CBase				//, public MCreatorRandomDataField
+    {
+public:    
+    static CCreatorContactField* NewL();
+    void AddFieldToParamL( CCreatorEngine* aEngine, CPhonebookParameters* aParam, TInt aType, TInt aRand = KErrNotFound );
+    void AddFieldToParamL( CPhonebookParameters* aParam, TInt aType, TPtrC aContent );
+    ~CCreatorContactField();
+private:
+    CCreatorContactField();
+    void ConstructL();
+    };
 
 #endif // __CREATORPHONEBOOK_H__

@@ -24,6 +24,7 @@
 
 // Engine includes
 #include <memspy/engine/memspyengineobjectthreadinfoobjects.h>
+#include <memspy/api/memspyapithreadinfoitem.h>
 
 // User includes
 #include "MemSpyViewBase.h"
@@ -34,12 +35,13 @@ class CMemSpyProcess;
 class CMemSpyThread;
 class CMemSpyThreadInfoContainer;
 class CMemSpyThreadInfoItemBase;
-
+class RMemSpySession;
 
 class CMemSpyViewThreadInfoItemGeneric : public CMemSpyViewBase
     {
 public:
-    CMemSpyViewThreadInfoItemGeneric( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aInfoContainer, TMemSpyThreadInfoItemType aType );
+    //CMemSpyViewThreadInfoItemGeneric( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aInfoContainer, TMemSpyThreadInfoItemType aType );
+	CMemSpyViewThreadInfoItemGeneric( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcessId, TThreadId aId, TMemSpyThreadInfoItemType aType );
     ~CMemSpyViewThreadInfoItemGeneric();
 
 public: // From CMemSpyViewBase
@@ -50,7 +52,8 @@ public: // API
     CMemSpyThread& Thread() const;
     CMemSpyThreadInfoContainer& Container() const;
     CMemSpyThreadInfoItemBase& InfoItem() const;
-
+    TThreadId ThreadId() { return iThreadId; }
+    
 public: // From CMemSpyViewBase
     void RefreshL();
     TMemSpyViewType ViewType() const;
@@ -69,12 +72,18 @@ private: // Internal methods
     static TInt CheckForItemConstructionComplete( TAny* aSelf );
 
 protected: // Member data
-    CMemSpyThreadInfoContainer& iContainer;
-    CMemSpyThreadInfoItemBase* iInfoItem;
-
+    //CMemSpyThreadInfoContainer& iContainer;
+    //CMemSpyThreadInfoItemBase* iInfoItem;
+    
 private: // Member data
     CAknWaitDialog* iWaitNote;
     CPeriodic* iWaitConstructionChecker;
+    
+    RArray<CMemSpyApiThreadInfoItem*> iThreadInfoItems;  //cigasto
+    CDesCArrayFlat* iModel;
+    TThreadId iThreadId;
+    TProcessId iParentProcessId;
+    TMemSpyThreadInfoItemType iType;
     };
 
 

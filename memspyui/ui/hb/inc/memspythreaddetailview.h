@@ -18,28 +18,46 @@
 #ifndef MEMSPYTHREADDETAILVIEW_H_
 #define MEMSPYTHREADDETAILVIEW_H_
 
-#include "memspyview.h"
+#include "memspylistview.h"
 #include "enginewrapper.h"
 
 class HbMenu;
 
-class MemSpyThreadDetailView : public MemSpyView
+class MemSpyThreadDetailModel : public QAbstractListModel
+{
+public:
+	MemSpyThreadDetailModel(EngineWrapper &engine, ThreadId threadId, ThreadInfoType type, QObject *parent = 0);
+	
+	~MemSpyThreadDetailModel();
+	
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	
+private:
+	QList<MemSpyThreadInfoItem*> mThreadInfo;
+};
+
+
+class MemSpyThreadDetailView : public MemSpyListView
 {
 	Q_OBJECT
 	
 public:
 	MemSpyThreadDetailView(EngineWrapper &engine, ViewManager &viewManager) 
-		: MemSpyView(engine, viewManager) {}
+		: MemSpyListView(engine, viewManager) {}
 protected:
 	virtual void initialize(const QVariantMap& params);
-	virtual HbMenu* createToolMenu();
-
-private slots:
-	void changePriority();
+	
+	virtual bool isBreadCrumbVisible() const;
+	
+	virtual QString getBreadCrumbText() const;
 	
 private:
 	ThreadId mThreadId;
 	HbMenu *mPriorityMenu;
+	QString mProcessName;
+	QString mThreadName;
 };
 
 #endif /* MEMSPYTHREADDETAILVIEW_H_ */

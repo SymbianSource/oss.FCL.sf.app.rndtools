@@ -101,26 +101,13 @@ void CMemSpyViewKernelHeap::SetListBoxModelL()
 	CMemSpyApiHeap* iHeap;
 	iHeap = iMemSpySession.GetHeap( );
 		
-	CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( 22 ); //array for formated items TODO: to remove constant
+	CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( 22 );
 		
 	model = FormatModel( iHeap );	
 				
 	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
 	listbox->Model()->SetItemTextArray( model );
-	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );	
-	
-	/*
-	// Get list contents
-	TMemSpyHeapInfo heapInfo;
-	iEngine.HelperHeap().GetHeapInfoKernelL( heapInfo );
-	CMemSpyEngineOutputList* list = iEngine.HelperHeap().NewHeapSummaryShortLC( heapInfo );
-
-	// Set up list box
-	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-	listbox->Model()->SetItemTextArray( list );
-	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
-	CleanupStack::Pop( list );
-	*/
+	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );			
 	}
 
 
@@ -144,9 +131,8 @@ TBool CMemSpyViewKernelHeap::HandleCommandL( TInt aCommand )
 
 
 void CMemSpyViewKernelHeap::OnCmdDumpKernelHeapL()
-    {
-	// TODO
-    //iEngine.HelperHeap().OutputHeapDataKernelL();
+    {	
+    iMemSpySession.DumpKernelHeap();
     }
 
 
@@ -178,7 +164,7 @@ CDesCArrayFlat* CMemSpyViewKernelHeap::FormatModel( CMemSpyApiHeap* aHeap )
 	 _LIT( KItem11, "Max. length" );
 	 _LIT( KItem12, "Debug Allocator Library" );
 	 
-	HBufC* iItem = HBufC::NewL( 64 );	
+	HBufC* iItem = HBufC::NewL( KMaxName );	
 	
 	iItem = FormatItem( KItem0, aHeap->Type() );
 	TPtr pItem( iItem->Des() );
@@ -305,7 +291,7 @@ CDesCArrayFlat* CMemSpyViewKernelHeap::FormatModel( CMemSpyApiHeap* aHeap )
 
 HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TDesC& aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );
+	HBufC* retBuf = HBufC::NewL( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 	pRetBuf.Append( _L("\t") );
@@ -317,7 +303,7 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TDesC& aV
 
 HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TInt aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );
+	HBufC* retBuf = HBufC::NewL( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
     
@@ -334,7 +320,7 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TInt aValue )
 
 HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );
+	HBufC* retBuf = HBufC::NewL( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
     
@@ -352,7 +338,7 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint aValue )
 
 HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TInt64& aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );
+	HBufC* retBuf = HBufC::NewL( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 	    
@@ -369,7 +355,7 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TInt64& a
 
 HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TAny* aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );
+	HBufC* retBuf = HBufC::NewL( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 		    
@@ -386,7 +372,7 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TAny* aValue )
 
 HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint* aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );
+	HBufC* retBuf = HBufC::NewL( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 		    
@@ -403,7 +389,7 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint* aValue )
 
 HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint8* aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );
+	HBufC* retBuf = HBufC::NewL( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 		    
@@ -420,7 +406,7 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint8* aValue 
 
 HBufC* CMemSpyViewKernelHeap::FormatPercentageItem( const TDesC& aCaption, TReal aOneHundredPercentValue, TReal aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( 64 );	//buffer for formatted item
+	HBufC* retBuf = HBufC::NewL( KMaxName );	//buffer for formatted item
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 	

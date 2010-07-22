@@ -109,6 +109,7 @@ void CHtiAdminAppUi::ConstructL()
     iAppView->SetSelectedCommCaption( KHtiSelectedCommCaption );
     UpdateVersion();
     UpdateStatusL();
+    StartTimer();
     iHtiCfg = CHtiCfg::NewL();
     UpdateAutoStartStatus(); // uses iHtiCfg
     UpdateSelectedComm(); // uses iHtiCfg
@@ -810,6 +811,7 @@ void CHtiAdminAppUi::HandleForegroundEventL( TBool aForeground )
         {
         UpdateStatusL();
         UpdateAutoStartStatus();
+        StartTimer();
         }
     else
         {
@@ -889,15 +891,6 @@ void CHtiAdminAppUi::UpdateStatusL()
                 {
                 _LIT( KTxt, "Running" );
                 iAppView->SetStatus( KTxt );
-
-                // start timer to watch the status
-                if ( !iPeriodic )
-                    {
-                    iPeriodic = CPeriodic::NewL( CActive::EPriorityStandard );
-                    iPeriodic->Start( 5 * 1000 * 1000,
-                                      5 * 1000 * 1000,
-                                      TCallBack( TimerCallBackL, this ) );
-                    }
                 }
                 break;
 
@@ -906,7 +899,6 @@ void CHtiAdminAppUi::UpdateStatusL()
                 {
                 _LIT( KTxt, "Stopped" );
                 iAppView->SetStatus( KTxt );
-                KillTimer();
                 }
                 break;
 
@@ -914,15 +906,10 @@ void CHtiAdminAppUi::UpdateStatusL()
                 {
                 _LIT( KTxt, "Panic" );
                 iAppView->SetStatus( KTxt );
-                KillTimer();
                 }
                 break;
             };
         prs.Close();
-        }
-    else
-        {
-        KillTimer();
         }
     }
 
@@ -1080,6 +1067,18 @@ void CHtiAdminAppUi::KillHtiWatchDogL()
         prs.Kill( KTerminateReason );
         prs.Close();
         HTI_LOG_TEXT( "HTI watchdog killed" );
+        }
+    }
+
+void CHtiAdminAppUi::StartTimer()
+    {
+    // start timer to watch the status
+    if ( !iPeriodic )
+        {
+        iPeriodic = CPeriodic::NewL( CActive::EPriorityIdle );
+        iPeriodic->Start( 1 * 1000 * 1000,
+                          10 * 1000 * 1000,
+                          TCallBack( TimerCallBackL, this ) );
         }
     }
 

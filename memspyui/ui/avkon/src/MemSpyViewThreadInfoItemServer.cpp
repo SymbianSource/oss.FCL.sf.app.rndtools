@@ -36,8 +36,8 @@ const TInt KMemSpyServerSessionsIndex = 2;
 
 
 
-CMemSpyViewThreadInfoItemServer::CMemSpyViewThreadInfoItemServer( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
-:   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeServer )
+CMemSpyViewThreadInfoItemServer::CMemSpyViewThreadInfoItemServer( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemGeneric( aSession, aObserver, aProcId, aId, EMemSpyThreadInfoItemTypeServer )
     {
     }
 
@@ -53,11 +53,12 @@ void CMemSpyViewThreadInfoItemServer::ConstructL( const TRect& aRect, CCoeContro
 #ifdef _DEBUG
     RDebug::Printf( "CMemSpyViewThreadInfoItemServer::ConstructL() - aSelectionRune: 0x%08x", aSelectionRune );
 #endif
-
+    /* TODO
     // Try to select the correct server
     CMemSpyThreadInfoHandleObjectBase* infoItem = static_cast< CMemSpyThreadInfoHandleObjectBase* >( iInfoItem );
+    */
     TInt selectedIndex = 0;
-    if  ( aSelectionRune )
+    /*if  ( aSelectionRune )
         {
         // Treat the rune as a handle, and try to look it up
         selectedIndex = infoItem->DetailsIndexByHandle( aSelectionRune );
@@ -65,10 +66,10 @@ void CMemSpyViewThreadInfoItemServer::ConstructL( const TRect& aRect, CCoeContro
 
     // Select item
     if  ( infoItem->DetailsCount() > 0 )
-        {
+        {*/
         iListBox->SetCurrentItemIndex( selectedIndex );
         HandleListBoxItemSelectedL( selectedIndex );
-        }
+        /*}*/
     }
 
 
@@ -81,16 +82,18 @@ TBool CMemSpyViewThreadInfoItemServer::HandleCommandL( TInt aCommand )
 
 CMemSpyViewBase* CMemSpyViewThreadInfoItemServer::PrepareChildViewL()
     {
+	/*
     CMemSpyViewThreadInfoItemServerDetails* child = new(ELeave) CMemSpyViewThreadInfoItemServerDetails( iEngine, iObserver, iContainer, iCurrentInfoItemDetails );
     CleanupStack::PushL( child );
     child->ConstructL( Rect(), *Parent() );
     CleanupStack::Pop( child );
     return child;
+    */
     }
 
 
 void CMemSpyViewThreadInfoItemServer::HandleListBoxItemSelectedL( TInt aIndex )
-    {
+    {/* TODO
     // Identify the type of item to display...
     CMemSpyThreadInfoHandleObjectBase* infoItem = static_cast< CMemSpyThreadInfoHandleObjectBase* >( iInfoItem );
     iCurrentInfoItemDetails = infoItem->DetailsAt( aIndex );
@@ -98,7 +101,7 @@ void CMemSpyViewThreadInfoItemServer::HandleListBoxItemSelectedL( TInt aIndex )
 #ifdef _DEBUG
     RDebug::Printf( "CMemSpyViewThreadInfoItemServer::HandleListBoxItemSelectedL() - iCurrentInfoItemDetails.iHandle: 0x%08x", iCurrentInfoItemDetails.iHandle );
 #endif
-
+*/
     // Notify observer about item selection
     ReportEventL( MMemSpyViewObserver::EEventItemSelected );
     }
@@ -127,7 +130,7 @@ void CMemSpyViewThreadInfoItemServer::HandleListBoxItemSelectedL( TInt aIndex )
 
 
 
-
+/*
 CMemSpyViewThreadInfoItemServerDetails::CMemSpyViewThreadInfoItemServerDetails( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer, const TMemSpyDriverHandleInfoGeneric& aInfoItemDetails )
 :   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeServer ), iInfoItemDetails( aInfoItemDetails )
     {
@@ -229,19 +232,25 @@ void CMemSpyViewThreadInfoItemServerDetails::SetListBoxModelL()
     CleanupStack::Pop( model );
     }
 
-
-void CMemSpyViewThreadInfoItemServerDetails::HandleListBoxItemActionedL( TInt /*aIndex*/ )
-    {
-    // Notify observer about an item being 'fired'
+*/
+/*
+void CMemSpyViewThreadInfoItemServerDetails::HandleListBoxItemActionedL( TInt /*aIndex*/ /*)
+*/
+/*    
+   	{
+    // Notify observer about an item being 'fired'    
     ReportEventL( MMemSpyViewObserver::EEventItemActioned );
     }
 
 
-void CMemSpyViewThreadInfoItemServerDetails::HandleListBoxItemSelectedL( TInt /*aIndex*/ )
+void CMemSpyViewThreadInfoItemServerDetails::HandleListBoxItemSelectedL( TInt /*aIndex*/ /*)
+*/
+/*
     {
     // Notify observer about item selection
     ReportEventL( MMemSpyViewObserver::EEventItemSelected );
     }
+*/
 
 
 
@@ -266,8 +275,7 @@ void CMemSpyViewThreadInfoItemServerDetails::HandleListBoxItemSelectedL( TInt /*
 
 
 
-
-
+/*
 
 
 CMemSpyViewThreadInfoItemServerSessions::CMemSpyViewThreadInfoItemServerSessions( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer, const TMemSpyDriverHandleInfoGeneric& aInfoItemDetails )
@@ -374,12 +382,7 @@ void CMemSpyViewThreadInfoItemServerSessions::SetListBoxModelL()
     CleanupStack::Pop( model );
     }
 
-
-
-
-
-
-
+*/
 
 
 

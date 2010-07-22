@@ -30,18 +30,17 @@
 class CMemSpyProcess;
 class CMemSpyThread;
 class CMemSpyThreadInfoItemBase;
-
+class RMemSpySession;
 
 class CMemSpyViewThreadInfoItemList : public CMemSpyViewBase, public MMemSpyThreadInfoContainerObserver
     {
 public:
-    CMemSpyViewThreadInfoItemList( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThread& aThread );
+    //CMemSpyViewThreadInfoItemList( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThread& aThread );
+	CMemSpyViewThreadInfoItemList( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcess, TThreadId aThread );
     ~CMemSpyViewThreadInfoItemList();
-    void ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune = NULL );
+    void ConstructL( const TRect& aRect, CCoeControl& aContainer, TMemSpyThreadInfoItemType iType);
 
 public: // API
-    const CMemSpyProcess& Process() const;
-    const CMemSpyThread& Thread() const;
     const CMemSpyThreadInfoItemBase& CurrentInfoItem() const;
 
 public: // From CMemSpyViewBase
@@ -67,11 +66,14 @@ private: // From CMemSpyViewBase
     void HandleListBoxItemActionedL( TInt aCurrentIndex );
     void HandleListBoxItemSelectedL( TInt aCurrentIndex );
     static TInt IdleUpdateListBoxModel( TAny* aSelf );
-    void DoIdleUpdateListBoxModelL();
+    void DoIdleUpdateListBoxModelL();   
 
 private: // Member data
-    CMemSpyThread& iThread;
+    //CMemSpyThread& iThread;
+    TThreadId iThreadId;
+    TProcessId iParentProcessId;
     CMemSpyThreadInfoItemBase* iCurrentInfoItem;
+    TInt iCurrentInfoItemId;
     CPeriodic* iIdleResetListboxTimer;
     };
 

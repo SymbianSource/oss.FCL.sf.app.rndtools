@@ -20,30 +20,34 @@
 DlgOutput::DlgOutput(IStfQtUIController* ctl, QWidget *parent) :
     QDialog(parent), controller(ctl)
     {
-    QSize btnSize(100,30);
     QGridLayout *mainLayout = new QGridLayout(this);
     this->setLayout(mainLayout);
     this->setContextMenuPolicy(Qt::NoContextMenu);
 
-    tabMain = new QTabWidget();
+    tabMain = new QTabWidget(this);
     tabMain->setContextMenuPolicy(Qt::NoContextMenu);
 
     QWidget *toolWidget = new QWidget(this);
     toolWidget->setContextMenuPolicy(Qt::NoContextMenu);
-    QGridLayout *toolLayout = new QGridLayout();
+    QGridLayout *toolLayout = new QGridLayout(this);
     toolWidget->setLayout(toolLayout);
     btnPause = new QPushButton(tr("Pause"), toolWidget);
     btnPause->setContextMenuPolicy(Qt::NoContextMenu);
-    btnPause->setFixedSize(btnSize);
     QObject::connect(btnPause, SIGNAL(clicked()), this,
             SLOT(on_btnPause_clicked()));
     btnAbort = new QPushButton(tr("Abort"), toolWidget);
     btnAbort->setContextMenuPolicy(Qt::NoContextMenu);
-    btnAbort->setFixedSize(btnSize);
     QObject::connect(btnAbort, SIGNAL(clicked()), this,
             SLOT(on_btnAbort_clicked()));
+    
+    btnClose = new QPushButton(tr("Hide"), toolWidget);
+    btnClose->setContextMenuPolicy(Qt::NoContextMenu);
+    QObject::connect(btnClose, SIGNAL(clicked()), this,
+            SLOT(on_btnClose_clicked()));
     toolLayout->addWidget(btnPause, 0, 0);
     toolLayout->addWidget(btnAbort, 0, 1);
+    toolLayout->addWidget(btnClose, 0, 2);
+        
 
     mainLayout->addWidget(toolWidget, 0, 0);
     mainLayout->addWidget(tabMain, 1, 0);
@@ -65,9 +69,8 @@ void DlgOutput::CreateItem(QString index, QString item)
 
 void DlgOutput::CloseItem(QString index)
     {
-    int u = tabList.keys().indexOf(index);
+    delete tabList.value(index);
     tabList.remove(index);
-    tabMain->removeTab(u);
     if (tabMain->count() == 0)
         {
         this->close();
@@ -79,6 +82,13 @@ void DlgOutput::ShowMessage(QString index, QString msg)
     if(tabList.contains(index))
         {
         tabList.value(index)->setPlainText(msg);    
+        }
+    else
+        {
+//        bool ok;
+//        CSTFCase acase = controller->GetRunningCase(index.toInt(&ok, 10));
+//        CreateItem(index, acase.Name());
+//        ShowMessage(index, msg);
         }
     }
 
@@ -101,10 +111,19 @@ void DlgOutput::on_btnAbort_clicked()
     controller->AbortCase();
     }
 
+void DlgOutput::on_btnClose_clicked()
+    {
+    controller->SetShowOutput(false);
+    this->close();
+    }
+
 void DlgOutput::OnCaseOutputChanged(const IStfEventListener::CaseOutputCommand& cmd,
         const QString& index, const QString& msg)
     {
-    this->showMaximized();
+    if(controller->ShowOutput() && this->isVisible() == false)
+        {
+        this->showMaximized();
+        }
     switch (cmd)
         {
         case IStfEventListener::ECreate:
@@ -120,3 +139,4 @@ void DlgOutput::OnCaseOutputChanged(const IStfEventListener::CaseOutputCommand& 
 
     }
 
+// End of File

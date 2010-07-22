@@ -18,18 +18,21 @@
 #include "stfqtuicontroller.h"
 #include <stifinternal/UIStoreIf.h>
 #include <stifinternal/UIStoreContainer.h>
-//#include "stiflogger.h"
 #include <QDateTime>
 
 const QString TEMPSETNAME = "TEMPSET";
 const QString DEFAULTINI = "c:\\testframework\\testframework.ini";
 
-//__DECLARE_LOG
+
 
 StfQtUIController::StfQtUIController(IStfQtUIModel* aModel) :
-    model(aModel), isShowOutput(false)
+    model(aModel), 
+    isShowOutput(false), 
+    iCurrentRunPos(0),
+    isLoopInfinitely(false),
+    loopTimes(0)
+       
     {
-//    __OPENLOGL ("\\STFQtUI\\", "StifQtUi.log" );
     executor = new CStifExecutor();
     executor->OpenIniFile(DEFAULTINI);
     executor->AddStifCaseUpdateListener(this);
@@ -40,15 +43,20 @@ StfQtUIController::~StfQtUIController()
     executor->RemoveStifCaseUpdateListener(this);
     delete executor;
     executor = NULL;
-//    __CLOSELOG;
     }
 //for cases
 
 bool StfQtUIController::OpenEngineIniFile(const QString& fileName)
     {
+    QString path = fileName;
+    if(path.contains('/'))
+        {
+        path = path.replace('/', '\\');
+        }
+    executor->RemoveStifCaseUpdateListener(this);
     delete executor;
     executor = new CStifExecutor();
-    bool rst = executor->OpenIniFile(fileName);
+    bool rst = executor->OpenIniFile(path);
     executor->AddStifCaseUpdateListener(this);
     return rst;
     }
@@ -132,19 +140,71 @@ void StfQtUIController::RunCases(const QList<CSTFCase>& caseList,
         }
     }
 
-void StfQtUIController::AddCaseToSet(const QList<CSTFCase>& caseList,
-        const QString& /*setName*/)
+// run cases repeatly. 
+// By default, loopTimes = -1 means loop infinitely util user stop it.
+void StfQtUIController::RepeatRunCases(const QList<CSTFCase>& aCaseList, const bool aIsLoopInfinitely, const int aLoopTimes)
     {
-    QString setName = QDateTime::currentDateTime().toString("hh_mm_ss");
-    setName.append(".set");
-    executor->CreateSet(setName);
+    InitRepeatSetting(aIsLoopInfinitely, aLoopTimes);
+    repeatRunCaseList = aCaseList;
+    
+    Execution();
+    
+    }
+
+void StfQtUIController::InitRepeatSetting(const bool aIsLoopInfinitely, const int aLoopTimes)
+    {
+    loopTimes = aLoopTimes;
+    isLoopInfinitely = aIsLoopInfinitely;
+    iCurrentRunPos = 0;
+    }
+
+void StfQtUIController::ResetRepeatSetting()
+    {
+    iCurrentRunPos = 0;
+    isLoopInfinitely = false;
+    loopTimes = 0;
+    }
+
+// Repeat execution cases
+void StfQtUIController::Execution()
+    {
+    if(loopTimes > 0  || isLoopInfinitely)
+        {
+        int count = repeatRunCaseList.count();
+        CSTFCase aCase = repeatRunCaseList.at(iCurrentRunPos);
+        QString msg = "Start execute case:" + aCase.Name();
+        FireOnGetOutput(msg);
+        executor->ExecuteSingleCase(aCase.ModuleName(), aCase.Index());
+        
+        iCurrentRunPos++;
+        if( iCurrentRunPos >= count )
+            {
+            iCurrentRunPos = 0;
+            loopTimes --;
+            }    
+        }
+    }
+
+bool StfQtUIController::AddCaseToSet(const QList<CSTFCase>& caseList,
+        const QString& setName)
+    {
+    QString name = setName;
+    bool rst = true;
     foreach(CSTFCase aCase, caseList)
             {
-            executor->AddtoSet(setName, aCase);
+            rst = executor->AddtoSet(name, aCase);
+            if(!rst)
+                {
+                break;
+                }
             }
-    executor->SaveSet(setName);
-    executor->RemoveSet(setName);
+    if(!rst)
+        {
+        return false;
+        }
+    rst = executor->SaveSet(name);
     FireOnSetListChanged();
+    return rst;
     }
 
 //for set
@@ -164,18 +224,29 @@ QList<QString> StfQtUIController::GetCaseListBySet(const QString& setName)
     return caseList;
     }
 
-void StfQtUIController::CreateSet(const QString& setName)
+bool StfQtUIController::CreateSet(QString& setName)
     {
-    executor->CreateSet(setName);
-    //executor->SaveSet(setName);
+    bool rst = executor->CreateSet(setName);
+    if(!rst)
+        {
+        return rst;
+        }
+    rst = executor->SaveSet(setName);
     FireOnSetListChanged();
+    return rst;
     }
 
-void StfQtUIController::DeleteSet(const QString& setName)
+bool StfQtUIController::DeleteSet(const QString& setName)
     {
-    executor->RemoveSet(setName);
-    //executor->SaveSet(setName);
+    bool rst = executor->RemoveSet(setName);
+    if(!rst)
+        {
+        return false;
+        }
+    QString name = setName;
+    rst = executor->SaveSet(name);
     FireOnSetListChanged();
+    return rst;
     }
 
 void StfQtUIController::RunSets(const QString& setName, const TSTFCaseRunningType& type)
@@ -201,6 +272,12 @@ void StfQtUIController::AbortCase()
     {
     model->AbortCase();
     FireOnGetOutput("Case Aborted");
+    }
+
+CSTFCase StfQtUIController::GetRunningCase(int index)
+    {
+    CStartedTestCase* startedCase = (CStartedTestCase*) index;
+    return model->GetRunningCase(startedCase);
     }
 
 bool StfQtUIController::ShowOutput()
@@ -256,6 +333,9 @@ void StfQtUIController::OnGetCaseUpdated(CStartedTestCase* aCase,
         model->RemoveRunningCase(aCase);
         model->AddCaseByStatus(EStatusAborted, stfcase);
         msg += "aborted";
+        
+        //reset repeat execution information
+        ResetRepeatSetting();
 
         }
     else if (flags & CUIStoreIf::EStatusExecuted)
@@ -279,7 +359,12 @@ void StfQtUIController::OnGetCaseUpdated(CStartedTestCase* aCase,
             model->AddCaseByStatus(EStatusPassed, stfcase);
             msg += "passed";
             }
-
+        
+        // if repeat execution is choosed, start to execution again.
+        if(loopTimes > 0 || isLoopInfinitely)
+            {
+            Execution();
+            }
         }
     else
         {
@@ -297,7 +382,7 @@ void StfQtUIController::OnGetCaseOutput(CStartedTestCase* aCase, QString& msg)
 void StfQtUIController::FireOnCaseOutputChanged(
         IStfEventListener::CaseOutputCommand cmd, int index, QString msg)
     {
-    if (ShowOutput())
+    if (true)//ShowOutput
         {
         foreach(IStfEventListener* listener, listenerList)
                 {
@@ -322,3 +407,5 @@ void StfQtUIController::FireOnSetListChanged()
             listener->OnSetListChanged();
             }
     }
+
+// End of File

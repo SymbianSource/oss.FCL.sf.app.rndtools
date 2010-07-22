@@ -148,21 +148,23 @@ CCreatorConnectionSettings::~CCreatorConnectionSettings()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorConnectionSettings::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorConnectionSettings::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorConnectionSettings::AskDataFromUserL");
-
+    
+    CCreatorModuleBase::AskDataFromUserL( aCommand );
+    
     if( aCommand == ECmdDeleteIAPs )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Connection Methods?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Connection Methods?"), this, ECreatorModuleDelete );
         }
     else if( aCommand == ECmdDeleteCreatorIAPs )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Connection Methods created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Connection Methods created with Creator?"), this, ECreatorModuleDelete );
         }
     else
         {
-        return iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?"));
+        return iEngine->GetEngineWrapper()->EntriesQueryDialog(&iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorModuleStart );
         }
     }
 

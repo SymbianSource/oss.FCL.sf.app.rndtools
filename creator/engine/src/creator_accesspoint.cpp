@@ -18,10 +18,10 @@
 
 
 
-#include "creator_accesspoint.h" 
+//#include "creator_accesspoint.h" 
 #include "creator_traces.h"
-#include <aplistitemlist.h>
-#include <aplistitem.h> 
+#include <ApListItemList.h>
+#include <ApListItem.h> 
 #include "enginewrapper.h"
 
 static const TInt KAccessPointsFieldLength = 128;
@@ -188,20 +188,22 @@ CCreatorAccessPoints::~CCreatorAccessPoints()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorAccessPoints::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+TBool CCreatorAccessPoints::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorAccessPoints::AskDataFromUserL");
-
+    
+    CCreatorModuleBase::AskDataFromUserL( aCommand );//ignore retval
+    
     if( aCommand == ECmdDeleteIAPs )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Access Points?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Access Points?"), this, ECreatorModuleDelete );
         }
     else if( aCommand == ECmdDeleteCreatorIAPs )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Access Points created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all Access Points created with Creator?"), this, ECreatorModuleDelete );
         }
 
-    return iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?"));
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog(&iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorModuleStart );
     }
 
 

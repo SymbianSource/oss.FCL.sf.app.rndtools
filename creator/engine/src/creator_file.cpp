@@ -16,7 +16,7 @@
 */
 
 
-#include <drmrights.h>
+#include <DRMRights.h>
 
 #include "engine.h"
 #include "enginewrapper.h"
@@ -37,6 +37,7 @@ CFilesParameters::CFilesParameters()
     LOGSTRING("Creator: CFilesParameters::CFilesParameters");
     iFullFilePath = HBufC::New(KFilesFieldLength);
     }
+
 CFilesParameters::CFilesParameters( CFilesParameters& aCopy )
     {
     LOGSTRING("Creator: CFilesParameters::CFilesParameters");
@@ -46,10 +47,13 @@ CFilesParameters::CFilesParameters( CFilesParameters& aCopy )
     iEncrypt = aCopy.iEncrypt;
     if ( aCopy.iPermission )
         {
-        iPermission = CDRMPermission::NewL();
-        iPermission->DuplicateL( *aCopy.iPermission );
+        TRAP_IGNORE(    
+            iPermission = CDRMPermission::NewL();
+            iPermission->DuplicateL( *aCopy.iPermission );
+            );
         }
     }
+
 CFilesParameters::~CFilesParameters()
     {
     LOGSTRING("Creator: CFilesParameters::~CFilesParameters");
@@ -85,7 +89,6 @@ void CCreatorFiles::ConstructL(CCreatorEngine* aEngine)
 
     iEngine = aEngine;
 
-    iDirectoryQueriedFromUser = HBufC::New(KFilesFieldLength);
     User::LeaveIfError( iApaLs.Connect() );
     
     iFilePaths = new (ELeave) CDesCArrayFlat( 4 );
@@ -121,7 +124,6 @@ CCreatorFiles::~CCreatorFiles()
         TRAP_IGNORE( StorePathsForDeleteL( *iFilePaths ) );
         }
     delete iFilePaths;
-    delete iDirectoryQueriedFromUser;
     delete iParameters;
     delete iUserParameters;
     iApaLs.Close();
@@ -129,66 +131,182 @@ CCreatorFiles::~CCreatorFiles()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorFiles::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+void CCreatorFiles::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
+    {
+    LOGSTRING("Creator: CCreatorFiles::QueryDialogClosedL");
+    
+    if( aPositiveAction == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        return;
+        }
+    
+    const TDesC* showText = &KSavingText;
+    TBool finished(EFalse);
+    TBool retval(ETrue);
+    switch(aUserData)
+        {
+        case ECreatorFilesDelete:
+            showText = &KDeletingText;
+            iEntriesToBeCreated = 1;
+            finished = ETrue;
+            break;
+        case ECreatorFilesStart:
+            {
+            // set a default directory  (eg. c:\Nokia\Images\)
+            iEngine->SetDefaultPathForFileCommandL(iCommand, iDirectoryQueriedFromUser);
+            TBuf<50> promptText;
+            if (iCommand == ECmdCreateFileEntryEmptyFolder)
+                promptText.Copy( _L("Specify the folder path and name") );
+            else
+                promptText.Copy( _L("Specify the directory") );
+            
+            // show directory query dialog
+            retval = iEngine->GetEngineWrapper()->DirectoryQueryDialog(promptText, iDirectoryQueriedFromUser, this, ECreatorFilesGetDirectory );
+            }
+            break;
+        case ECreatorFilesGetDirectory:
+            // check that the root folder is correct
+            if ( iDirectoryQueriedFromUser.Length() < 3  ||  BaflUtils::CheckFolder( iFs, iDirectoryQueriedFromUser.Left(3) ) != KErrNone )
+                {
+                iEngine->GetEngineWrapper()->ShowErrorMessage(_L("Invalid path"));
+                retval = EFalse;
+                }        
+            else
+                {
+                // check the directory contains a trailing backlash
+                if ( iDirectoryQueriedFromUser.Right(1) != _L("\\") )
+                    {
+                    iDirectoryQueriedFromUser.Append(_L("\\"));
+                    }
+                // copy the directory name to a class member
+                if ( iCommand == ECmdCreateFileEntryEmptyFolder )
+                    {
+                    finished = ETrue;
+                    }
+                else
+                    {
+                    retval = AskDRMDataFromUserL();
+                    }
+                }
+            break;
+        case ECreatorFilesAskDRMData:
+            if ( iDummy > 0 )
+                {
+                iUserParameters->iEncrypt = ETrue;
+                }
+            if ( iDummy == 2 )
+                {
+                iUserParameters->iPermission = CDRMPermission::NewL();
+                CDRMPermission* perm = iUserParameters->iPermission; 
+                perm->iTopLevel->iActiveConstraints = EConstraintNone;
+                perm->iPlay->iActiveConstraints = EConstraintNone;
+                perm->iDisplay->iActiveConstraints = EConstraintNone;
+                perm->iPrint->iActiveConstraints = EConstraintNone;
+                perm->iExecute->iActiveConstraints = EConstraintNone;
+                perm->iUniqueID = 0;
+                // DRM Combined Delivery
+                iDummy = 0;
+                retval = iEngine->GetEngineWrapper()->EntriesQueryDialog( &iDummy, _L("How many counts(0=unlimited)?"), ETrue, this, ECreatorFilesAskDRM_CD_Counts );
+                }
+            else
+                {
+                finished = ETrue;
+                }
+            break;
+        case ECreatorFilesAskDRM_CD_Counts:
+            if ( iDummy > 0 )
+                {
+                TInt count = iDummy;
+                CDRMPermission* perm = iUserParameters->iPermission;
+                // apply constraints to all permission types
+                // applied type will be selected by setting iAvailableRights
+                // when determining the file type
+                perm->iDisplay->iActiveConstraints |= EConstraintCounter;
+                perm->iDisplay->iCounter = count;
+                perm->iDisplay->iOriginalCounter = count;
+    
+                perm->iPlay->iActiveConstraints |= EConstraintCounter;
+                perm->iPlay->iCounter = count;
+                perm->iPlay->iOriginalCounter = count;
+    
+                perm->iPrint->iActiveConstraints |= EConstraintCounter;
+                perm->iPrint->iCounter = count;
+                perm->iPrint->iOriginalCounter = count;
+                
+                perm->iExecute->iActiveConstraints |= EConstraintCounter;
+                perm->iExecute->iCounter = count;
+                perm->iExecute->iOriginalCounter = count;
+                }
+            iDummy = 0;
+            retval = iEngine->GetEngineWrapper()->EntriesQueryDialog( &iDummy, _L("How many minutes until expire(0=unlimited)?"), ETrue, 
+                this, ECreatorFilesAskDRM_CD_Minutes
+                );
+            break;
+        case ECreatorFilesAskDRM_CD_Minutes:
+            if ( iDummy > 0 )
+                {
+                TInt minutes = iDummy;
+                CDRMPermission* perm = iUserParameters->iPermission;            
+                // apply constraints to all permission types
+                // applied type will be selected by setting iAvailableRights
+                // when determining the file type            
+                perm->iDisplay->iActiveConstraints |= EConstraintInterval;
+                perm->iDisplay->iInterval = TTimeIntervalSeconds( 60 * minutes );
+                perm->iDisplay->iIntervalStart = Time::NullTTime();
+                
+                perm->iPlay->iActiveConstraints |= EConstraintInterval;
+                perm->iPlay->iInterval = TTimeIntervalSeconds( 60 * minutes );
+                perm->iPlay->iIntervalStart = Time::NullTTime();
+    
+                perm->iPrint->iActiveConstraints |= EConstraintInterval;
+                perm->iPrint->iInterval = TTimeIntervalSeconds( 60 * minutes );
+                perm->iPrint->iIntervalStart = Time::NullTTime();
+    
+                perm->iExecute->iActiveConstraints |= EConstraintInterval;
+                perm->iExecute->iInterval = TTimeIntervalSeconds( 60 * minutes );
+                perm->iExecute->iIntervalStart = Time::NullTTime();
+                }
+            finished = ETrue;
+            break;
+        default:
+            //some error
+            retval = EFalse;
+            break;
+        }
+    if( retval == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        }
+    else if( finished )
+        {
+        // add this command to command array
+        iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
+        // started exucuting commands
+        iEngine->ExecuteFirstCommandL( *showText );
+        }
+    }
+
+//----------------------------------------------------------------------------
+
+TBool CCreatorFiles::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorFiles::AskDataFromUserL");
     
+    CCreatorModuleBase::AskDataFromUserL( aCommand );
+    
     if ( aCommand == ECmdDeleteCreatorFiles )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all files created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all files created with Creator?"), this, ECreatorFilesDelete );
         }
     
     delete iUserParameters;
     iUserParameters = NULL;
     iUserParameters = new(ELeave) CFilesParameters();
     
-    iDirectoryQueriedFromUser->Des().Copy( KNullDesC );
+    iDirectoryQueriedFromUser.Copy( KNullDesC );
 
-    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?")))
-        {
-        // set a default directory  (eg. c:\Nokia\Images\)
-        TFileName directory;
-        iEngine->SetDefaultPathForFileCommandL(aCommand, directory);
-
-        // directory query dialog
-		/*
-        CAknTextQueryDialog* textDialog = CAknTextQueryDialog::NewL(directory, CAknQueryDialog::ENoTone);
-        textDialog->SetMaxLength(256);
-		*/
-		
-        TBuf<50> promptText;
-
-        if (aCommand == ECmdCreateFileEntryEmptyFolder)
-            promptText.Copy( _L("Specify the folder path and name") );
-        else
-            promptText.Copy( _L("Specify the directory") );
-		// show directory query dialog
-        if (iEngine->GetEngineWrapper()->DirectoryQueryDialog(promptText, directory))
-            {
-	        // check that the root folder is correct
-            if (directory.Length() < 3  ||  BaflUtils::CheckFolder(iFs, directory.Left(3)) != KErrNone)
-                {
-                iEngine->GetEngineWrapper()->ShowErrorMessage(_L("Invalid path"));
-                return EFalse;
-                }        
-            else
-                {
-                // check the directory contains a trailing backlash
-                if (directory.Right(1) != _L("\\"))
-                    directory.Append(_L("\\"));
-
-                // copy the directory name to a class member
-                iDirectoryQueriedFromUser->Des() = directory;
-                if ( aCommand == ECmdCreateFileEntryEmptyFolder ) return ETrue;
-                else return AskDRMDataFromUserL();
-                }
-            }        
-        else
-            return EFalse;
-        }
-    else 
-        return EFalse;
-
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog(&iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorFilesStart );
     }
 
 
@@ -226,8 +344,8 @@ TInt CCreatorFiles::CreateFileEntryL(CFilesParameters *aParameters, TInt aComman
     if ( aCommand == ECmdCreateFileEntryEmptyFolder)
         {
         // strip the last backslash from the path
-        if( iDirectoryQueriedFromUser && iDirectoryQueriedFromUser->Des().Length() > 0)
-        	directoryToBeCreated = iDirectoryQueriedFromUser->Des();
+        if( iDirectoryQueriedFromUser.Length() > 0)
+        	directoryToBeCreated = iDirectoryQueriedFromUser;
         else if( parameters->iFullFilePath && parameters->iFullFilePath->Des().Length() > 0 )
         	directoryToBeCreated = parameters->iFullFilePath->Des();
         else 
@@ -332,13 +450,13 @@ TInt CCreatorFiles::CreateFileEntryL(CFilesParameters *aParameters, TInt aComman
             LOGSTRING2("Creator: CCreatorFiles::CreateFileEntryL iFullFilePath used, fullTargetPath: %S", &fullTargetPath);
             }
     
-        else if ( iDirectoryQueriedFromUser && iDirectoryQueriedFromUser->Des().Length() > 0 )
+        else if ( iDirectoryQueriedFromUser.Length() > 0 )
             {
             // target path = directory + the file name from source path
             TParse parser;
             parser.Set(fullSourcePath, NULL, NULL);
 
-            fullTargetPath = iDirectoryQueriedFromUser->Des();
+            fullTargetPath = iDirectoryQueriedFromUser;
             fullTargetPath.Append( parser.NameAndExt() );
 
             LOGSTRING2("Creator: CCreatorFiles::CreateFileEntryL iDirectoryQueriedFromUser used, fullTargetPath: %S", &fullTargetPath);
@@ -409,7 +527,7 @@ void CCreatorFiles::EncryptFileL( const TDesC& aInFileName, const TDesC& aOutFil
         SetPermissionsL( metaData, aOutFileName, aParameters );
         }
     
-    supplier->SetOutputDirectoryL( *iDirectoryQueriedFromUser );
+    supplier->SetOutputDirectoryL( iDirectoryQueriedFromUser );
     
     // The KOmaImportContentType is a OMA DRM agent specific MIME type which
     // indicates that plain content is to be encrypted
@@ -559,12 +677,6 @@ TBool CCreatorFiles::AskDRMDataFromUserL()
     {
     LOGSTRING("Creator: CCreatorFiles::AskDRMDataFromUserL");
     // Encryption -dialog
-    TInt encIndex( 0 );
-	
-
-    //CAknListQueryDialog* encDlg = new (ELeave) CAknListQueryDialog( &encIndex );
-    //encDlg->PrepareLC( R_ENCRYPTION_DIALOG );
-    //Create flat array from which list is built.
     CDesCArrayFlat* items = new(ELeave) CDesCArrayFlat(5);
     CleanupStack::PushL(items);
 
@@ -573,144 +685,12 @@ TBool CCreatorFiles::AskDRMDataFromUserL()
     items->AppendL( _L("DRM Forward Lock") );
     items->AppendL( _L("DRM Combined Delivery") );
 
-    // Add items into main list
-    //encDlg->SetOwnershipType( ELbmOwnsItemArray );
-    //encDlg->SetItemTextArray( items );
-    CleanupStack::Pop( items );
-    //encDlg->ListBox()->SetCurrentItemIndexAndDraw( 0 );
-
+    
 	// create a popup list
-    if ( iEngine->GetEngineWrapper()->PopupListDialog(_L("Encryption"), items, encIndex) )
-        {
-        if ( encIndex > 0 )
-            {
-            iUserParameters->iEncrypt = ETrue;
-            }
-        if ( encIndex == 2 )
-            {
-            iUserParameters->iPermission = CDRMPermission::NewL();
-            CDRMPermission* perm = iUserParameters->iPermission; 
-            perm->iTopLevel->iActiveConstraints = EConstraintNone;
-            perm->iPlay->iActiveConstraints = EConstraintNone;
-            perm->iDisplay->iActiveConstraints = EConstraintNone;
-            perm->iPrint->iActiveConstraints = EConstraintNone;
-            perm->iExecute->iActiveConstraints = EConstraintNone;
-            perm->iUniqueID = 0;
-            // DRM Combined Delivery
-            return AskDRMCDDataFromUserL();
-            }
-        return ETrue;
-        }
-    else
-        {
-        return EFalse;
-        } 
-    }
-
-//----------------------------------------------------------------------------
-
-TBool CCreatorFiles::AskDRMCDDataFromUserL()
-    {
-    LOGSTRING("Creator: CCreatorFiles::AskDRMCDDataFromUserL");
-    TInt count( 0 );
-    if ( iEngine->GetEngineWrapper()->EntriesQueryDialog( count, _L("How many counts\r\n(0=unlimited)?"), ETrue ) )
-        {
-        if ( count > 0 )
-            {
-            CDRMPermission* perm = iUserParameters->iPermission;
-            // apply constraints to all permission types
-            // applied type will be selected by setting iAvailableRights
-            // when determining the file type
-            perm->iDisplay->iActiveConstraints |= EConstraintCounter;
-            perm->iDisplay->iCounter = count;
-            perm->iDisplay->iOriginalCounter = count;
-
-            perm->iPlay->iActiveConstraints |= EConstraintCounter;
-            perm->iPlay->iCounter = count;
-            perm->iPlay->iOriginalCounter = count;
-
-            perm->iPrint->iActiveConstraints |= EConstraintCounter;
-            perm->iPrint->iCounter = count;
-            perm->iPrint->iOriginalCounter = count;
-            
-            perm->iExecute->iActiveConstraints |= EConstraintCounter;
-            perm->iExecute->iCounter = count;
-            perm->iExecute->iOriginalCounter = count;
-            }
-        }
-    else
-        {
-        return EFalse;
-        }
-    /*
-    TInt seconds( 0 );
-    if ( iEngine->GetEngineWrapper()->EntriesQueryDialog( seconds, _L("How many accumulated seconds until expire (0=unlimited)?"), ETrue ) )
-        {
-        if ( seconds > 0 )
-            {
-            CDRMPermission* perm = iUserParameters->iPermission;            
-            // apply constraints to all permission types
-            // applied type will be selected by setting iAvailableRights
-            // when determining the file type            
-            perm->iDisplay->iActiveConstraints |= EConstraintAccumulated;
-            perm->iDisplay->iEndTime = Time::MaxTTime();
-            perm->iDisplay->iStartTime = Time::MinTTime();;
-            perm->iDisplay->iAccumulatedTime = seconds;
-            
-            perm->iPlay->iActiveConstraints |= EConstraintAccumulated;
-            perm->iPlay->iEndTime = Time::MaxTTime();
-            perm->iPlay->iStartTime = Time::MinTTime();;
-            perm->iPlay->iAccumulatedTime = seconds;
-
-            perm->iPrint->iActiveConstraints |= EConstraintAccumulated;
-            perm->iPrint->iEndTime = Time::MaxTTime();
-            perm->iPrint->iStartTime = Time::MinTTime();;
-            perm->iPrint->iAccumulatedTime = seconds;
-
-            perm->iExecute->iActiveConstraints |= EConstraintAccumulated;
-            perm->iExecute->iEndTime = Time::MaxTTime();
-            perm->iExecute->iStartTime = Time::MinTTime();;
-            perm->iExecute->iAccumulatedTime = seconds;
-            }
-        }
-    else
-        {
-        return EFalse;
-        }
-    */
-    
-    TInt minutes( 0 );
-    if ( iEngine->GetEngineWrapper()->EntriesQueryDialog( minutes, _L("How many minutes until expire (0=unlimited)?"), ETrue ) )
-        {
-        if ( minutes > 0 )
-            {
-            CDRMPermission* perm = iUserParameters->iPermission;            
-            // apply constraints to all permission types
-            // applied type will be selected by setting iAvailableRights
-            // when determining the file type            
-            perm->iDisplay->iActiveConstraints |= EConstraintInterval;
-            perm->iDisplay->iInterval = TTimeIntervalSeconds( 60 * minutes );
-            perm->iDisplay->iIntervalStart = Time::NullTTime();
-            
-            perm->iPlay->iActiveConstraints |= EConstraintInterval;
-            perm->iPlay->iInterval = TTimeIntervalSeconds( 60 * minutes );
-            perm->iPlay->iIntervalStart = Time::NullTTime();
-
-            perm->iPrint->iActiveConstraints |= EConstraintInterval;
-            perm->iPrint->iInterval = TTimeIntervalSeconds( 60 * minutes );
-            perm->iPrint->iIntervalStart = Time::NullTTime();
-
-            perm->iExecute->iActiveConstraints |= EConstraintInterval;
-            perm->iExecute->iInterval = TTimeIntervalSeconds( 60 * minutes );
-            perm->iExecute->iIntervalStart = Time::NullTTime();
-            }
-        }
-    else
-        {
-        return EFalse;
-        }
-    
-    return ETrue;
+    iDummy = 0;
+    TBool retval = iEngine->GetEngineWrapper()->PopupListDialog(_L("Encryption"), items, &iDummy, this, ECreatorFilesAskDRMData );
+    CleanupStack::PopAndDestroy( items );
+    return retval;
     }
 
 //----------------------------------------------------------------------------

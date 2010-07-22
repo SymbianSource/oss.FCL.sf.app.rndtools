@@ -27,25 +27,37 @@ symbian:CONFIG -= symbian_i18n
 HEADERS += inc/enginewrapper.h \
 	inc/viewmanager.h \
 	inc/memspyview.h \
+	inc/memspylistview.h \
 	inc/memspymainview.h \
 	inc/memspyprocessview.h \
 	inc/memspythreadview.h \
+	inc/memspythreaddetailindexview.h \
 	inc/memspythreaddetailview.h \
 	inc/memspykernelobjecttypeview.h \
 	inc/memspykernelobjectview.h \
-	inc/memspykernelobjectdetailview.h  
+	inc/memspykernelobjectdetailview.h \
+	inc/memspytrackingview.h \
+	inc/memspyswmtview.h \
+	inc/memspyheapdumpsview.h \
+	inc/memspysettingsview.h
 
 SOURCES += src/main.cpp \
 	src/enginewrapper.cpp \
 	src/viewmanager.cpp \
 	src/memspyview.cpp \
+	src/memspylistview.cpp \
 	src/memspymainview.cpp \
 	src/memspyprocessview.cpp \
 	src/memspythreadview.cpp \
+	src/memspythreaddetailindexview.cpp \
 	src/memspythreaddetailview.cpp \
 	src/memspykernelobjecttypeview.cpp \
 	src/memspykernelobjectview.cpp \
-	src/memspykernelobjectdetailview.cpp 
+	src/memspykernelobjectdetailview.cpp \
+	src/memspytrackingview.cpp \
+	src/memspyswmtview.cpp \
+	src/memspyheapdumpsview.cpp \
+	src/memspysettingsview.cpp
 
 RESOURCES +=
 

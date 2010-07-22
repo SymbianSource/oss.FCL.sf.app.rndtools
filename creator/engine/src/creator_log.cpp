@@ -69,6 +69,7 @@ CCreatorLogs* CCreatorLogs::NewLC(CCreatorEngine* aEngine)
 
 CCreatorLogs::CCreatorLogs() : CActive(0)
     {
+    iEntriesToBeCreated = 1;
     }
 
 void CCreatorLogs::ConstructL(CCreatorEngine* aEngine)
@@ -105,18 +106,64 @@ CCreatorLogs::~CCreatorLogs()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorLogs::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+void CCreatorLogs::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
+    {
+    LOGSTRING("Creator: CCreatorModuleBase::QueryDialogClosedL");
+    
+    if( aPositiveAction == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        return;
+        }
+    
+    const TDesC* showText = &KSavingText;
+    TBool finished(EFalse);
+    TBool retval(ETrue);
+    switch(aUserData)
+        {
+        case ECreatorLogsDelete:
+            showText = &KDeletingText;
+            iEntriesToBeCreated = 1;
+            finished = ETrue;
+            break;
+        case ECreatorLogsStart:
+            finished = ETrue;
+            break;
+        default:
+            //some error
+            retval = EFalse;
+            break;
+        }
+    if( retval == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        }
+    else if( finished )
+        {
+        // add this command to command array
+        iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
+        // started exucuting commands
+        iEngine->ExecuteFirstCommandL( *showText );
+        }
+    }
+    
+//----------------------------------------------------------------------------
+
+TBool CCreatorLogs::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorLogs::AskDataFromUserL");
+    
+    iCommand = aCommand;
+    
     if ( aCommand == ECmdDeleteLogs )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all log entries?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all log entries?"), this, ECreatorLogsDelete );
         }
     else if ( aCommand ==  ECmdDeleteCreatorLogs )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all log entries created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all log entries created with Creator?"), this, ECreatorLogsDelete );
         }
-    return iEngine->GetEngineWrapper()->EntriesQueryDialog( aNumberOfEntries, _L("How many entries to create?") );
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog( &iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorLogsStart );
     }
 
 //----------------------------------------------------------------------------

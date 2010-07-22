@@ -220,5 +220,5 @@ void CTestSetInsertMenuContainer::SaveActiveLine()
 	{
 	((CMenuListBox*)iListBox)->SaveFocusPosition();
 	}
-    
+
 // End of File

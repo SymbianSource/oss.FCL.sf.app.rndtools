@@ -46,13 +46,20 @@ SOURCES += src/main.cpp \
 RESOURCES +=
 
 symbian: {
+    INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE 
     INCLUDEPATH += ../../../engine/inc
     HEADERS += ../../../engine/inc/perfmon_engine.h
 
     SOURCES += ../../../engine/src/perfmon_engine.cpp
 
     LIBS += -lestor \
-        -lbafl
+        -lbafl \
+        -lefsrv \
+        -lavkon \
+        -lapparc \
+        -lapgrfx \
+        -lgdi \
+        -lcone
 
     TARGET.CAPABILITY = WriteDeviceData
 

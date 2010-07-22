@@ -48,19 +48,21 @@ public:
     virtual QList<QString> GetCaseListByModule(const QString& moduleName) = 0;
     virtual CSTFCase GetCase(const QString& moduleName, const int index) = 0;
     virtual void RunCases(const QList<CSTFCase>& caseList, const TSTFCaseRunningType& type) = 0;
-    virtual void AddCaseToSet(const QList<CSTFCase>& aCase, const QString& setName) = 0;
+    virtual void RepeatRunCases(const QList<CSTFCase>& aCaseList, const bool aIsLoopInfinitely, const int aLoopTimes = 1) = 0;
+    virtual bool AddCaseToSet(const QList<CSTFCase>& aCase, const QString& setName) = 0;
     
     //for set
     virtual QList<QString> GetSetList() = 0;
     virtual QList<QString> GetCaseListBySet(const QString& setName) = 0;
-    virtual void CreateSet(const QString& setName) = 0;
-    virtual void DeleteSet(const QString& setName) = 0;
+    virtual bool CreateSet(QString& setName) = 0;
+    virtual bool DeleteSet(const QString& setName) = 0;
     virtual void RunSets(const QString& setName, const TSTFCaseRunningType& type) = 0;
     
     //for Started
     virtual void PauseCase() = 0;
     virtual void ResumeCase() = 0;
     virtual void AbortCase() = 0;
+    virtual CSTFCase GetRunningCase(int index) = 0;
     virtual bool ShowOutput() = 0;
     virtual void SetShowOutput(bool isShow) = 0;
     
@@ -71,9 +73,14 @@ public:
     virtual void AddStfEventListener(IStfEventListener* listener) = 0;
     virtual void RemoveStfEventListener(IStfEventListener* listener) = 0;
     
+    //for repeat execution setting
+    virtual void InitRepeatSetting(const bool aIsLoopInfinitely, const int aLoopTimes) = 0;
+    virtual void ResetRepeatSetting() = 0;
 
 };
 
 
 
 #endif // ISTFQTUICONTROLLER_H
+
+// End of File

@@ -18,7 +18,7 @@
 &EN
 
 ; Using UID of HtiFramework project
-#{"HTI"},(0x1020DEB6),2,21,0
+#{"HTI"},(0x1020DEB6),2,25,0
 
 ; Localised Vendor name
 %{"Nokia"}
@@ -81,6 +81,8 @@
 ""- "z:\Resource\Plugins\HtiPIMServicePlugin.rsc"
 ""- "z:\sys\bin\HtiIpProxyServicePlugin.dll"
 ""- "z:\Resource\Plugins\HtiIpProxyServicePlugin.rsc"
+""- "z:\sys\bin\HtiCameraServicePlugin.dll"
+""- "z:\Resource\Plugins\HtiCameraServicePlugin.rsc"
 
 ; Helper to add notepad memos
 ""- "z:\sys\bin\HtiNpdHlp.exe"
@@ -93,6 +95,9 @@
 
 ; HTI watchdog
 ""- "z:\sys\bin\HtiWatchDog.exe"
+
+; HTI Restart
+""- "z:\sys\bin\HtiRestart.exe"
 
 ; HTI device reboot
 ""- "z:\sys\bin\HtiDeviceRebootUI.exe"

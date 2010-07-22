@@ -254,6 +254,8 @@ TInt CFileBrowserFileOps::DoFindEntries(const TDesC& aFileName, const TDesC& aPa
                                 }
                             else
                                 {
+                                // ensure that root target folder exists
+                                BaflUtils::EnsurePathExistsL(iFs, iBuf2);
                                 // otherwise copy the file
                                 FileOpCopy(fullSourcePath, fullTargetPath, iUint1);
                                 }
@@ -331,7 +333,11 @@ TInt CFileBrowserFileOps::DoFindEntriesRecursiveL(const TDesC& aFileName, const 
                     {
                     path.Append(entry.iName);
                     path.Append(_L("\\"));
-                    DoFindEntries(aFileName, path);
+                    // test path.Left(iBuf2.Length()).Compare(iBuf2) - to prevent never ending recursive copy (in case of copy folder under itself)
+                    if( !(iRecursiveState == EFileOpCopy && !path.Left(iBuf2.Length()).Compare(iBuf2)) )
+                        {
+                        DoFindEntries(aFileName, path);
+                        }
                     }
                 }
             if ( iFileManObserverResult == MFileManObserver::ECancel )
@@ -380,17 +386,13 @@ TInt CFileBrowserFileOps::Copy(const TFileEntry& aSourceEntry, const TDesC& aTar
         iBuf2.Copy(targetPath);
         iUint1 = newSwitch;
         
-        // create initial directory - if it does not succeed, do not even try to continue
-        err = FileOpMkDirAll(targetPath, aSourceEntry.iEntry.iAtt);
-        
-        if (iOperationError == KErrNone)
+        TRAP(err, DoFindEntries(_L("*"), sourcePath));              // entries under current directory entry
+        if ( iFileManObserverResult != MFileManObserver::ECancel )
             {
-            TRAP(err, DoFindEntries(_L("*"), sourcePath));              // entries under current directory entry
-            if ( iFileManObserverResult != MFileManObserver::ECancel )
-                {
-                TRAP(err, DoFindEntriesRecursiveL(_L("*"), sourcePath));    // recursively under directories of current directory entry
-                }
+            TRAP(err, DoFindEntriesRecursiveL(_L("*"), sourcePath));    // recursively under directories of current directory entry
             }
+        // a path has a trailing backslash so it needs to be removed before the call
+        err = FileOpAttribs(targetPath.Left(targetPath.Length()-1), aSourceEntry.iEntry.iAtt, 0, 0, 0);
         }
 
     else if (aSourceEntry.iEntry.IsDir())

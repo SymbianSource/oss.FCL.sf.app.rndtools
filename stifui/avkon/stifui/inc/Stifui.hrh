@@ -109,4 +109,5 @@ enum TShowStartedCasesMode
     };
 
 #endif      // STIF_UI_HRH
+
 // End of File

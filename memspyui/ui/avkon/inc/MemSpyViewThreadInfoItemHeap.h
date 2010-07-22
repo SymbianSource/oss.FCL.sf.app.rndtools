@@ -25,11 +25,12 @@
 // User includes
 #include "MemSpyViewThreadInfoItemGeneric.h"
 
+class RMemSpySession;
 
 class CMemSpyViewThreadInfoItemHeap : public CMemSpyViewThreadInfoItemGeneric
     {
 public:
-    CMemSpyViewThreadInfoItemHeap( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer );
+    CMemSpyViewThreadInfoItemHeap( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType  );
 
 public: // From CMemSpyViewBase
     TBool HandleCommandL( TInt aCommand );

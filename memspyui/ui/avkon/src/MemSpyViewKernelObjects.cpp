@@ -165,7 +165,7 @@ void CMemSpyViewKernelObjects::DynInitMenuPaneL( TInt aResourceId, CEikMenuPane*
 
 void CMemSpyViewKernelObjects::SetListBoxModelL()
     {
-    _LIT( KLineFormatSpec, "\t%S" );
+    //_LIT( KLineFormatSpec, "\t%S" );
     _LIT( KTab, "\t" );
        
     iMemSpySession.GetKernelObjectItems( iKernelObjectItems, iObjectType );
@@ -178,7 +178,10 @@ void CMemSpyViewKernelObjects::SetListBoxModelL()
     	CleanupStack::PushL( tempName );
     	TPtr tempNamePtr( tempName->Des() );
     	tempNamePtr.Copy( KTab );
-    	tempNamePtr.Append( iKernelObjectItems[i]->Name() );
+    	
+    	TBuf<KMaxName> temp;
+    	temp.Copy(iKernelObjectItems[i]->Name());    	
+    	tempNamePtr.Append( temp	 );
     	iModel->AppendL( tempNamePtr );
     	
     	CleanupStack::PopAndDestroy( tempName ); 
@@ -248,27 +251,15 @@ TBool CMemSpyViewKernelObjects::HandleCommandL( TInt aCommand )
 
 
 TKeyResponse CMemSpyViewKernelObjects::OfferKeyEventL( const TKeyEvent& aKeyEvent, TEventCode aType )
-    {
-	// TODO: to remove support of tabs
+    {	
     TKeyResponse resp = EKeyWasNotConsumed;
-    if  ( iTabs && ( aKeyEvent.iScanCode == EStdKeyRightArrow || aKeyEvent.iScanCode == EStdKeyLeftArrow ) )
-        {
-        resp = iTabs->OfferKeyEventL( aKeyEvent, aType );
-        }
-    else
-        {
-        resp = CMemSpyViewBase::OfferKeyEventL( aKeyEvent, aType );    
-        }
+    resp = CMemSpyViewBase::OfferKeyEventL( aKeyEvent, aType );    
+    //}
     return resp;
     }
 
-
 void CMemSpyViewKernelObjects::TabChangedL( TInt /*aIndex*/ )
     {
-	/* TODO: tabs removed
-    iObjectType = (TMemSpyDriverContainerType)iTabs->ActiveTabId();
-    RefreshL();
-    */
     }
 
 
@@ -278,13 +269,13 @@ void CMemSpyViewKernelObjects::OnCmdTerminateL()
         {
         case EMemSpyDriverContainerTypeThread:
             {
+            TBool err = EFalse;
             TBool doTerminate = ETrue;
             
             //CMemSpyEngineObjectContainer& container = iEngine.Container();
             //TThreadId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
             TThreadId id( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() ); //get id of the current thread
-            
-            TBool err;
+                        
             iMemSpySession.ThreadSystemPermanentOrCritical( id, err );
             
             // Try to find the thread in question...
@@ -299,7 +290,8 @@ void CMemSpyViewKernelObjects::OnCmdTerminateL()
 				
 				if ( doTerminate )
 					{
-					iMemSpySession.TerminateThread( id );
+					iMemSpySession.EndThread( id, ETerminate );
+					RefreshL();
 					}
             	}            
             
@@ -319,21 +311,35 @@ void CMemSpyViewKernelObjects::OnCmdTerminateL()
                     thread->TerminateL();
                     }                
                 }
-            */
-            RefreshL();
+            */            
             break;
             }        
         case EMemSpyDriverContainerTypeProcess:
             {
+            TBool err = EFalse;
             TBool doTerminate = ETrue;
-            // Obtain the process that corresponds to the selected item
-            //CMemSpyEngineObjectContainer& container = iEngine.Container();
-            //TProcessId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
             TProcessId id( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() );
+            iMemSpySession.ProcessSystemPermanentOrCritical( id, err );
             
+            if( err )
+            	{
+				CAknQueryDialog* importDialog = CAknQueryDialog::NewL();	
+                doTerminate = ( importDialog->ExecuteLD( R_MEMSPY_PANIC_SYSTEM_CRITICAL_THREAD_OR_PROCESS ) );
+                
+                if( doTerminate )
+                	{
+                    iMemSpySession.EndProcess( id, ETerminate );     
+                    RefreshL();
+                    }
+            	}
+            
+            // Obtain the process that corresponds to the selected item
+            /*
+            CMemSpyEngineObjectContainer& container = iEngine.Container();
+            TProcessId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );                                                
             CMemSpyProcess& process = container.ProcessByIdL( id );
-            process.Open();
-
+            process.Open();			
+            						
             if  ( process.IsSystemPermanent() || process.IsSystemCritical() )
                 {
                 CAknQueryDialog* importDialog = CAknQueryDialog::NewL();
@@ -344,7 +350,8 @@ void CMemSpyViewKernelObjects::OnCmdTerminateL()
                 {
                 process.TerminateL();
                 RefreshL();
-                }
+                }*/
+            
             break;
             }
         default:
@@ -357,7 +364,9 @@ void CMemSpyViewKernelObjects::OnCmdTerminateL()
 
 
 void CMemSpyViewKernelObjects::OnCmdSwitchToL()
-    {/*
+    {	
+	TBool brought = EFalse;
+	/*
     TInt wgCount;
     RWsSession wsSession;
     User::LeaveIfError( wsSession.Connect() );
@@ -370,11 +379,15 @@ void CMemSpyViewKernelObjects::OnCmdSwitchToL()
     TBool brought( EFalse );
     TInt wgId( KErrNotFound );
     TThreadId threadId;
+    */
     switch ( iObjectType )
-        {
+        {    	    	    	
         case EMemSpyDriverContainerTypeThread:
             {
-            TThreadId currentThreadId( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
+            TThreadId currentThreadId( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() );
+            TInt error = iMemSpySession.SwitchToThread( currentThreadId, brought );
+            /*
+            TThreadId currentThreadId( iObjectList->At( iListBox->CurrentItemIndex() ).iId );            
             
             // loop trough all window groups and see if a thread id matches
             while( !brought && wgCount-- )
@@ -392,14 +405,21 @@ void CMemSpyViewKernelObjects::OnCmdSwitchToL()
                         }
                     CleanupStack::PopAndDestroy( wgName );
                     }
-                }                
+                }
+                */                
             break;
             }
         case EMemSpyDriverContainerTypeProcess:
-            {
-            CMemSpyEngineObjectContainer& container = iEngine.Container();
-            TProcessId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
-            CMemSpyProcess& process = container.ProcessByIdL( id );
+            {                        
+            TProcessId id( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() );
+            TInt error = iMemSpySession.SwitchToProcess( id, brought  );
+            /*
+            //CMemSpyEngineObjectContainer& container = iEngine.Container();
+            //TProcessId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
+            //CMemSpyProcess& process = container.ProcessByIdL( id );
+            
+            TProcessId id( iKernelObjectItems[iListBox->CurrentItemIndex()]->Id() );
+            
             
             // loop trough threads in a process
             for ( TInt i = 0; i < process.MdcaCount(); i++ )
@@ -424,7 +444,7 @@ void CMemSpyViewKernelObjects::OnCmdSwitchToL()
                         }
                     }
                 }
-
+			*/
             break;
             }
         default:
@@ -438,18 +458,36 @@ void CMemSpyViewKernelObjects::OnCmdSwitchToL()
         // Error handling in HandleCommandL
         User::Leave( KErrGeneral );
         }
-    CleanupStack::PopAndDestroy( 2 ); //wgArray,wsSession*/
+    CleanupStack::PopAndDestroy( 2 ); //wgArray,wsSession    
     }
 
 
 void CMemSpyViewKernelObjects::OnCmdEndL()
-    {/*
+    {
     switch ( iObjectType )
         {
         case EMemSpyDriverContainerTypeThread:
             {
+            TBool err = EFalse;
             TBool doTerminate = ETrue;
             
+            TThreadId id( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() ); //get id of the current thread                                   
+            iMemSpySession.ThreadSystemPermanentOrCritical( id, err );
+            
+            if( err )
+            	{
+				CAknQueryDialog* importDialog = CAknQueryDialog::NewL();
+				doTerminate = ( importDialog->ExecuteLD( R_MEMSPY_PANIC_SYSTEM_CRITICAL_THREAD_OR_PROCESS ) );
+                        				
+				if ( doTerminate )
+					{
+					iMemSpySession.EndThread( id, EKill );
+					RefreshL();
+					}
+            	}            
+
+            
+            /*
             CMemSpyEngineObjectContainer& container = iEngine.Container();
             TThreadId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
             
@@ -473,11 +511,31 @@ void CMemSpyViewKernelObjects::OnCmdEndL()
                     thread->KillL();
                     }                
                 }
+            
             RefreshL();
+            */
             break;
             }
         case EMemSpyDriverContainerTypeProcess:
             {
+            TBool err = EFalse;
+            TBool doTerminate = ETrue;
+            TProcessId id( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() );
+            iMemSpySession.ProcessSystemPermanentOrCritical( id, err );
+            
+            if( err )
+            	{
+				CAknQueryDialog* importDialog = CAknQueryDialog::NewL();	
+				doTerminate = ( importDialog->ExecuteLD( R_MEMSPY_PANIC_SYSTEM_CRITICAL_THREAD_OR_PROCESS ) );
+				
+				if( doTerminate )
+					{
+					iMemSpySession.EndProcess( id, EKill);     
+					RefreshL();
+					}
+            	}
+            
+            /*
             TBool doTerminate = ETrue;
             // Obtain the process that corresponds to the selected item
             CMemSpyEngineObjectContainer& container = iEngine.Container();
@@ -495,7 +553,7 @@ void CMemSpyViewKernelObjects::OnCmdEndL()
                 process.KillL();
                 RefreshL();
                 }
-
+			*/
             break;
             }
         default:
@@ -503,63 +561,55 @@ void CMemSpyViewKernelObjects::OnCmdEndL()
             // Programming error
             __ASSERT_ALWAYS( EFalse, User::Panic( _L("MemSpy-View"), 0 ) );
             }
-        }    */
+        }    
     }
 
 
 void CMemSpyViewKernelObjects::OnCmdPanicL()
-    {/*
+    {
     switch ( iObjectType )
         {
         case EMemSpyDriverContainerTypeThread:
             {
+            TBool err = EFalse;
             TBool doTerminate = ETrue;
             
-            CMemSpyEngineObjectContainer& container = iEngine.Container();
-            TThreadId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
+            TThreadId id( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() ); //get id of the current thread                                   
+            iMemSpySession.ThreadSystemPermanentOrCritical( id, err );
             
-            // Try to find the thread in question...
-            CMemSpyProcess* process = NULL;
-            CMemSpyThread* thread = NULL; 
-            User::LeaveIfError( container.ProcessAndThreadByThreadId( id, process, thread ) );
-
-            if ( thread )
-                {
-                thread->Open();
-                //
-                if  ( thread->IsSystemPermanent() || thread->IsSystemCritical() )
-                    {
-                    CAknQueryDialog* importDialog = CAknQueryDialog::NewL();
-                    doTerminate = ( importDialog->ExecuteLD( R_MEMSPY_PANIC_SYSTEM_CRITICAL_THREAD_OR_PROCESS ) );
-                    }
-                //
-                if  ( doTerminate )
-                    {
-                    thread->PanicL();
-                    }                
-                }
-            RefreshL();
+            if( err )
+            	{
+				CAknQueryDialog* importDialog = CAknQueryDialog::NewL();
+				doTerminate = ( importDialog->ExecuteLD( R_MEMSPY_PANIC_SYSTEM_CRITICAL_THREAD_OR_PROCESS ) );
+                        				
+				if ( doTerminate )
+					{
+					iMemSpySession.EndThread( id, EPanic );
+					RefreshL();
+					}
+            	}
+            
             break;
             }
         case EMemSpyDriverContainerTypeProcess:
             {
+            TBool err = EFalse;
             TBool doTerminate = ETrue;
-            // Obtain the process that corresponds to the selected item
-            CMemSpyEngineObjectContainer& container = iEngine.Container();
-            TProcessId id( iObjectList->At( iListBox->CurrentItemIndex() ).iId );
-            CMemSpyProcess& process = container.ProcessByIdL( id );
-            process.Open();
-
-            if  ( process.IsSystemPermanent() || process.IsSystemCritical() )
-                {
-                CAknQueryDialog* importDialog = CAknQueryDialog::NewL();
-                doTerminate = ( importDialog->ExecuteLD( R_MEMSPY_PANIC_SYSTEM_CRITICAL_THREAD_OR_PROCESS ) );
-                }
-            if  ( doTerminate )
-                {
-                process.PanicL();
-                RefreshL();
-                }
+            TProcessId id( iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Id() );
+            iMemSpySession.ProcessSystemPermanentOrCritical( id, err );
+            
+            if( err )
+            	{
+				CAknQueryDialog* importDialog = CAknQueryDialog::NewL();	
+				doTerminate = ( importDialog->ExecuteLD( R_MEMSPY_PANIC_SYSTEM_CRITICAL_THREAD_OR_PROCESS ) );
+                           
+				if( doTerminate )
+					{
+					iMemSpySession.EndProcess( id, EPanic );     
+					RefreshL();
+					}
+            	}
+        
             break;
             }
         default:
@@ -567,42 +617,21 @@ void CMemSpyViewKernelObjects::OnCmdPanicL()
             // Programming error
             __ASSERT_ALWAYS( EFalse, User::Panic( _L("MemSpy-View"), 0 ) );
             }
-        }*/
+        }
     }
 
 
 void CMemSpyViewKernelObjects::CreateTabsL()
     {
+	TMemSpyDriverContainerType type = iKernelObjectItems[ iListBox->CurrentItemIndex() ]->Type();
+	const TPtrC pType( MemSpyUiUtils::TypeAsString( type ) );
+	
 	CEikStatusPane* statusPane = static_cast<CAknAppUi*> ( iEikonEnv->EikAppUi() )->StatusPane();
 	TUid uid;
 	uid.iUid = EEikStatusPaneUidNavi;
 	iNaviPane = ( CAknNavigationControlContainer * ) statusPane->ControlL( TUid::Uid( EEikStatusPaneUidNavi ) );	
-	iNavDecorator=iNaviPane->CreateMessageLabelL(_L("Kernel Object Type")); //TODO: To print there kernel object type
-	iNaviPane->PushL(*iNavDecorator); 
-	/*
-    CEikStatusPane* statusPane = static_cast<CAknAppUi*> ( iEikonEnv->EikAppUi() )->StatusPane();
-    TUid uid;
-    uid.iUid = EEikStatusPaneUidNavi;
-    iNavDecorator = ((CAknNavigationControlContainer*)(statusPane->ControlL(uid)))->Top();
-
-    if ( !iNavDecorator )
-        {
-        iNavContainer = (CAknNavigationControlContainer*)statusPane->ControlL(uid);
-        iNavDecorator = iNavContainer->CreateTabGroupL();
-
-        iTabs = ( CAknTabGroup* )iNavDecorator->DecoratedControl();
-        iTabs->SetTabFixedWidthL( KTabWidthWithThreeLongTabs );
-    
-        for ( TInt i = 0; i < iModel->Count(); i++ )
-            {
-            const CMemSpyEngineGenericKernelObjectList& item = iModel->At( i );
-            iTabs->AddTabL( item.Type(), item.TypeAsString( item.Type() ) );
-            }
-        iTabs->SetActiveTabById( iObjectType );
-        iTabs->SetObserver( this );
-        iNavContainer->PushL( *iNavDecorator );
-       }
-       */
+	iNavDecorator=iNaviPane->CreateMessageLabelL( pType );
+	iNaviPane->PushL(*iNavDecorator); 		
     }
 
 

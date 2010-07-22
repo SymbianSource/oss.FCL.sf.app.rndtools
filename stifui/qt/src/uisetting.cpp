@@ -40,6 +40,11 @@ QString UiSetting::ReadSetting(const QString& item)
         {
         value = settingList.value(item);
         }
+    else
+        {
+        value = getDefaultValue(item);
+        settingList.insert(item, value);
+        }
     return value;
     }
 
@@ -58,10 +63,34 @@ void UiSetting::SetSetting(const QString& item, const QString& value)
 void UiSetting::loadDefault()
     {
     settingList.clear();
-    settingList.insert("showoutput", "true");
+    settingList.insert(KShowOutput, getDefaultValue(KShowOutput));
+    settingList.insert(KStyleSheet, getDefaultValue(KStyleSheet));
+    settingList.insert(KFilter, getDefaultValue(KFilter));
+    settingList.insert(KFilterCaseSens, getDefaultValue(KFilterCaseSens));
     //add mor default setting here.
     }
 
+QString UiSetting::getDefaultValue(const QString& item)
+    {
+    QString result = "";
+    if(item == KShowOutput)
+        {
+        result = "true";
+        }
+    else if(item == KStyleSheet)
+        {
+        result = ":/qss/coffee.qss";
+        }
+    else if(item == KFilter)
+        {
+        result = "";
+        }
+    else if(item == KFilterCaseSens)
+        {
+        result = "false";
+        }
+    return result;
+    }
 
 bool UiSetting::load()
     {
@@ -75,7 +104,7 @@ bool UiSetting::load()
     int index;
     while(!in.atEnd())
         {
-        line = in.readLine().trimmed().toLower();
+        line = in.readLine().trimmed();
         if(!line.startsWith("//"))
             {
             index = line.indexOf("=");
@@ -83,6 +112,8 @@ bool UiSetting::load()
                 {
                 item = line.left(index).trimmed();
                 value = line.right(line.length() - index  -1);
+                if(item == KFilter) //For filter do not care about stored value
+                    value = "";
                 settingList.insert(item, value);
                 }
             }
@@ -112,3 +143,4 @@ bool UiSetting::save()
     return true;    
     }
 
+// End of File

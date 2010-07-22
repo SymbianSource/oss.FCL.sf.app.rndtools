@@ -26,10 +26,14 @@ enum ViewIndex {
 	MainView,
 	ProcessView,
 	ThreadView,
+	ThreadDetailIndexView,
 	ThreadDetailView,
 	KernelObjectTypeView,
 	KernelObjectView,
-	KernelObjectDetailView
+	KernelObjectDetailView,
+	TrackingView,
+	SwmtView,
+	HeapDumpsView
 };
 
 class HbMainWindow;

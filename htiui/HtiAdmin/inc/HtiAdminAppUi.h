@@ -135,6 +135,8 @@ class CHtiAdminAppUi : public CAknAppUi
     	void HandleBtSearch();
     	void HandleIPConnect();
     	void HandleIPListen();
+    	
+    	void StartTimer();
 
     private:
 

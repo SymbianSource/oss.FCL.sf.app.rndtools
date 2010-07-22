@@ -48,3 +48,5 @@ private:
 
 };
 #endif // CSTFMODULE_H
+
+// End of File

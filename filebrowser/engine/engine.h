@@ -22,7 +22,7 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <apgcli.h>
-#include <CAknMemorySelectionSettingPage.h>
+
 #include "FBFileUtils.h"
 
 // setting keys (do not change uids of existing keys to maintain compatibility to older versions!)
@@ -48,7 +48,6 @@ class CFileBrowserFileListContainer;
 class CFileBrowserScreenCapture;
 class CFileBrowserFileUtils;
 class CEikonEnv;
-class CAknGlobalConfirmationQuery;
 class CDictionaryFileStore;
 class MFileBrowserUI;
 
@@ -78,10 +77,10 @@ public:
 class MFileBrowserUI
 {
 public:
-    /**
-      * Method from getting current index
-      * @return current index.
-      */
+//    /**
+//      * Method from getting current index
+//      * @return current index.
+//      */
 //    virtual TInt QueryCurrentItemIndex() = 0;
 
     /**
@@ -106,14 +105,26 @@ public:
      */
     virtual void ShowConfirmationNote(const TDesC& aText, TBool aNoTimeout = EFalse) = 0;
 
-//    /**
-//     * Shows progress bar with text
-//     * @param aText A text to be shown at top of the progress bar.
-//     * @param aMinimum A minimum progress bar value.
-//     * @param aMaximum A maximum progress bar value.
-//     * @return None.
-//     */
-//    virtual void ShowProgressBar(const TDesC& aText, TInt aMinimum, TInt aMaximum ) = 0;
+    /**
+     * Shows progress bar with text
+     * @param aText A text to be shown at top of the progress bar.
+     * @param aMinimum A minimum progress bar value.
+     * @param aMaximum A maximum progress bar value.
+     * @return None.
+     */
+    virtual void ShowProgressDialog(const TDesC& aDescText, TInt aMinimum, TInt aMaximum ) = 0;
+
+    /**
+     * Cancel progress dialog
+     * @return None.
+     */
+    virtual void CancelProgressDialog() = 0;
+
+    /**
+      * Set progress dialog value
+      * @param aValue A vaule to be shown at top of the progress dialog.
+      */
+    virtual void SetProgressValue(TInt aValue) = 0;
 //
 //    /**
 //     * Sets progress bar value
@@ -128,18 +139,24 @@ public:
 //     */
 //    virtual void HideProgressBar() = 0;
 //
-//    /**
-//     * Shows wait dialog with text
-//     * @param aText A text to be shown at top of the wait bar.
-//     * @return None.
-//     */
-//    virtual void ShowWaitDialog(const TDesC& aText) = 0;
-//
-//    /**
-//     * Hides wait dialog
-//     * @return None.
-//     */
-//    virtual void HideWaitDialog() = 0;
+    /**
+     * Shows wait dialog with text
+     * @param aText A text to be shown at top of the wait bar.
+     * @return None.
+     */
+    virtual void ShowWaitDialog(const TDesC& aText) = 0;
+
+    /**
+     * Cancel wait dialog
+     * @return None.
+     */
+    virtual void CancelWaitDialog() = 0;
+
+    /**
+     * Processes all pending events to allow wait/progresa dialog to update itself
+     * @return None.
+     */
+    virtual void ProcessEvents() = 0;
 
     /**
      * Shows confirmation dialog
@@ -160,7 +177,6 @@ private:
     CEngine();
     void ConstructL(MFileBrowserUI *aFileBrowserUI);
     void LoadSettingsL();
-    void GetHashKeySelectionStatus();
     void LoadDFSValueL(CDictionaryFileStore* aDicFS, const TUid& aUid, TInt& aValue);
     void LoadDFSValueL(CDictionaryFileStore* aDicFS, const TUid& aUid, TDes& aValue);
     void SaveDFSValueL(CDictionaryFileStore* aDicFS, const TUid& aUid, const TInt& aValue);
@@ -170,7 +186,6 @@ public:
     void ActivateEngineL();
     void DeActivateEngineL();
     void SaveSettingsL(TBool aNotifyModules=ETrue);
-//    void SetFileListContainer(CFileBrowserFileListContainer* aFileListContainer);
     TInt LaunchSettingsDialogL();
     inline TFileBrowserSettings& Settings() { return iSettings; }
     inline CEikonEnv* EikonEnv() { return iEnv; }
@@ -178,13 +193,10 @@ public:
     inline CFileBrowserScreenCapture* ScreenCapture() { return iScreenCapture; }
     inline CFileBrowserFileUtils* FileUtils() { return iFileUtils; }
     inline MFileBrowserUI* FileBrowserUI() { return iFileBrowserUI; }
-    inline CFileBrowserFileListContainer* FileListContainer() { return iFileListContainer; }
-    inline TBool IsHashKeySelectionInUse() { return iIsHashKeySelectionInUse; }
 
     void OpenWithApparcL(TFileName aFileName);
     void OpenWithDocHandlerL(TFileName aFileName, TBool aEmbed);
 //    TInt QueryCurrentItemIndex();
-//    CArrayFix<TInt> *GetSelectedIndices();
     TSearchAttributes GetSearchAttributes();
     void ChangeAttributes(TSearchAttributes attributes);
     TSearchResults SearchResults();
@@ -193,7 +205,6 @@ public:
 
 private:
     MFileBrowserUI                  *iFileBrowserUI;
-    CFileBrowserFileListContainer   *iFileListContainer;
     CFileBrowserScreenCapture       *iScreenCapture;
     CFileBrowserFileUtils           *iFileUtils;
     CEikonEnv*                      iEnv;

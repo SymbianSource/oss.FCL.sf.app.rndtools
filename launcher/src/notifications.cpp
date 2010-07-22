@@ -45,7 +45,7 @@ void Notifications::about()
 {
     Notifications::showMessageBox( 
         HbMessageBox::MessageTypeInformation, 
-        "Version 4.0.0 - 3rd March 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.", 
+        "Version 4.0.1 - 21st May 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.", 
         "About Launcher"
         );
 }

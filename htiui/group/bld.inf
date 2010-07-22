@@ -30,6 +30,7 @@ PRJ_EXPORTS
 // Service plugins
 #include "../HtiServicePlugins/HtiAppServicePlugin/group/bld.inf"
 #include "../HtiServicePlugins/HtiAudioServicePlugin/group/bld.inf"
+#include "../HtiServicePlugins/HtiCameraServicePlugin/group/bld.inf"
 #include "../HtiServicePlugins/HtiKeyEventServicePlugin/group/bld.inf"
 #include "../HtiServicePlugins/HtiMessagesServicePlugin/group/bld.inf"
 #include "../HtiServicePlugins/HtiPIMServicePlugin/group/bld.inf"

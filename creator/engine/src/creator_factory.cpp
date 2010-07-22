@@ -19,7 +19,7 @@
 #include "engine.h"
 #include "creator_factory.h"
 
-#include "creator_accessPoint.h"
+//#include "creator_accesspoint.h"
 #include "creator_phonebook.h"
 
 CCreatorPhonebookBase* TCreatorFactory::CreatePhoneBookL(CCreatorEngine* aEngine)
@@ -29,10 +29,9 @@ CCreatorPhonebookBase* TCreatorFactory::CreatePhoneBookL(CCreatorEngine* aEngine
 
 CCreatorModuleBaseParameters* TCreatorFactory::CreatePhoneBookParametersL()
 	{
-	//return new(ELeave) CVirtualPhonebookParameters;
-    return NULL;
+	return new(ELeave) CPhonebookParameters;
 	}
-
+/*
 CCreatorConnectionSettingsBase* TCreatorFactory::CreateConnectionSettingsL(CCreatorEngine* aEngine)
 {
     return CCreatorAccessPoints::NewL(aEngine); 
@@ -42,3 +41,4 @@ CCreatorModuleBaseParameters* TCreatorFactory::CreateConnectionSettingsParameter
     {
     return new(ELeave) CAccessPointsParameters;
     }
+*/

@@ -55,7 +55,7 @@ private:
     void HandleSessionEventL(TMsvSessionEvent aEvent, TAny* aArg1, TAny* aArg2, TAny* aArg3); // from MMsvSessionObserver
         
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
     
     TInt CreateConnectionSettingsEntryL(CCreatorModuleBaseParameters *aParameters);    
     TUint32 AccessPointNameToIdL(const TDesC& aAPName, TBool aAnyIfNotFound = EFalse );

@@ -31,6 +31,11 @@ class CCreatorContactSet : public CBase
 public:
     static CCreatorContactSet* NewL(TInt aLinkId, TInt aNumOfExistingContacts);
     virtual ~CCreatorContactSet();
+    void AppendL(TUint32);
+    TInt NumberOfExistingContacts() const;
+    RArray<TUint32> ContactLinks();
+    const RArray<TUint32> ContactLinks() const;
+
     TInt LinkId() const;
 
 private:
@@ -38,12 +43,15 @@ private:
     //void ConstructL();
     TInt iLinkId;
     TInt iNumOfExistingContacts;
+    RArray<TUint32> iContactLinks;
 };
 
 class MContactLinkCache
 {
 public:
     virtual void AppendL(CCreatorContactSet* aContactSet) = 0;
+    virtual RArray<TUint32> ContactLinks(TInt aLinkId) = 0;
+    virtual const RArray<TUint32> ContactLinks(TInt aLinkId) const = 0;    
     virtual RPointerArray<CCreatorContactSet>& ContactSets() = 0;
     virtual const RPointerArray<CCreatorContactSet>& ContactSets() const = 0;
     virtual const CCreatorContactSet& ContactSet(TInt aLinkId) const = 0;

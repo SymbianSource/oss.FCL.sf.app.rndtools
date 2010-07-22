@@ -29,58 +29,40 @@
 #include <memspy/engine/memspyengineobjectthreadinfoobjects.h>
 #include <memspy/engine/memspyengineobjectthreadinfocontainer.h>
 #include <memspy/engine/memspyenginehelperprocess.h>
+#include <memspysession.h>
 
 // User includes
 #include "MemSpyContainerObserver.h"
 #include "MemSpyViewThreadInfoItemList.h"
+#include "MemSpyUiUtils.h"
 
 // Constants
 const TInt KMemSpyConstructionCheckerTimerPeriod = 500000; // 1/2 second
 
-
-
-CMemSpyViewThreadInfoItemGeneric::CMemSpyViewThreadInfoItemGeneric( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aInfoContainer, TMemSpyThreadInfoItemType aType )
-:   CMemSpyViewBase( aEngine, aObserver ), iContainer( aInfoContainer )
+CMemSpyViewThreadInfoItemGeneric::CMemSpyViewThreadInfoItemGeneric( RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcessId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewBase( aSession, aObserver )//, iThreadId( aId ), iType( aType )		//iContainer( aInfoContainer )
     {
-    iContainer.Thread().Process().Open();
-    iContainer.Thread().Open();
-    iContainer.Open();
-    //
-    iInfoItem = &iContainer.Item( aType );
-    __ASSERT_ALWAYS( iInfoItem != NULL, User::Invariant() );
-    iInfoItem->Open();
+	iParentProcessId = aProcessId;
+	iThreadId = aId;
+	iType = aType;
     }
 
 
 CMemSpyViewThreadInfoItemGeneric::~CMemSpyViewThreadInfoItemGeneric()
-    {
+    {/* TODO:
     if  ( iInfoItem )
         {
         iInfoItem->Close();
-        }
-    //
-    DestroyWaitNote();
-    //
-    iContainer.Close();
-    iContainer.Thread().Close();
-    iContainer.Thread().Process().Close();
+        }    
+    DestroyWaitNote();    
+    */
     }
 
 
 void CMemSpyViewThreadInfoItemGeneric::ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune )
     {
-    const TPtrC pTitle( iInfoItem->Name().Mid( 1 ) );
-    SetTitleL( pTitle );
-    //
-    if  ( iInfoItem->IsReady() == EFalse )
-        {
-#ifdef _DEBUG
-        RDebug::Printf( "CMemSpyViewThreadInfoItemGeneric::ConstructL() - show wait note - item not ready, iType: %d", iInfoItem->Type() );
-#endif
-
-        // Wait for engine data to be made ready... 
-        ShowWaitNoteL();
-        }
+	const TPtrC pTitle( MemSpyUiUtils::ThreadInfoItemNameByType( iType ) );
+	SetTitleL( pTitle );
 
     CMemSpyViewBase::ConstructL( aRect, aContainer, aSelectionRune );
     }
@@ -88,32 +70,32 @@ void CMemSpyViewThreadInfoItemGeneric::ConstructL( const TRect& aRect, CCoeContr
 
 CMemSpyProcess& CMemSpyViewThreadInfoItemGeneric::Process() const
     {
-    return iContainer.Thread().Process();
+  //  return iContainer.Thread().Process();
     }
 
 
 CMemSpyThread& CMemSpyViewThreadInfoItemGeneric::Thread() const
     {
-    return iContainer.Thread();
+  //  return iContainer.Thread();
     }
 
 
 CMemSpyThreadInfoContainer& CMemSpyViewThreadInfoItemGeneric::Container() const
     {
-    return iContainer;
+ //   return iContainer;
     }
 
 
 CMemSpyThreadInfoItemBase& CMemSpyViewThreadInfoItemGeneric::InfoItem() const
     {
-    __ASSERT_ALWAYS( iInfoItem != NULL, User::Invariant() );
-    return *iInfoItem;
+ //   __ASSERT_ALWAYS( iInfoItem != NULL, User::Invariant() );
+ //   return *iInfoItem;
     }
 
 
 void CMemSpyViewThreadInfoItemGeneric::RefreshL()
     {
-    iInfoItem->RebuildL();    
+ //   iInfoItem->RebuildL();     //TODO
     SetListBoxModelL();
     CMemSpyViewBase::RefreshL();
     }
@@ -123,7 +105,8 @@ TMemSpyViewType CMemSpyViewThreadInfoItemGeneric::ViewType() const
     {
     TMemSpyViewType type = EMemSpyViewTypeNone;
     //
-    switch( iInfoItem->Type() )
+    //switch( iInfoItem->Type() )
+    switch( iType )
         {
     case EMemSpyThreadInfoItemTypeHeap:
         type = EMemSpyViewTypeThreadInfoItemHeap;
@@ -196,7 +179,7 @@ TMemSpyViewType CMemSpyViewThreadInfoItemGeneric::ViewType() const
         break;
 
     default:
-        __ASSERT_DEBUG( EFalse, User::Invariant() );
+        //__ASSERT_DEBUG( EFalse, User::Invariant() );
         break;
         }
     //
@@ -206,9 +189,9 @@ TMemSpyViewType CMemSpyViewThreadInfoItemGeneric::ViewType() const
 
 CMemSpyViewBase* CMemSpyViewThreadInfoItemGeneric::PrepareParentViewL()
     {
-    CMemSpyViewThreadInfoItemList* parent = new(ELeave) CMemSpyViewThreadInfoItemList( iEngine, iObserver, Thread() );
+    CMemSpyViewThreadInfoItemList* parent = new(ELeave) CMemSpyViewThreadInfoItemList( iMemSpySession, iObserver, iParentProcessId, iThreadId );
     CleanupStack::PushL( parent );
-    parent->ConstructL( Rect(), *Parent(), iInfoItem );
+    parent->ConstructL( Rect(), *Parent(), iType );
     CleanupStack::Pop( parent );
     return parent;
     }
@@ -216,7 +199,7 @@ CMemSpyViewBase* CMemSpyViewThreadInfoItemGeneric::PrepareParentViewL()
 
 CMemSpyViewBase* CMemSpyViewThreadInfoItemGeneric::PrepareChildViewL()
     {
-    __ASSERT_ALWAYS( iInfoItem != NULL, User::Invariant() );
+    //__ASSERT_ALWAYS( iInfoItem != NULL, User::Invariant() );
     CMemSpyViewBase* child = NULL;
     //
     return child;
@@ -232,8 +215,36 @@ TBool CMemSpyViewThreadInfoItemGeneric::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewThreadInfoItemGeneric::SetListBoxModelL()
     {
+	iMemSpySession.GetThreadInfoItems( iThreadInfoItems, iThreadId, iType );
+	
+	iModel = new (ELeave) CDesC16ArrayFlat( iThreadInfoItems.Count() + 10 );
+	
+	for( TInt i=0; i<iThreadInfoItems.Count(); i++)
+		{						
+		HBufC* combined = HBufC::NewLC( iThreadInfoItems[i]->Caption().Length() + iThreadInfoItems[i]->Value().Length() + 30 );		
+			/*
+		else if ( combined->Des().MaxLength() < requiredLength )
+			{
+			combined = combined->ReAllocL( requiredLength );
+			}*/				
+        
+		TPtr pCombined( combined->Des() );
+		pCombined.Zero();
+		pCombined.Copy( _L("\t") );
+		if( iThreadInfoItems[i]->Caption() != KNullDesC )
+			pCombined.Append( iThreadInfoItems[i]->Caption() );
+		if( iType != EMemSpyThreadInfoItemTypeChunk )
+			{
+			pCombined.Append( _L("\t\t") );
+			pCombined.Append( iThreadInfoItems[i]->Value() );
+			}					
+		
+		iModel->AppendL( pCombined );								
+		}	
+	
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-    listbox->Model()->SetItemTextArray( iInfoItem );
+    //listbox->Model()->SetItemTextArray( iInfoItem );
+    listbox->Model()->SetItemTextArray( iModel );
     listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
     }
 
@@ -256,7 +267,7 @@ void CMemSpyViewThreadInfoItemGeneric::HandleListBoxItemSelectedL( TInt /*aIndex
 void CMemSpyViewThreadInfoItemGeneric::ShowWaitNoteL()
     {
     // Ugly, but I'm not adding an observer mechanism just for this wait dialog.
-    __ASSERT_ALWAYS( iWaitConstructionChecker == NULL, User::Invariant() );
+   // __ASSERT_ALWAYS( iWaitConstructionChecker == NULL, User::Invariant() );
     iWaitConstructionChecker = CPeriodic::NewL( CActive::EPriorityLow );
     iWaitConstructionChecker->Start( KMemSpyConstructionCheckerTimerPeriod, 
                                      KMemSpyConstructionCheckerTimerPeriod, 
@@ -293,12 +304,15 @@ void CMemSpyViewThreadInfoItemGeneric::DestroyWaitNote()
 
 TInt CMemSpyViewThreadInfoItemGeneric::CheckForItemConstructionComplete( TAny* aSelf )
     {
+	/*
     CMemSpyViewThreadInfoItemGeneric& self = *reinterpret_cast< CMemSpyViewThreadInfoItemGeneric* >( aSelf );
+    */
     //
 #ifdef _DEBUG
-    RDebug::Printf( "CMemSpyViewThreadInfoItemGeneric::CheckForItemConstructionComplete() - ready status: %d, iType: %d", self.iInfoItem->IsReady(), self.iInfoItem->Type() );
+/*   RDebug::Printf( "CMemSpyViewThreadInfoItemGeneric::CheckForItemConstructionComplete() - ready status: %d, iType: %d", self.iInfoItem->IsReady(), self.iInfoItem->Type() );*/
 #endif
 	//
+    /*
     TBool callAgain = ETrue;
     if  ( self.iInfoItem->IsReady() )
         {
@@ -307,6 +321,7 @@ TInt CMemSpyViewThreadInfoItemGeneric::CheckForItemConstructionComplete( TAny* a
         }
     //
     return callAgain;
+    */
     }
 
 

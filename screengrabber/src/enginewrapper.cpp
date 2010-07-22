@@ -15,7 +15,7 @@
 *
 */
 #include <eikenv.h>
-#include <APGTASK.H>
+#include <apgtask.h>
 #include <hbdeviceprogressdialog.h>
 #include "enginewrapper.h"
 

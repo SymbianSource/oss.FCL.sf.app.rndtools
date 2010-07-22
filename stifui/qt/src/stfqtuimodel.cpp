@@ -65,6 +65,11 @@ void StfQtUIModel::RemoveRunningCase(const CStartedTestCase* startedCase)
     FireOnRunningCaseChangedEvent();
     }
 
+CSTFCase StfQtUIModel::GetRunningCase(const CStartedTestCase* startedCase)
+    {
+    return runningCaseList.value(startedCase);
+    }
+
 void StfQtUIModel::AddCaseByStatus(const TSTFCaseStatusType& type, const CSTFCase& aCase)
     {
     switch (type)
@@ -86,6 +91,8 @@ void StfQtUIModel::AddCaseByStatus(const TSTFCaseStatusType& type, const CSTFCas
         case EStatusCrashed:
             crashedCaseList.append(aCase);
             break;
+        default:
+            break;            
         }
     FireOnCaseStatisticChangedEvent();
     }
@@ -106,6 +113,8 @@ QList<CSTFCase> StfQtUIModel::GetCasesByStatus(const TSTFCaseStatusType& type)
             return abortCaseList;
         case EStatusCrashed:
             return crashedCaseList;
+        default:
+            break;
         }
     QList<CSTFCase> list;
     return list;
@@ -154,3 +163,5 @@ void StfQtUIModel::ClearCasesStatus()
     crashedCaseList.clear();
     FireOnCaseStatisticChangedEvent();
     }
+
+// End of File

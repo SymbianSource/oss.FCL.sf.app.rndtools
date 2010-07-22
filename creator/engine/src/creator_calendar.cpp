@@ -330,63 +330,107 @@ CCreatorInterimCalendar::~CCreatorInterimCalendar ( )
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorInterimCalendar::AskDataFromUserL (TInt aCommand,
-        TInt& aNumberOfEntries )
+void CCreatorInterimCalendar::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
+    {
+    LOGSTRING("Creator: CCreatorInterimCalendar::QueryDialogClosedL");
+    
+    if( aPositiveAction == EFalse && aUserData != ECreatorCalendarAddDefaultAlarm )
+        {
+        iEngine->ShutDownEnginesL();
+        return;
+        }
+    
+    const TDesC* showText = &KSavingText;
+    TBool finished(EFalse);
+    TBool retval(ETrue);
+    switch(aUserData)
+        {
+        case ECreatorCalendarDelete:
+            iEntriesToBeCreated = 1;
+            showText = &KDeletingText;
+            finished = ETrue;
+            break;
+        case ECreatorCalendarStart:
+            if( iCommand == ECmdCreateCalendarEntryEvents || iCommand == ECmdCreateCalendarEntryAppointments )
+                {
+                _LIT(KRepeatingNum, "How many repeating (weekly) entries");
+                retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iNumberRepeatingEntries, KRepeatingNum, ETrue, this, ECreatorCalendarGetWeeklyEntries);
+                }
+            else
+                {
+                _LIT(KStartPeriodDate, "Start date of creation period");// \n dd/mm/yyyy
+                retval = iEngine->GetEngineWrapper()->TimeQueryDialog(&iRandomModeStartTime, KStartPeriodDate, this, ECreatorCalendarGetStartDate); // ask start date
+                }
+            break;
+        case ECreatorCalendarGetWeeklyEntries:
+            _LIT(KAttendeesNum, "How many attendees to create");
+            retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iNumberOfAttendees, KAttendeesNum, ETrue, this, ECreatorCalendarGetAttendies);
+            break;
+        case ECreatorCalendarGetAttendies:
+            {
+            // ask start date
+            _LIT(KStartPeriodDate, "Start date of creation period");
+            retval = iEngine->GetEngineWrapper()->TimeQueryDialog(&iRandomModeStartTime, KStartPeriodDate, this, ECreatorCalendarGetStartDate ); 
+            }
+            break;
+        case ECreatorCalendarGetStartDate:
+            {
+            _LIT(KEndPeriodDate, "End date of creation period\n dd/mm/yyyy");
+            iEngine->GetEngineWrapper()->TimeQueryDialog (&iRandomModeEndTime, KEndPeriodDate, this, ECreatorCalendarGetEndDate ); // ask end date
+            }
+            break;
+        case ECreatorCalendarGetEndDate:
+           if (iRandomModeStartTime > iRandomModeEndTime ) // check end date is ok
+                {
+                iEngine->GetEngineWrapper()->ShowNote(_L("End date must be after start date") );
+                retval = EFalse;
+                }
+            else 
+                {
+                retval = iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Add default alarm?"), this, ECreatorCalendarAddDefaultAlarm);
+                }
+           break;
+        case ECreatorCalendarAddDefaultAlarm:
+            iSetAlarm = aPositiveAction;
+            finished = ETrue;
+            break;
+        default:
+            //some error
+            retval = EFalse;
+            break;
+        }
+    if( retval == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        }
+    else if( finished )
+        {
+        // add this command to command array
+        iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
+        // started exucuting commands
+        iEngine->ExecuteFirstCommandL( *showText );
+        }
+    }
+
+//----------------------------------------------------------------------------
+
+TBool CCreatorInterimCalendar::AskDataFromUserL( TInt aCommand )
     {
     LOGSTRING("Creator: CCreatorInterimCalendar::AskDataFromUserL");
-
+    
+    CCreatorModuleBase::AskDataFromUserL( aCommand );//ignore retval
+    
     if( aCommand == ECmdDeleteCalendarEntries )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all calendar entries?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all calendar entries?"), this, ECreatorCalendarDelete );
         }
     if( aCommand == ECmdDeleteCreatorCalendarEntries )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all calendar entries created with Creator?") ); 
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Delete all calendar entries created with Creator?"), this, ECreatorCalendarDelete ); 
         }
 
     // display queries
-    if (iEngine->GetEngineWrapper()->EntriesQueryDialog (aNumberOfEntries, _L("How many entries to create?") ) ) // ask number of entries to create
-        {
-        if( aCommand == ECmdCreateCalendarEntryEvents ||
-            aCommand == ECmdCreateCalendarEntryAppointments)
-            {
-            _LIT(KRepeatingNum, "How many repeating (weekly) entries");
-            if( !iEngine->GetEngineWrapper()->EntriesQueryDialog(iNumberRepeatingEntries, KRepeatingNum, ETrue))
-                {
-                return EFalse;
-                }
-            _LIT(KAttendeesNum, "How many attendees to create");
-            if( !iEngine->GetEngineWrapper()->EntriesQueryDialog(iNumberOfAttendees, KAttendeesNum, ETrue))
-                {
-                return EFalse;
-                }
-            }
-        if (iEngine->GetEngineWrapper()->TimeQueryDialog(iRandomModeStartTime, _L("Start date of creation period\n dd/mm/yyyy") ) ) // ask start date
-            {
-            if (iEngine->GetEngineWrapper()->TimeQueryDialog (iRandomModeEndTime, _L("End date of creation period\n dd/mm/yyyy") ) ) // ask end date
-                {
-                if (iRandomModeStartTime > iRandomModeEndTime ) // check end date is ok
-                    {
-                    iEngine->GetEngineWrapper()->ShowNote(_L("End date must be after start date") );
-                    return EFalse;
-                    }
-                else 
-                    {
-                    if( iEngine->GetEngineWrapper()->YesNoQueryDialog(_L("Add default alarm?")))
-                        {
-                        iSetAlarm = ETrue;
-                        }                   
-                    }                    
-                    return ETrue;
-                }
-            else
-                return EFalse;
-            }
-        else
-            return EFalse;
-        }
-    else
-        return EFalse;
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog(&iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorCalendarStart ); // ask number of entries to create
     }
 
 //----------------------------------------------------------------------------

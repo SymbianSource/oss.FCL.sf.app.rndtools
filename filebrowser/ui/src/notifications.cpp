@@ -14,14 +14,11 @@
 * Description:
 *
 */
-
-
-#include <hblabel.h>
-//#include <hbdeviceprogressdialog.h>
-#include <hbmessagebox.h>
-
 #include "notifications.h"
 
+#include <HbLabel>
+#include <HbProgressDialog>
+#include <HbMessageBox>
 
 // ---------------------------------------------------------------------------
 
@@ -41,7 +38,7 @@ void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QStr
 void Notifications::showAboutNote()
 {
     showMessageBox(HbMessageBox::MessageTypeInformation,
-                   "Version 5.0.0 - 23h April 2010. Copyright © 2010 Nokia Corporation"
+                   "Version 5.1.0 - 18th June 2010. Copyright © 2010 Nokia Corporation"
                         "and/or its subsidiary(-ies). All rights reserved."
                         "Licensed under Eclipse Public License v1.0.",
                    "About File Browser"
@@ -50,39 +47,32 @@ void Notifications::showAboutNote()
 
 // ---------------------------------------------------------------------------
 
-//HbDeviceProgressDialog* Notifications::showWaitDialog(const QString &text)
-//{
-//    HbDeviceProgressDialog *note = new HbDeviceProgressDialog( HbProgressDialog::WaitDialog );
-//    note->setText( text );
-//    note->show();
-//    return note;
-//}
-
-// ---------------------------------------------------------------------------
-
 void Notifications::showInformationNote(const QString &text, const QString &title)
 {
-    showMessageBox(HbMessageBox::MessageTypeInformation, text, title, false);
+    showMessageBox(HbMessageBox::MessageTypeInformation, text, title, 3000);
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::showErrorNote(const QString &text, bool noTimeout)
 {
-    showMessageBox(HbMessageBox::MessageTypeWarning, text, "", noTimeout ? HbPopup::NoTimeout : HbPopup::StandardTimeout);
+    showMessageBox(HbMessageBox::MessageTypeWarning, text, "",
+                   noTimeout ? HbPopup::NoTimeout : 3000 /*HbPopup::StandardTimeout*/);
 }
 
 // ---------------------------------------------------------------------------
 
 void Notifications::showConfirmationNote(const QString &text, bool noTimeout)
 {
-    showMessageBox(HbMessageBox::MessageTypeWarning, text, "", noTimeout ? HbPopup::NoTimeout : HbPopup::ConfirmationNoteTimeout);
+    showMessageBox(HbMessageBox::MessageTypeInformation, text, "",
+                   noTimeout ? HbPopup::NoTimeout : 3000 /*HbPopup::ConfirmationNoteTimeout*/);
 }
 
 // ---------------------------------------------------------------------------
 
 bool Notifications::showConfirmationQuery(const QString &aText)
 {
+    Q_UNUSED(aText);
     return false; //HbMessageBox::question(aText);
 }
 

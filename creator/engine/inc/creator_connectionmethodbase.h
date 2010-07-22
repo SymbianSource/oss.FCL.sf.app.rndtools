@@ -27,7 +27,7 @@ class CCreatorModuleBaseParameters;
 
 const TUint KRandomBearerType = 0xEEEEEEEE;
 
-class CCreatorConnectionSettingsBase : public CBase, public MCreatorModuleBase
+class CCreatorConnectionSettingsBase : public CCreatorModuleBase
     {
 public:
     

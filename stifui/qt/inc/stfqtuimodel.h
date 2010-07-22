@@ -32,6 +32,7 @@ public://implement IStfQtUIModel
     void AddCaseByStatus(const TSTFCaseStatusType& type, const CSTFCase& aCase);
     void AddStifModelEventListener(IStifModelEventListener* listener);
     void RemoveStifModelEventListener(IStifModelEventListener* listener);
+    CSTFCase GetRunningCase(const CStartedTestCase* startedCase);
     void PauseCase();
     void ResumeCase();
     void AbortCase();
@@ -55,3 +56,5 @@ private:
     
     
     };
+
+// End of File

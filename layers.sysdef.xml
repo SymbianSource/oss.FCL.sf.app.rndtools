@@ -6,9 +6,6 @@
 <SystemDefinition name="rndtools" schema="1.5.1">
   <systemModel>
     <layer name="app_layer">
-      <module name="rndtools">
-        <unit unitID="tools.rndtools" mrp="" bldFile="&layer_real_source_path;/group" name="rndtools" />
-      </module>
       <module name="screengrabber">
 				<unit unitID="tools.screengrabberqt" mrp="" bldFile="&layer_real_source_path;/screengrabber" name="screengrabber" proFile="screengrabber.pro" />
 			</module>
@@ -32,7 +29,13 @@
 			</module>
 			<module name="memspyui">
 				<unit unitID="tools.memspyuiqt" mrp="" bldFile="&layer_real_source_path;/memspyui" name="memspyui" proFile="memspyui.pro" />
-			</module>			
+			</module>
+			<module name="piprofilerui">
+				<unit unitID="tools.piprofilerui" mrp="" bldFile="&layer_real_source_path;/piprofilerui" name="piprofilerui" proFile="piprofilerui.pro" />
+			</module>
+			<module name="stifui">
+				<unit unitID="tools.stifui" mrp="" bldFile="&layer_real_source_path;/stifui/avkon/group" name="stifui"/>
+			</module>
     </layer>
   </systemModel>
 </SystemDefinition>

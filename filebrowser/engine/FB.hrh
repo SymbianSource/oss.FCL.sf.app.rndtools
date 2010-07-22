@@ -274,4 +274,15 @@ enum TFileBrowserCmdFileChecksums
     EFileChecksumsSHA1
     };
 
+enum TListingMode
+    {
+    ENormalEntries = 0,
+    ESearchResults,
+    EOpenFiles,
+    EMsgAttachmentsInbox,
+    EMsgAttachmentsDrafts,
+    EMsgAttachmentsSentItems,
+    EMsgAttachmentsOutbox
+    };
+
 #endif      // FILEBROWSER_HRH

@@ -24,6 +24,10 @@ MemSpyKernelObjectTypeModel::MemSpyKernelObjectTypeModel(EngineWrapper &engine, 
 	QAbstractListModel(parent),
 	mObjectTypes(engine.getKernelObjectTypes())
 {
+    mKernelObjectNames << "Threads" << "Processes" << "Chunks" << "Libraries" <<
+        "Semaphores" << "Mutexes" << "Timers" << "Servers" << "Sessions" << "Logical Devices" <<
+        "Physical Devices" << "Logical Channels" << "Change Notifiers" << "Undertakers" <<
+        "Message Queues" << "Property Refs." << "Conditional Vars.";
 }
 
 MemSpyKernelObjectTypeModel::~MemSpyKernelObjectTypeModel()
@@ -41,7 +45,10 @@ QVariant MemSpyKernelObjectTypeModel::data(const QModelIndex &index, int role) c
 {
 	if (role == Qt::DisplayRole) {
 		QStringList lines;
-		lines << mObjectTypes.at(index.row())->name();
+		lines << mKernelObjectNames.at(index.row());
+		lines << QString("%1, %2").
+			arg(tr("%n item(s)", "", mObjectTypes.at(index.row())->count())).
+			arg(formatSize(mObjectTypes.at(index.row())->size()));
 		
 		return lines;
 	}
@@ -52,19 +59,26 @@ QVariant MemSpyKernelObjectTypeModel::data(const QModelIndex &index, int role) c
 	return QVariant();
 }
 
+QString MemSpyKernelObjectTypeModel::formatSize(qint64 size) const
+{
+	// If < 1000K
+	if  (size < 1024000)
+		return QString("%1K").arg(size ? qBound<int>(1, (size + 512) >> 10, 999) : 0);
+	
+	// larger than 1M
+	double sizeInM = size / 1048576.;
+	return sizeInM >= 1000 ?
+		QString("%1G").arg(qMax<double>(1, sizeInM / 1024), 0, 'f', 1) :
+		QString("%1M").arg(qBound<double>(1, sizeInM, 999.9), 0, 'f', 1);
+}
+
 void MemSpyKernelObjectTypeView::initialize(const QVariantMap& params)
 {
-	MemSpyView::initialize(params);
-	
 	setTitle(tr("Kernel Objects"));
-	
-	QStringList list = QStringList() << "Thread" << "Process" << "Chunk" << "Library" <<
-			"Semaphore" << "Mutex" << "Timer" << "Server" << "Session" << "Logical Device" <<
-			"Physical Device" << "Logical Channel" << "Change Notifier" << "Undertaker" <<
-			"Message Queue" << "Property Ref." << "Conditional Var.";
+		
+	MemSpyView::initialize(params);
 			
-	//mListView.setModel(new MemSpyKernelObjectTypeModel(mEngine, this));
-	mListView.setModel(new QStringListModel(list, this));
+	mListView.setModel(new MemSpyKernelObjectTypeModel(mEngine, this));
 	
 	connect(&mListView, SIGNAL(activated(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
 }

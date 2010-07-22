@@ -149,6 +149,7 @@ void CCreatorScriptParser::OnEndDocumentL(TInt aErrorCode)
     {
     LOGSTRING2("Creator: CCreatorScriptParser::OnEndDocumentL (Error code: %d)", aErrorCode);
     User::LeaveIfError(aErrorCode);
+    iEngine->SortCommands();
     }
 
 void CCreatorScriptParser::OnStartPrefixMappingL(   const RString& /*aPrefix*/, 

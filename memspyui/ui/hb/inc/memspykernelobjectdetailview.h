@@ -18,18 +18,39 @@
 #ifndef MEMSPYKERNELOBJECTDETAILVIEW_H_
 #define MEMSPYKERNELOBJECTDETAILVIEW_H_
 
-#include "memspyview.h"
+#include "memspylistview.h"
 
-class MemSpyKernelObjectDetailView : public MemSpyView
+class MemSpyKernelObjectDetailModel : public QAbstractListModel
+{
+public:
+    MemSpyKernelObjectDetailModel(const QStringList& details, QObject *parent = 0);
+    
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+  
+private:
+    QStringList mDetails;
+};
+
+class MemSpyKernelObjectDetailView : public MemSpyListView
 {
 	Q_OBJECT
 	
 public:
 	MemSpyKernelObjectDetailView(EngineWrapper &engine, ViewManager &viewManager) 
-		: MemSpyView(engine, viewManager) {}
+		: MemSpyListView(engine, viewManager) {}
 	
 protected:
 	virtual void initialize(const QVariantMap& params);
+	
+	virtual bool isBreadCrumbVisible() const;
+	        
+	virtual QString getBreadCrumbText() const;
+	
+private:
+	QString mTypeName;
+	QString mObjectName;
 };
 
 #endif /* MEMSPYKERNELOBJECTDETAILVIEW_H_ */

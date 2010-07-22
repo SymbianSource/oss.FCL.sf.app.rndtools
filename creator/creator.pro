@@ -1,19 +1,3 @@
-#
-# Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
-# All rights reserved.
-# This component and the accompanying materials are made available
-# under the terms of "Eclipse Public License v1.0"
-# which accompanies this distribution, and is available
-# at the URL "http://www.eclipse.org/legal/epl-v10.html".
-#
-# Initial Contributors:
-# Nokia Corporation - initial contribution.
-#
-# Contributors:
-#
-# Description: 
-#
-
 TEMPLATE = app
 TARGET = Creator
 
@@ -33,18 +17,12 @@ SOURCES += main.cpp \
 	src/notifications.cpp
 
 symbian: {
-
+        INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 	HEADERS += engine/inc/creator.hrh \
-			engine/inc/creator_accesspoint.h \
-			engine/inc/creator_browser.h \
-			engine/inc/creator_browserelement.h \
 			engine/inc/creator_calendar.h \
 			engine/inc/creator_calendarbase.h \
 			engine/inc/creator_calendarelement.h \
 			engine/inc/creator_cmdscriptrun.h \
-			engine/inc/creator_connectionmethod.h \
-			engine/inc/creator_connectionmethodbase.h \
-			engine/inc/creator_connectionmethodelement.h \
 			engine/inc/creator_contactelement.h \
 			engine/inc/creator_contactsetcache.h \
 			engine/inc/creator_factory.h \
@@ -60,7 +38,10 @@ symbian: {
 			engine/inc/creator_messageelement.h \
 			engine/inc/creator_modulebase.h \
 			engine/inc/creator_note.h \
+			engine/inc/creator_notepadwrapper.h \
 			engine/inc/creator_phonebook.h \
+			engine/inc/creator_phonebookwrapper.h \
+			engine/inc/creator_phonebookapi.h \
 			engine/inc/creator_phonebookbase.h \
 			engine/inc/creator_randomdatafield.h \
 			engine/inc/creator_randomdataparser.h \
@@ -71,18 +52,13 @@ symbian: {
 			engine/inc/creator_std.h \
 			engine/inc/creator_traces.h \
 			engine/inc/creator_wepsecuritysettings.h \
-			engine/inc/randomData.txt \
+			engine/inc/randomdata.txt \
 			inc/engine.h \
 			inc/enginewrapper.h
 
-	SOURCES += engine/src/creator_accesspoint.cpp \
-			engine/src/creator_browser.cpp \
-			engine/src/creator_browserelement.cpp \
-			engine/src/creator_calendar.cpp \
+	SOURCES += engine/src/creator_calendar.cpp \
 			engine/src/creator_calendarelement.cpp \
 			engine/src/creator_cmdscriptrun.cpp \
-			engine/src/creator_connectionmethod.cpp \
-			engine/src/creator_connectionmethodelement.cpp \
 			engine/src/creator_contactelement.cpp \
 			engine/src/creator_contactsetcache.cpp \
 			engine/src/creator_factory.cpp \
@@ -97,7 +73,10 @@ symbian: {
 			engine/src/creator_message.cpp \
 			engine/src/creator_messageelement.cpp \
 			engine/src/creator_note.cpp \
+			engine/src/creator_notepadwrapper.cpp \
 			engine/src/creator_phonebook.cpp \
+			engine/src/creator_phonebookwrapper.cpp \
+			engine/src/creator_phonebookapi.cpp \
 			engine/src/creator_phonebookbase.cpp \
 			engine/src/creator_randomdataparser.cpp \
 			engine/src/creator_scriptelement.cpp \
@@ -116,7 +95,6 @@ symbian: {
 			-lapparc \
 			-lcone \ 
 			-lcntmodel \
-			-lfavouritesengine \
 			-lmsgs \
 			-llogwrap \
 			-llogcli \
@@ -155,11 +133,9 @@ symbian: {
 			-lbitmaptransforms \
 			-lcmmanager \
 			-lcmmanagerdatabase \
-			-lapengine \
 			-lnoteseditor \
 			-lxqservice \
 		    -lQtContacts \
-		    -lmobcntmodel \ 
 			-lagendainterface 
 
 	creatorDataBlock = \

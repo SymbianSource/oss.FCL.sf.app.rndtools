@@ -21,7 +21,7 @@
 
 #include <coecntrl.h>
 #include <QString>
-#include <QLocale.h>
+#include <qlocale.h>
 
 
 #include <HtiVersion.h>

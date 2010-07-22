@@ -30,6 +30,7 @@
 #include "MemSpyDeviceWideOperationDialog.h"
 #include "MemSpyContainerObserver.h"
 #include <memspy/engine/memspyengineobserver.h>
+#include "MemSpySettings.h"
 
 // Classes referenced
 class CEikMenuBar;
@@ -41,7 +42,7 @@ class CMemSpyDocument;
 class RMemSpySession;
 
 
-class CMemSpyAppUi : public CAknAppUi, public MMemSpyContainerObserver, public MCoeControlObserver, public MMemSpyEngineObserver, public MMemSpyDeviceWideOperationDialogObserver
+class CMemSpyAppUi : public CAknAppUi, public MMemSpyContainerObserver, public MCoeControlObserver, public MMemSpyEngineObserver//, public MMemSpyDeviceWideOperationDialogObserver
     {
 public:
     //CMemSpyAppUi( CMemSpyEngine& aEngine );
@@ -95,7 +96,8 @@ private: // Command handlers
     void OnCmdOutputToFileL();
  
     // Phone-information
-    void OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::TOperation aOp );
+    //void OnCmdPhoneInformationOperationL( CMemSpyDeviceWideOperations::TOperation aOp );
+    void OnCmdPhoneInformationOperationL( TDeviceWideOperation aOperation );
     void OnCmdPhoneInformationOperationKernelContainersL();
     
     // Automatic capture
@@ -116,6 +118,7 @@ private: // Member data
     //CMemSpyEngine& iEngine;
     RMemSpySession& iMemSpySession;
     CMemSpyContainer* iAppContainer;
+    CMemSpySettings* iSettings;
     
     // For phone information dialog
     TBool iRunningDeviceWideOperation;

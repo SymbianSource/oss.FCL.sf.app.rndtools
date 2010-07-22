@@ -59,4 +59,4 @@ CEikAppUi* CAppUIDocument::CreateAppUiL()
     return new (ELeave) CAppUIAppUi;
     }
 
-// End of File  
+// End of File

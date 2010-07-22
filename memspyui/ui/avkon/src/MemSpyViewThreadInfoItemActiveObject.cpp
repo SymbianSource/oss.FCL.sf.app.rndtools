@@ -25,14 +25,14 @@
 #include <memspy/engine/memspyengineobjectthreadinfoobjects.h>
 #include <memspy/engine/memspyengineobjectthreadinfocontainer.h>
 #include <memspy/engine/memspyenginehelperactiveobject.h>
+#include <memspysession.h>
 
 // User includes
 #include "MemSpyContainerObserver.h"
 
 
-
-CMemSpyViewThreadInfoItemActiveObjectBase::CMemSpyViewThreadInfoItemActiveObjectBase( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
-:   CMemSpyViewThreadInfoItemGeneric( aEngine, aObserver, aContainer, EMemSpyThreadInfoItemTypeActiveObject )
+CMemSpyViewThreadInfoItemActiveObjectBase::CMemSpyViewThreadInfoItemActiveObjectBase(RMemSpySession& aSession, MMemSpyViewObserver& aObserver, TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemGeneric( aSession, aObserver, aProcId, aId, EMemSpyThreadInfoItemTypeActiveObject )
     {
     }
 
@@ -40,6 +40,7 @@ CMemSpyViewThreadInfoItemActiveObjectBase::CMemSpyViewThreadInfoItemActiveObject
 TBool CMemSpyViewThreadInfoItemActiveObjectBase::HandleCommandL( TInt aCommand )
     {
     TBool handled = ETrue;
+    /*
     //
     switch ( aCommand )
         {
@@ -51,6 +52,7 @@ TBool CMemSpyViewThreadInfoItemActiveObjectBase::HandleCommandL( TInt aCommand )
         break;
         }
     //
+     * */
     return handled;
     }
 
@@ -59,20 +61,23 @@ void CMemSpyViewThreadInfoItemActiveObjectBase::DynInitMenuPaneL( TInt aResource
     {
     if  ( aResourceId == R_MEMSPY_MENUPANE )
         {
-        aMenuPane->SetItemDimmed( EMemSpyCmdActiveObject, Thread().IsDead() );
+     //   aMenuPane->SetItemDimmed( EMemSpyCmdActiveObject, Thread().IsDead() );
         }
     }
 
 
 CMemSpyEngineActiveObjectArray& CMemSpyViewThreadInfoItemActiveObjectBase::ActiveObjectArray() const
     {
-    CMemSpyThreadInfoActiveObjects* activeObjectArray = static_cast< CMemSpyThreadInfoActiveObjects* >( iInfoItem );
-    return activeObjectArray->Array();
+ //   CMemSpyThreadInfoActiveObjects* activeObjectArray = static_cast< CMemSpyThreadInfoActiveObjects* >( iInfoItem );
+ //   return activeObjectArray->Array();
     }
     
     
 void CMemSpyViewThreadInfoItemActiveObjectBase::OnCmdWriteAOListingL()
     {
+	iMemSpySession.OutputAOListL( ThreadId(), EMemSpyThreadInfoItemTypeActiveObject );
+	
+	/*
     CMemSpyEngineActiveObjectArray& objects = ActiveObjectArray();
 
     // Begin a new data stream
@@ -100,6 +105,7 @@ void CMemSpyViewThreadInfoItemActiveObjectBase::OnCmdWriteAOListingL()
 
     // End data stream
     iEngine.Sink().DataStreamEndL();
+    */
     }
 
 
@@ -112,8 +118,8 @@ void CMemSpyViewThreadInfoItemActiveObjectBase::OnCmdWriteAOListingL()
 
 
 
-CMemSpyViewThreadInfoItemActiveObject::CMemSpyViewThreadInfoItemActiveObject( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer )
-:   CMemSpyViewThreadInfoItemActiveObjectBase( aEngine, aObserver, aContainer )
+CMemSpyViewThreadInfoItemActiveObject::CMemSpyViewThreadInfoItemActiveObject( RMemSpySession& aSession, MMemSpyViewObserver& aObserver,  TProcessId aProcId, TThreadId aId, TMemSpyThreadInfoItemType aType )
+:   CMemSpyViewThreadInfoItemActiveObjectBase( aSession, aObserver, aProcId, aId, aType )
     {
     }
 
@@ -127,6 +133,7 @@ void CMemSpyViewThreadInfoItemActiveObject::ConstructL( const TRect& aRect, CCoe
     SetTitleL( KTitle );
 
     // Try to select the correct server
+    /* TODO: to consider this
     CMemSpyThreadInfoHandleObjectBase* infoItem = static_cast< CMemSpyThreadInfoHandleObjectBase* >( iInfoItem );
     TInt selectedIndex = 0;
     if  ( aSelectionRune )
@@ -142,9 +149,12 @@ void CMemSpyViewThreadInfoItemActiveObject::ConstructL( const TRect& aRect, CCoe
     // Select item
     if  ( infoItem->DetailsCount() > 0 )
         {
-        iListBox->SetCurrentItemIndex( selectedIndex );
-        HandleListBoxItemSelectedL( selectedIndex );
+        */
+        iListBox->SetCurrentItemIndex( 0 ); //selectedIndex
+        HandleListBoxItemSelectedL( 0 ); //selectedIndex
+        /*
         }
+        */
     }
 
 
@@ -157,7 +167,7 @@ TMemSpyViewType CMemSpyViewThreadInfoItemActiveObject::ViewType() const
 CMemSpyViewBase* CMemSpyViewThreadInfoItemActiveObject::PrepareChildViewL()
     {
     CMemSpyViewBase* child = NULL;
-
+    /*
     // Get current entry address
     TInt index = iListBox->CurrentItemIndex();
     if  ( index > 0 )
@@ -177,6 +187,8 @@ CMemSpyViewBase* CMemSpyViewThreadInfoItemActiveObject::PrepareChildViewL()
             }
         }
     //
+     * 
+     */
     return child;
     }
 
@@ -189,7 +201,7 @@ CMemSpyViewBase* CMemSpyViewThreadInfoItemActiveObject::PrepareChildViewL()
 
 
 
-
+/*
 CMemSpyViewThreadInfoItemActiveObjectDetails::CMemSpyViewThreadInfoItemActiveObjectDetails( CMemSpyEngine& aEngine, MMemSpyViewObserver& aObserver, CMemSpyThreadInfoContainer& aContainer, TAny* aObjectAddress )
 :   CMemSpyViewThreadInfoItemActiveObjectBase( aEngine, aObserver, aContainer ), iObjectAddress( aObjectAddress )
     {
@@ -233,9 +245,4 @@ void CMemSpyViewThreadInfoItemActiveObjectDetails::SetListBoxModelL()
     listbox->Model()->SetItemTextArray( &object );
     listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
     }
-
-
-
-
-
-
+*/

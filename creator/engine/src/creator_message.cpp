@@ -24,6 +24,7 @@
 #include "creator_contactsetcache.h"
 #include <apgcli.h>
 #include <MuiuServiceUtilities.h>
+#include <utf.h>
 
 #include <mmf/common/mmfcontrollerpluginresolver.h> // for CleanupResetAndDestroyPushL
 
@@ -123,187 +124,131 @@ CCreatorMessages::~CCreatorMessages()
 
 //----------------------------------------------------------------------------
 
-TBool CCreatorMessages::AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries)
+void CCreatorMessages::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
+    {
+    LOGSTRING("Creator: CCreatorMessages::QueryDialogClosedL");  
+    
+    if( aPositiveAction == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        return;
+        }
+    
+    const TDesC* showText = &KSavingText;
+    TBool finished(EFalse);
+    TBool retval(ETrue);
+    switch(aUserData)
+        {
+        case ECreatorMessagesDelete:
+            showText = &KDeletingText;
+            iEntriesToBeCreated = 1;
+            finished = ETrue;
+            break;
+        case ECreatorMessagesStart:
+            // message type query
+            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message type"), R_MESSAGE_TYPE_QUERY, (TInt*) &iMessageType, this, ECreatorMessagesMessageType);
+            break;
+        case ECreatorMessagesMessageType:
+            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Folder type"), R_FOLDER_TYPE_QUERY, (TInt*) &iFolderType, this, ECreatorMessagesFolderType);
+            break;
+        case ECreatorMessagesFolderType:
+            // query create as unread
+            retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message status"), R_UNREAD_QUERY, (TInt*)&iCreateAsUnread, this, ECreatorMessagesMessageStatus);
+            break;
+        case ECreatorMessagesMessageStatus:
+            if( iMessageType == ESMS || iMessageType == EMMS || iMessageType == EEmail )
+                {
+                iDefinedMessageLength = 100;
+                retval = iEngine->GetEngineWrapper()->EntriesQueryDialog(&iDefinedMessageLength, _L("Amount of characters in message body?"), ETrue, 
+                    this, ECreatorMessagesCharsInBody
+                    );
+                break;
+                }
+            else
+                {
+                iDefinedMessageLength = 0;
+                // goto query attachments ... :-) DO NOT break;
+                }
+        case ECreatorMessagesCharsInBody:
+            // query attachments
+            iAttachments->Reset();
+            if( iMessageType == EMMS || iMessageType == EEmail)
+                {
+                retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_MULTI_SELECTION_QUERY, 
+                    iAttachments, this, ECreatorMessagesAttachment
+                    );
+                }
+            else if( iMessageType == EAMS )
+                {
+                iAttachments->AppendL( TInt(0) );
+                retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_AMS_ATTACHMENT_SINGLE_SELECTION_QUERY, 
+                    &iAttachments->At(0), this, ECreatorMessagesAttachment
+                    );
+                }
+            else if( iMessageType == EIrMessage || iMessageType == EBTMessage )
+                {
+                iAttachments->AppendL( TInt(0) );
+                retval = iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_SINGLE_SELECTION_QUERY,
+                    &iAttachments->At(0), this, ECreatorMessagesAttachment
+                    );
+                }
+            else
+                {
+                finished = ETrue;
+                }
+            break;
+        case ECreatorMessagesAttachment:
+            finished = ETrue;
+            if(iMessageType== EMMS || iMessageType == EEmail)
+                {
+                // "none" is selected
+                if (iAttachments->At(0) == 0)
+                    {
+                    iAttachments->Reset();
+                    }
+                else  // otherwise fix indexes
+                    {
+                    for (TInt i=0; i<iAttachments->Count(); i++)
+                        iAttachments->At(i)--;  // decrease value by one 
+
+                    }
+                }
+            break;
+        default:
+            //some error
+            retval = EFalse;
+            break;
+        }
+    if( retval == EFalse )
+        {
+        iEngine->ShutDownEnginesL();
+        }
+    else if( finished )
+        {
+        // add this command to command array
+        iEngine->AppendToCommandArrayL(iCommand, NULL, iEntriesToBeCreated);
+        // started exucuting commands
+        iEngine->ExecuteFirstCommandL( *showText );
+        }
+    }
+//----------------------------------------------------------------------------
+
+TBool CCreatorMessages::AskDataFromUserL(TInt aCommand)
     {
     LOGSTRING("Creator: CCreatorMessages::AskDataFromUserL");
 
+    CCreatorModuleBase::AskDataFromUserL(aCommand);
+    
     if ( aCommand == ECmdDeleteMessages )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages?"), this, ECreatorMessagesDelete );
         }
     else if ( aCommand ==  ECmdDeleteCreatorMessages )
         {
-        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages created with Creator?") );
+        return iEngine->GetEngineWrapper()->YesNoQueryDialog( _L("Delete all messages created with Creator?"), this, ECreatorMessagesDelete  );
         }
 
-    if (iEngine->GetEngineWrapper()->EntriesQueryDialog(aNumberOfEntries, _L("How many entries to create?")))
-        {
-        
-        // message type query
-        if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message type"), R_MESSAGE_TYPE_QUERY, (TInt&) iMessageType))
-            {
-			if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Folder type"), R_FOLDER_TYPE_QUERY, (TInt&) iFolderType))
-                {
-                /*
-                if (iFolderType == EMailbox)
-                    {
-                    // array to hold mailbox names
-                    CDesCArray* names = new (ELeave) CDesCArrayFlat(16);
-                    CleanupStack::PushL(names);                    
-                    
-                    CMsvSession* session = CMsvSession::OpenSyncL(*this);
-                    CleanupStack::PushL(session);
-    
-                    // generate list of mailboxes
-                    CMsvEntrySelection* entrySelection = MsvUiServiceUtilities::GetListOfAccountsWithMTML(*session, KUidMsgTypeSMTP, ETrue);
-                    CleanupStack::PushL(entrySelection);
-
-                    TBool doReturn(EFalse);
-                    
-                    if (entrySelection->Count() == 0)
-                        {
-                        CAknInformationNote* note = new(ELeave) CAknInformationNote;
-                        note->ExecuteLD(_L("No mailboxes found"));
-
-                        doReturn = ETrue;
-                        }
-                    else
-                        {
-                        // get mailbox names
-                        for (TInt i=0; i<entrySelection->Count(); i++)
-                            {
-                            CMsvEntry* centry = session->GetEntryL(entrySelection->At(i));
-                            CleanupStack::PushL(centry);
-
-                            TMsvEntry tentry = centry->Entry();
-                            names->AppendL(tentry.iDetails);
-                            CleanupStack::PopAndDestroy(); //centry
-                            }
-                        
-                        // show query
-                        TInt index(0);
-                        CAknListQueryDialog* dlg = new(ELeave) CAknListQueryDialog(&index);
-                        dlg->PrepareLC(R_MAILBOX_SELECTION_QUERY);
-                        dlg->SetItemTextArray(names);
-                        dlg->SetOwnershipType(ELbmDoesNotOwnItemArray);
-
-                        if(dlg->RunLD())
-                            {
-                            iUserSelectedMailbox = entrySelection->At(index);
-
-                            doReturn = EFalse;
-                            }
-                        else
-                            {
-                            doReturn = ETrue;
-                            }    
-                        
-                        }
-                    
-                    CleanupStack::PopAndDestroy(3); // names, session, entrySelection
-                    
-                    if (doReturn)
-                        return EFalse;                    
-                    }
-                */
-
-                // query create as unread
-                if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Message status"), R_UNREAD_QUERY, (TInt&)iCreateAsUnread))
-                    {                
-                    // query number of characters in msg body
-                    switch (iMessageType)
-                        {
-                        case ESMS:
-                        case EMMS:
-                        case EEmail:
-                            {
-                            iDefinedMessageLength = 100;
-                            if (iEngine->GetEngineWrapper()->EntriesQueryDialog(iDefinedMessageLength, _L("Amount of characters in message body?"), ETrue))
-                                {
-                                ;
-                                }
-                            else
-                                return EFalse;
-
-                            break;
-                            }
-                        case EAMS:
-                        	{
-                        	iDefinedMessageLength = 0;
-                        	break;
-                        	}
-                        default: break;
-                        }
-
-                    // query attachments
-                    iAttachments->Reset();
-              
-                    switch (iMessageType)
-                        {
-                        case EMMS:
-                        case EEmail:
-                            {
-                            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_MULTI_SELECTION_QUERY, iAttachments))
-                                {
-                                // "none" is selected
-                                if (iAttachments->At(0) == 0)
-                                    iAttachments->Reset();
-                                else  // otherwise fix indexes
-                                    {
-                                    for (TInt i=0; i<iAttachments->Count(); i++)
-                                        iAttachments->At(i)--;  // decrease value by one 
-
-                                    }
-                                }
-                            else
-                                return EFalse;
-                            
-                            break;
-                            }
-                        case EAMS:
-                        	{
-                            iAttachments->AppendL( TInt(0) );
-                            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_AMS_ATTACHMENT_SINGLE_SELECTION_QUERY, iAttachments->At(0)))
-                                {
-                                ;
-                                }
-                            else
-                                return EFalse;                        
-
-                            break;
-                        	}
-                            
-                        case EIrMessage:
-                        case EBTMessage:
-                            {
-                            iAttachments->AppendL( TInt(0) );
-                            if (iEngine->GetEngineWrapper()->ListQueryDialog(_L("Choose attachment:"), R_ATTACHMENT_SINGLE_SELECTION_QUERY, iAttachments->At(0)))
-                                {
-                                ;
-                                }
-                            else
-                                return EFalse;                        
-
-                            break;
-                            }
-                        default: break;
-                        }
-                    
-                    return ETrue;  // all queries accepted
-
-                    }
-                else
-                    return EFalse;
-                }
-            else
-                return EFalse;
-            }
-        else
-            return EFalse;
-			
-        }
-    // else
-        return EFalse;
+    return iEngine->GetEngineWrapper()->EntriesQueryDialog( &iEntriesToBeCreated, _L("How many entries to create?"), EFalse, this, ECreatorMessagesStart );
     }
 
 //----------------------------------------------------------------------------
@@ -513,10 +458,11 @@ TInt CCreatorMessages::CreateSMSEntryL(const CMessagesParameters& parameters)
     clientMtm->CreateMessageL(defaultServiceId);
 
     // set the from field to sms header
-    if (parameters.iFolderType == EInbox)
+    // !!! This will cause CRASH
+    /*if (parameters.iFolderType == EInbox)
         {
         CSmsHeader* smsHeader = &clientMtm->SmsHeader();
-        delete smsHeader;
+        delete smsHeader; // <-- This will cause CRASH
         smsHeader = NULL;
         smsHeader = CSmsHeader::NewL(CSmsPDU::ESmsDeliver, clientMtm->Body());        
         if( parameters.iSenderAddress )
@@ -527,7 +473,7 @@ TInt CCreatorMessages::CreateSMSEntryL(const CMessagesParameters& parameters)
             {
             smsHeader->SetFromAddressL(KEmpty);
             }
-        }       
+        }       */
 
     // set body
     clientMtm->Body().Reset();
@@ -539,11 +485,11 @@ TInt CCreatorMessages::CreateSMSEntryL(const CMessagesParameters& parameters)
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         // Add all recipients to clientMtm
         // iRecipientArray is up-to-date so don't call AddRecipientsL here 
         for( TInt i = 0; i < iRecipientArray.Count(); i++ )
@@ -707,8 +653,8 @@ TInt CCreatorMessages::CreateMMSEntryL(const CMessagesParameters& parameters)
     waiter->StartAndWait();
     CleanupStack::PopAndDestroy(waiter);        
    
-    HBufC8* tempBuf = HBufC8::NewLC( parameters.iMessageBodyText->Des().Length() );
-    tempBuf->Des().Copy( parameters.iMessageBodyText->Des() );
+    HBufC8* tempBuf = CnvUtfConverter::ConvertFromUnicodeToUtf8L( parameters.iMessageBodyText->Des() );
+    CleanupStack::PushL(tempBuf);
     textFile.Write( tempBuf->Des() );        
     textFile.Close();
     CleanupStack::PopAndDestroy(); //tempBuf
@@ -722,11 +668,11 @@ TInt CCreatorMessages::CreateMMSEntryL(const CMessagesParameters& parameters)
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }    
 
     // set the description field same as the message subject
@@ -981,11 +927,11 @@ TInt CCreatorMessages::CreateAMSEntryL(const CMessagesParameters& parameters)
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }  
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }
 
     // set the description field same as the message subject
@@ -1146,14 +1092,14 @@ TInt CCreatorMessages::CreateEmailEntryL(const CMessagesParameters& parameters)
     if (parameters.iFolderType == EInbox)
         {
         AddSenderToMtmAddresseeL(*clientMtm, parameters, ETrue );
-        SetSenderToEntryDetails(messageEntry, parameters, ETrue);
+        SetSenderToEntryDetailsL(messageEntry, parameters, ETrue);
         messageEntry.iMtm = KUidMsgTypeIMAP4;  // or any other than KUidMsgTypeSMTP to display 'from' field instead of 'to' field 
         }
     else
         {
         // Add all recipients to clientMtm
         AddRecipientsL( *clientMtm, parameters, ETrue );
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);        
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);        
         }
 
     // set the description field same as the message subject
@@ -1377,11 +1323,11 @@ TInt CCreatorMessages::CreateSmartMessageEntryL(const CMessagesParameters& param
     // set the details field
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);        
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);        
         }        
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }
 
     // set the subject line
@@ -1488,11 +1434,11 @@ TInt CCreatorMessages::CreateObexEntryL(TUid aMtm, const CMessagesParameters& pa
     // set the details field and
     if (parameters.iFolderType == EInbox)
         {
-        SetSenderToEntryDetails(messageEntry, parameters, EFalse);
+        SetSenderToEntryDetailsL(messageEntry, parameters, EFalse);
         }        
     else
         {
-        SetRecipientToEntryDetails(messageEntry, parameters, EFalse);
+        SetRecipientToEntryDetailsL(messageEntry, parameters, EFalse);
         }
     
     // set mtm
@@ -1578,7 +1524,7 @@ void CCreatorMessages::HandleSessionEventL(TMsvSessionEvent /*aEvent*/, TAny* /*
     }
 
 //----------------------------------------------------------------------------
-void CCreatorMessages::SetSenderToEntryDetails(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
+void CCreatorMessages::SetSenderToEntryDetailsL(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
     {        
     // Only one sender allowed:
     if( iSenderArray.Count() == 0 )
@@ -1596,7 +1542,7 @@ void CCreatorMessages::SetSenderToEntryDetails(TMsvEntry& aMsgEntry, const CMess
     }
 
 //----------------------------------------------------------------------------
-void CCreatorMessages::SetRecipientToEntryDetails(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
+void CCreatorMessages::SetRecipientToEntryDetailsL(TMsvEntry& aMsgEntry, const CMessagesParameters& aParameters, TBool aUseEmailAddress)
     {        
     // Only one sender allowed:
     GetAllRecipientsL(iRecipientArray, aParameters, aUseEmailAddress);

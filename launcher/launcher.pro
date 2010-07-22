@@ -1,19 +1,3 @@
-#
-# Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
-# All rights reserved.
-# This component and the accompanying materials are made available
-# under the terms of "Eclipse Public License v1.0"
-# which accompanies this distribution, and is available
-# at the URL "http://www.eclipse.org/legal/epl-v10.html".
-#
-# Initial Contributors:
-# Nokia Corporation - initial contribution.
-#
-# Contributors:
-#
-# Description: 
-#
-
 TEMPLATE = app
 TARGET = Launcher
 load(hb.prf)
@@ -22,8 +6,8 @@ DEPENDPATH += src
 DEPENDPATH += inc
 INCLUDEPATH += inc
 
-HEADERS += launchermainwindow.h applicationview.h enginewrapper.h notifications.h  outputview.h commonactions.h
-SOURCES += main.cpp launchermainwindow.cpp applicationview.cpp enginewrapper.cpp notifications.cpp  outputview.cpp commonactions.cpp
+HEADERS += launchermainwindow.h applicationview.h enginewrapper.h notifications.h  outputview.h commonActions.h
+SOURCES += main.cpp launchermainwindow.cpp applicationview.cpp enginewrapper.cpp notifications.cpp  outputview.cpp commonActions.cpp
 RESOURCES += launcher.qrc
 
 symbian: {
@@ -61,7 +45,8 @@ symbian: {
 		
 		RSS_RULES += "group_name = \"RnD Tools\"";
 		
-		LIBS += -lapgrfx -lPlatformEnv -lxqutils -lxmlframework -lbafl -lshareui
+		LIBS += -lapgrfx -lPlatformEnv -lxqutils -lxmlframework -lbafl -lshareui -lws32 -lapparc -lefsrv -lcone
+
 
         TARGET.CAPABILITY = ReadUserData ReadDeviceData WriteUserData WriteDeviceData PowerMgmt AllFiles
         

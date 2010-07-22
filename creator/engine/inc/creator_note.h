@@ -16,30 +16,23 @@
 */
 
 
-
-
-
 #ifndef __CREATORNOTEPAD_H__
 #define __CREATORNOTEPAD_H__
 
 #include "engine.h"
 #include "creator_modulebase.h"
-
+#include "creator_notepadwrapper.h"
 
 #include <e32base.h>
-//#include <npdapi.h>
-#include <NotesEditor>
-#include <AgendaUtil>
-#include <AgendaEntry>
-
 
 static const TInt KNotepadFieldLength = 1024;
 
 class CCreatorEngine;
 class CNotepadParameters;
+class CCreatorNotepadWrapper;
 
 
-class CCreatorNotepad : public CBase, public MCreatorModuleBase
+class CCreatorNotepad : public CCreatorModuleBase
     {
 public: 
     static CCreatorNotepad* NewL(CCreatorEngine* aEngine);
@@ -51,15 +44,14 @@ private:
     void ConstructL(CCreatorEngine* aEngine); // from MCreatorModuleBase
 
 public:
-    TBool AskDataFromUserL(TInt aCommand, TInt& aNumberOfEntries); // from MCreatorModuleBase
+    TBool AskDataFromUserL( TInt aCommand ); // from MCreatorModuleBase
+    
     TInt CreateNoteEntryL(CNotepadParameters *aParameters);
     void DeleteAllL();
     void DeleteAllCreatedByCreatorL();
 
 private:
-    AgendaUtil *iAgendaUtil;
-    NotesEditor *iNotepadApi;	//QT Notes api 
-    //CNotepadApi *iNotepadApi;
+    CCreatorNotepadWrapper* iNotepadWrapper;
 
     CNotepadParameters* iParameters;
     RFs& iFs;
