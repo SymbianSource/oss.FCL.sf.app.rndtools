@@ -12,9 +12,6 @@
 			<module name="perfmon">
 				<unit unitID="tools.perfmonqt" mrp="" bldFile="&layer_real_source_path;/perfmon" name="perfmon" proFile="perfmon.pro" />
 			</module>
-			<module name="htiui">
-				<unit unitID="tools.htiuiqt" mrp="" bldFile="&layer_real_source_path;/htiui" name="htiui" proFile="htiui.pro" />
-			</module>
 			<module name="creator">
 				<unit unitID="tools.creatorqt" mrp="" bldFile="&layer_real_source_path;/creator" name="creator" proFile="creator.pro" />
 			</module>
@@ -32,9 +29,6 @@
 			</module>
 			<module name="piprofilerui">
 				<unit unitID="tools.piprofilerui" mrp="" bldFile="&layer_real_source_path;/piprofilerui" name="piprofilerui" proFile="piprofilerui.pro" />
-			</module>
-			<module name="stifui">
-				<unit unitID="tools.stifui" mrp="" bldFile="&layer_real_source_path;/stifui/avkon/group" name="stifui"/>
 			</module>
     </layer>
   </systemModel>

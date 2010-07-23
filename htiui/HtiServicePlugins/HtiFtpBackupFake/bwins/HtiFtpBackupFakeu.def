@@ -1,3 +1,0 @@
-EXPORTS
-	?NewHtiFtpBackupFake@@YAPAVCHtiFtpBackupFake@@XZ @ 1 NONAME ; class CHtiFtpBackupFake * NewHtiFtpBackupFake(void)
-
