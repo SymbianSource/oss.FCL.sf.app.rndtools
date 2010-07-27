@@ -70,7 +70,6 @@ symbian {
             -lfbscli \
             -lImageConversion \
             -lPlatformEnv \
-            -lCommonDialogs \
             -leikcoctl \
             -lapgrfx \
             -lefsrv \
