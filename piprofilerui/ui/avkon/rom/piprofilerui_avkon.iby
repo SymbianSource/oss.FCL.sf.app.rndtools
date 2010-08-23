@@ -30,7 +30,4 @@ SCALABLE_IMAGE(APP_BITMAP_DIR, APP_BITMAP_DIR, PIProfilerui_ExtraIcons)
   S60_APP_AIF_RSC(PIProfilerUI)
 #endif
 
-data=ZPRIVATE\2001E5AE\backup_registration.xml        	private\2001E5AE\backup_registration.xml
-data=ZSYSTEM\Install\PIProfilerUI_stub.sis              system\install\PIProfilerUI_stub.sis
-
 #endif // __PROFILERGUI_IBY__

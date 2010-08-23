@@ -480,7 +480,7 @@ RESOURCE DIALOG r_profiler_gui_about_dialog
             id = EAknMessageQueryContentId;
             control = AVKON_MESSAGE_QUERY
                 {
-               	message = "Version 2.2.0.2 - 4th May 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved.";
+               	message = "Version 2.2.1 - 10th August 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved.";
                 };
             }
         };

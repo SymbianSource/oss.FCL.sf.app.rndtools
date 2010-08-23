@@ -89,7 +89,6 @@ void PIMainView::init(PIMainWindow *mainWindow, HbApplication* app, HbDocumentLo
     loadItemsFromResources(loader);
 
     // Set list widget items
-    mListPlugins->setLongPressEnabled(true);
     mListPlugins->setClampingStyle(HbScrollArea::BounceBackClamping);
     mListPlugins->setFrictionEnabled(true);
 
@@ -187,7 +186,7 @@ void PIMainView::loadItemsFromResources(HbDocumentLoader &loader)
 void PIMainView::showAboutPopup()
 {
 
-    Notifications::showMessageBox("Version 2.2.0.2 - 4th May 2010. \n"
+    Notifications::showMessageBox("Version 2.2.1 - 10th August 2010. \n"
             "Copyright © 2010 Nokia Corporation "
             "and/or its subsidiary(-ies). "
             "All rights reserved.");
