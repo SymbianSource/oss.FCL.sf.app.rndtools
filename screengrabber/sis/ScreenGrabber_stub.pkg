@@ -28,7 +28,7 @@
 
 ; normal stuff:
 ""-"z:\sys\bin\ScreenGrabber.exe"
-""-"z:\Resource\Apps\ScreenGrabber_aif.mif"
+""-"z:\Resource\Apps\ScreenGrabber.mif"
 ""-"z:\Resource\Apps\ScreenGrabber.rsc"
 ""-"z:\private\10003a3f\import\apps\ScreenGrabber_reg.rsc"
 ""-"z:\private\101FB751\backup_registration.xml"

@@ -19,11 +19,12 @@
 */
 
 
-#include "../creator/group/bld.inf"
-#include "../filebrowser/group/bld.inf"
-#include "../launcher/group/bld.inf"
-#include "../loadgen/group/bld.inf"
-#include "../perfmon/group/bld.inf"
-#include "../screengrabber/group/bld.inf"
-#include "../memspyui/group/bld.inf"
-#include "../piprofilerui/group/bld.inf"
+//Orbit version added #include "../creator/group/bld.inf"
+//Orbit version added #include "../filebrowser/group/bld.inf"
+//Orbit version added #include "../launcher/group/bld.inf"
+//Orbit version added #include "../loadgen/group/bld.inf"
+//Orbit version added #include "../perfmon/group/bld.inf"
+//Orbit version added #include "../screengrabber/group/bld.inf"
+//Orbit version added #include "../stifui/avkon/group/bld.inf"
+//Orbit version added #include "../memspyui/group/bld.inf"
+//Orbit version added #include "../htiui/group/bld.inf"

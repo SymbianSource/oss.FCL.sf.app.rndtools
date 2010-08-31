@@ -20,14 +20,15 @@
 #define __SCREENGRABBER_IBY__
 
 S60_APP_EXE(ScreenGrabber)
-S60_APP_AIF_ICONS(ScreenGrabber)
 S60_APP_RESOURCE(ScreenGrabber)
-#ifdef S60_UPGRADABLE_APP_REG_RSC
-  S60_UPGRADABLE_APP_REG_RSC(ScreenGrabber)
-#else
-  S60_APP_AIF_RSC(ScreenGrabber)
-#endif
+SCALABLE_IMAGE(APP_BITMAP_DIR,APP_BITMAP_DIR,ScreenGrabber)
+//#ifdef S60_UPGRADABLE_APP_REG_RSC
+//  S60_UPGRADABLE_APP_REG_RSC(ScreenGrabber)
+//#else
+//  S60_APP_AIF_RSC(ScreenGrabber)
+//#endif
 
+data=ZPRIVATE\10003a3f\import\APPS\ScreenGrabber_reg.RSC Private\10003a3f\import\Apps\ScreenGrabber_reg.rsc 
 data=ZPRIVATE\101FB751\backup_registration.xml        	private\101FB751\backup_registration.xml
 data=ZSYSTEM\Install\ScreenGrabber_stub.sis             \system\install\ScreenGrabber_stub.sis
 

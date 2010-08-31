@@ -19,7 +19,7 @@
 #define PIPROFILERMAINWINDOW_H_
 
 // System includes
-#include <QObject.h>
+#include <qobject.h>
 #include <hbmainwindow.h>
 
 // User includes

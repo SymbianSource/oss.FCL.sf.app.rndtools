@@ -15,38 +15,16 @@
 *
 */
 
-
 #include <platform_paths.hrh>
 
-PRJ_EXPORTS
-../group/backup_registration.xml    Z:/private/20011385/backup_registration.xml
-../rom/perfmon.iby CORE_IBY_EXPORT_PATH(tools,perfmon.iby)
+prj_platforms
 
+WINSCW GCCE ARMV5 ARMV6
 
-PRJ_MMPFILES
-#if defined(__SERIES60_30__) || defined(__SERIES60_31__) || defined(__S60_32__)
-  gnumakefile perfmon_icons_aif.mk
+#include "bld_generic.inf"
 
-  #ifdef MARM
-  gnumakefile perfmon_stub_sis.mk
-  #endif
-#endif
+#include "../ui/avkon/group/bld.inf"
 
-perfmon.mmp
+prj_mmpfiles
 
-
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && !defined __S60_32__)
-  PRJ_EXTENSIONS
-  START EXTENSION s60/mifconv
-  OPTION TARGETFILE perfmon_aif.mif
-  OPTION SOURCEDIR ../icons
-  OPTION SOURCES -c8,8 qgn_menu_perfmon
-  END
-
-  #ifdef MARM
-  START EXTENSION app-services/buildstubsis
-  OPTION SRCDIR ../sis
-  OPTION SISNAME PerfMon_stub
-  END
-  #endif  
-#endif
+prj_extensions
