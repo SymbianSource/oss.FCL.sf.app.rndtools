@@ -11,20 +11,44 @@
 *
 * Contributors:
 *
-* Description:  
+* Description:
 *
 */
 
+
 #include <platform_paths.hrh>
+#include "../memspywindowserverhelper/group/bld.inf"
 
-prj_platforms
+PRJ_EXPORTS
+../data/MemSpyEComInterfaceIds.xml                      z:/private/2002129F/memspyecominterfaceids.xml
+../data/MemSpyProcessMemoryTrackingAutoStartConfig.xml	z:/private/2002129F/memspyprocessmemorytrackingautostartconfig.xml
+../data/backup_registration.xml							z:/private/2002129F/backup_registration.xml
+../rom/memspyui.iby                                     CORE_IBY_EXPORT_PATH(tools,memspyui.iby)
 
-WINSCW GCCE ARMV5 ARMV6
 
-#include "bld_generic.inf"
+PRJ_MMPFILES
+memspyui.mmp
 
-#include "../ui/avkon/group/bld.inf"
+#ifndef SBSV2
+  gnumakefile memspyui_icons_aif.mk
 
-prj_mmpfiles
+  #ifdef MARM
+  gnumakefile memspyui_stub_sis.mk
+  #endif
+#endif
 
-prj_extensions
+#ifdef SBSV2
+  PRJ_EXTENSIONS
+  START EXTENSION s60/mifconv
+  OPTION TARGETFILE memspyui_aif.mif
+  OPTION SOURCEDIR ../icons
+  OPTION SOURCES -c8,8 qgn_menu_memspyui
+  END
+
+  #ifdef MARM
+  START EXTENSION app-services/buildstubsis
+  OPTION SRCDIR ../sis
+  OPTION SISNAME MemSpy_stub
+  END
+  #endif 
+#endif

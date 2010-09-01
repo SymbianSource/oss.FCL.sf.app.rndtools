@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). 
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description: 
+* Description:  
 *
 */
 
@@ -20,15 +20,13 @@
 #define __LAUNCHER_IBY__
 
 S60_APP_EXE(Launcher)
+S60_APP_AIF_ICONS(Launcher)
 S60_APP_RESOURCE(Launcher)
-SCALABLE_IMAGE(APP_BITMAP_DIR,APP_BITMAP_DIR,Launcher)
-data=ZPRIVATE\10003a3f\import\APPS\Launcher_reg.RSC Private\10003a3f\import\Apps\Launcher_reg.rsc
-
-//#ifdef S60_UPGRADABLE_APP_REG_RSC
-//  S60_UPGRADABLE_APP_REG_RSC(Launcher)
-//#else
-//  S60_APP_AIF_RSC(Launcher)
-//#endif
+#ifdef S60_UPGRADABLE_APP_REG_RSC
+  S60_UPGRADABLE_APP_REG_RSC(Launcher)
+#else
+  S60_APP_AIF_RSC(Launcher)
+#endif
 
 data=ZPRIVATE\101FB74F\backup_registration.xml        	private\101FB74F\backup_registration.xml
 data=ZSYSTEM\Install\Launcher_stub.sis                  \system\install\Launcher_stub.sis

@@ -29,11 +29,11 @@
 // CLASS DECLARATIONS
 
 class RFBFileOpServerSession : public RSessionBase
-    {
+	{
 public:
-    TInt Connect();
+	TInt Connect();
 	
-    void Copy(const TDesC& aSourceFullName, const TDesC& aTargetFullName, TUint aSwitch, TRequestStatus& aStatus);
+	void Copy(const TDesC& aSourceFullName, const TDesC& aTargetFullName, TUint aSwitch, TRequestStatus& aStatus);
     TInt Rename(const TDesC& anOld, const TDesC& aNew, TUint aSwitch); 
     TInt Attribs(const TDesC& aName, TUint aSetMask, TUint aClearMask, const TTime& aTime, TUint aSwitch); 
     void RmDir(const TDesC& aDirName, TUint aSwitch, TRequestStatus& aStatus); 
@@ -45,9 +45,9 @@ public:
     TInt CancelOp();
 
 private:
-    TVersion Version() const;
-    TPckgBuf<TFileOpArgs> iPckgBuf;
-    };
+	TVersion Version() const;
+	TPckgBuf<TFileOpArgs> iPckgBuf;
+	};
 
 
 class CFBFileOpClient : public CBase
@@ -55,7 +55,7 @@ class CFBFileOpClient : public CBase
 public:
     IMPORT_C static CFBFileOpClient* NewL();
     IMPORT_C ~CFBFileOpClient();
-    IMPORT_C TInt Copy(const TDesC& aSourceFullName, const TDesC& aTargetFullName, TUint aSwitch);
+	IMPORT_C TInt Copy(const TDesC& aSourceFullName, const TDesC& aTargetFullName, TUint aSwitch); 
     IMPORT_C TInt Rename(const TDesC& anOld, const TDesC& aNew, TUint aSwitch); 
     IMPORT_C TInt Attribs(const TDesC& aName, TUint aSetMask, TUint aClearMask, const TTime& aTime, TUint aSwitch); 
     IMPORT_C TInt RmDir(const TDesC& aDirName, TUint aSwitch); 

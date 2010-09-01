@@ -18,7 +18,7 @@
 #ifndef NOTIFICATIONS_H_
 #define NOTIFICATIONS_H_
 
-#include <QString> 
+#include <qstring> 
 
 /**
  * Notifications class for viewing notification messages.

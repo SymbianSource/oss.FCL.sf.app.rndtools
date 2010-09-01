@@ -1,0 +1,206 @@
+===============================================================================
+
+RELEASE NOTES - CREATOR v5.3.5
+RELEASED 30th October 2009 
+
+SUPPORTS S60 3.0+
+
+===============================================================================
+
+Product Description:
+====================
+The Creator tool can be used to create different kinds of data into a device.
+It's useful for testing that the device works correctly when there are
+large amounts of data saved.
+
+Main Features:
+==============
+- Creating appointment, event, anniversary, todo, and reminder entries
+- Creating bookmark, bookmark folder, saved page, and saved page folder
+  entries
+- Creating different kinds of predefined file formats with or without DRM
+- Creating missed call, received call, and dialed number entries
+- Creating SMS, MMS, AMS, Email, Smart, Infrared and Bluetooth messages
+- Creating mailbox entries
+- Creating connection method, IMPS server, landmark and note entries
+- Creating contact and contact group entries
+- Entries can be created on the UI or by using scripts
+- Entries can be deleted with the UI
+
+===============================================================================
+
+What's New in v5.3.5
+====================
+- Fix: Creator crashes when creating 2000 contact entries.
+- Fix: Creator cannot create 1000 SMS messages
+
+===============================================================================
+
+Installation Notes:
+===================
+Creator is typically preinstalled on ROM. If not, it can be added to the
+ROM with the .iby file. Alternatively, a .sis file can be found under the sis-
+directory, but the user needs to sign it with their own developer certificate.
+In Nokia R&D environment, you can use directly the R&D-signed .sis file under
+the internal\sis directory.
+
+When signing with own developer certificate, the following capabilities are
+needed:
+  ReadDeviceData
+  WriteDeviceData
+  AllFiles
+  SwEvent
+  NetworkServices
+  LocalServices
+  ReadUserData
+  WriteUserData
+  Location
+  UserEnvironment
+
+===============================================================================
+
+System Requirements:
+====================
+Basic Requirements:
+- Any S60 3.x device, 5.x device or emulator environment
+
+===============================================================================
+
+Compatibility Issues:
+=====================
+Since version 5.0.0, the old .creator script files are no longer supported, 
+therefore you should use the new .creatorxml format instead. However, the script
+support is not available for S60 3.0 and 3.1 releases.
+
+When Creator has been compiled against 3.0 or 3.1, it will use the old
+phonebook and accesspoint APIs. With 3.2 and newer, new virtual phonebook and
+connection method APIs are used.
+
+===============================================================================
+
+Known Issues:
+=============
+- Generated browser saved pages cannot be opened in the browser. Currently no
+  workaround available.
+- Logs: <datetime> element is not saved into database. Event time is always
+  creation time of the event. S60 feature.
+- Deleting Notes created only with Creator is not supported
+- Deleting mailboxes is not supported
+- Deleting entries without using Creator may cause Creator to delete incorrect
+  entries when using Delete -> ... -> By Creator -command
+  
+===============================================================================
+
+Version History:
+================
+
+Version 5.3.4 - 12th October 2009
+---------------------------------
+- Fix: Cannot create SMS messages in inbox with Creator
+- Fix: Softkeys are not visible immediately when progress bar is shown
+
+Version 5.3.3 - 26th August 2009
+-------------------------------- 
+- Fix: Creator crashes when using scripts to create calendar appointments, 
+  which have existing contacts as attendees.
+- Fix: Destinations cannot be opened after deleting connection methods with
+  Creator.
+  
+Version 5.3.2 - 17th April 2009
+------------------------------- 
+- Fix: Creator crashes after phonebook operation
+
+Version 5.3.1 - 20th February 2009
+----------------------------------
+- Fix: Unable to create a phonebook group with more than 15 members
+
+Version 5.3.0 - 13th February 2009
+----------------------------------
+- Change: XML Schema is now available for validating Creator scripts
+- Change: Creator now deletes files created by Creator when selecting
+  Options -> Delete -> All
+- Fix: Creator crashes when creating RNG file
+- Fix: Creator crashes when creating large amount of files
+- Fix: Actual MIDI and 3GPP filenames are different from names described in
+  Creator UI
+- Fix: Text type attachment are not displayed correctly with generated messages
+ 
+Version 5.2.2 - 12th December 2008
+----------------------------------
+- Change: Generated file data changed 
+
+Version 5.2.1 - 14th November 2008
+----------------------------------
+- Fix: VCS and VCF type attachments does not work with MMS in Creator scripts
+- Fix: DRM accumulated element in Creator script mixes up starttime and
+  endtime values
+- Fix: Deleting Browser Bookmark folders -> By Creator deletes all bookmark
+  folders when it should delete only those created with Creator
+
+Version 5.2.0 - 31st October 2008
+---------------------------------
+- Feature: Deleting entries
+- Feature: Support for creating WMA and WMV files 
+
+Version 5.1.1 - 3rd October 2008
+--------------------------------
+- Fix: Creator creates messages with invalid recepients which causes Messages
+  application to crash
+- Fix: Creator crashes when pressing cancel while creating phonebook entries
+- Feature: Script support for DRM protected files
+- Feature: "incvalueforeachcopy" attribute introduced for increasing phone
+  numbers in scripts
+  
+Version 5.1.0 - 19th September 2008
+-----------------------------------
+- Feature: DRM protected files can be now generated
+- Fix: Message read status does not get generated correctly from script
+- Change: Legacy version removed
+
+Version 5.0.4 - 8th August 2008
+-------------------------------
+- Feature: Random string can be now specified via an external XML file if not
+  wanting to use the defaults provided by the tool
+- Fix: Crash when creating new landmark entries
+
+Version 5.0.3 - 2nd June 2008
+-----------------------------
+- Feature: Scripts can be now executed directly via commandline
+- Fix: With some combinations of parameters, connection method generation could
+  fail
+  
+Version 5.0.2 - 14th May 2008
+-----------------------------
+- Fix: Error handling in calendar entry recurrency rule improved
+- Fix: Context check for script's fields could fail
+
+Version 5.0.1 - 5th May 2008
+----------------------------
+- Fix: Calendar entry creation may crash due to incorrect status field
+- Fix: Saved deck entry creation may crash due to invalid path
+
+Version 5.0.0 - 21st April 2008
+-------------------------------
+- Feature: Uses Virtual Phonebook API for S60 3.2 or newer 
+- Feature: Uses Connection Method API for S60 3.2 or newer 
+- Feature: Creation of Landmarks 
+- Feature: Completely new XML based script-format supporting all features
+- Change: Agenda API replaced with Calendar Interim API
+
+Version 4.9.0 - 1st April 2008
+------------------------------
+- Change: Modified to support coexisting with Creator 5.0.0   
+
+Version 4.8.1 - 19th March 2008
+---------------------------------
+- Fix: Contact groups were created incorrectly
+
+===============================================================================
+Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+All rights reserved.
+
+This component and the accompanying materials are made available
+under the terms of "Eclipse Public License v1.0"
+which accompanies this distribution, and is available
+at the URL "http://www.eclipse.org/legal/epl-v10.html".
+

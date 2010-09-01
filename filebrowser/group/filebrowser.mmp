@@ -1,0 +1,116 @@
+/*
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  
+*
+*/
+
+
+#include <data_caging_paths.hrh>
+#include <platform_paths.hrh>
+
+TARGET            FileBrowser.exe
+TARGETTYPE        exe
+EPOCSTACKSIZE     0x5000
+EPOCHEAPSIZE      0x10000 0x2000000  // Min 64kB, Max 32MB
+
+UID               0x100039CE 0x102828D6
+
+VENDORID          VID_DEFAULT
+CAPABILITY        CAP_APPLICATION AllFiles DiskAdmin
+
+SMPSAFE
+
+LANG              SC
+
+
+START RESOURCE    ../data/filebrowser.rss
+HEADER
+TARGETPATH        APP_RESOURCE_DIR
+END
+
+START RESOURCE    ../data/filebrowser_reg.rss
+DEPENDS           filebrowser.rsg
+TARGETPATH        /private/10003a3f/apps
+END
+
+APP_LAYER_SYSTEMINCLUDE
+SYSTEMINCLUDE     /epoc32/include/connect
+USERINCLUDE       ../inc
+#ifndef FILEBROWSER_LITE 
+  USERINCLUDE       ../fileopclient/inc 
+#endif
+SOURCEPATH        ../src
+
+
+SOURCE            FBApp.cpp
+SOURCE            FBDocument.cpp 
+SOURCE            FBAppUi.cpp
+SOURCE            FBFileListView.cpp 
+SOURCE            FBFileListContainer.cpp 
+SOURCE            FBModel.cpp
+SOURCE            FBSettingViewDlg.cpp
+SOURCE            FBFileUtils.cpp
+SOURCE            FBFileOps.cpp
+SOURCE            FBFileDlgs.cpp
+SOURCE            FBFileEditor.cpp
+#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && !defined __S60_32__)
+  SOURCE            FBToolbar.cpp
+#endif
+
+LIBRARY           euser.lib
+LIBRARY           apparc.lib
+LIBRARY           cone.lib 
+LIBRARY           eikcore.lib  
+LIBRARY           avkon.lib 
+LIBRARY           aknnotify.lib
+LIBRARY           ws32.lib
+LIBRARY           fbscli.lib
+LIBRARY           ImageConversion.lib
+LIBRARY           PlatformEnv.lib
+LIBRARY           CommonDialogs.lib
+LIBRARY           eikcoctl.lib
+LIBRARY           aknskins.lib
+LIBRARY           apgrfx.lib
+LIBRARY           efsrv.lib
+LIBRARY           CommonEngine.lib
+LIBRARY           bafl.lib
+LIBRARY           CentralRepository.lib
+LIBRARY           mediaclientaudio.lib
+LIBRARY           estor.lib
+LIBRARY           gdi.lib
+LIBRARY           eikctl.lib
+LIBRARY           eikcdlg.lib
+LIBRARY           eikdlg.lib
+LIBRARY           aknicon.lib
+LIBRARY           egul.lib
+LIBRARY           commonui.lib
+LIBRARY           apmime.lib
+LIBRARY           sendui.lib
+LIBRARY           msgs.lib
+LIBRARY           ezlib.lib
+LIBRARY           cdlengine.lib 
+LIBRARY           remconcoreapi.lib
+LIBRARY           remconinterfacebase.lib
+LIBRARY           sbeclient.lib
+LIBRARY           hash.lib
+LIBRARY           etext.lib
+LIBRARY           charconv.lib
+LIBRARY           AknLayout2Scalable.lib
+LIBRARY           tzclient.lib
+
+#ifndef FILEBROWSER_LITE
+  LIBRARY           filebrowserfileopclient.lib
+#endif
+
+// End of File

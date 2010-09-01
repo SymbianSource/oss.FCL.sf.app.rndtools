@@ -29,9 +29,8 @@
 
 ; normal stuff:
 ""-"z:\sys\bin\creator.exe"
-""-"z:\resource\apps\creator.mif"
+""-"z:\resource\apps\creator_aif.mif"
 ""-"z:\resource\apps\creator.rsc"
-""-"z:\resource\apps\datacreator.rsc"
 ""-"z:\private\10003a3f\import\apps\creator_reg.rsc"
 ""-"z:\private\20011383\backup_registration.xml"
 

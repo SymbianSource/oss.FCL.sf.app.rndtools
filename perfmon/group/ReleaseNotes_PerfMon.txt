@@ -1,9 +1,9 @@
 ===============================================================================
 
-RELEASE NOTES - PERFORMANCE MONITOR v1.1.1
-RELEASED 21st May 2010 
+RELEASE NOTES - PERFORMANCE MONITOR v1.0.0
+RELEASED 6th March 2008 
 
-SUPPORTS S60 5.2+
+SUPPORTS S60 3.0+
 
 ===============================================================================
 
@@ -26,10 +26,9 @@ Main Features:
 
 ===============================================================================
 
-What's New in v1.1.1
+What's New in v1.0.0
 ====================
-- Improved Orbit UI
-- Error corrections
+- Initial version
 
 ===============================================================================
 

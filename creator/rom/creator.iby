@@ -20,16 +20,13 @@
 #define __CREATOR_IBY__
 
 S60_APP_EXE(Creator)
+S60_APP_AIF_ICONS(Creator)
 S60_APP_RESOURCE(Creator)
-S60_APP_RESOURCE(datacreator)
-SCALABLE_IMAGE(APP_BITMAP_DIR,APP_BITMAP_DIR,Creator)
-
-data=ZPRIVATE\10003a3f\import\APPS\Creator_reg.RSC Private\10003a3f\import\Apps\Creator_reg.rsc 
-//#ifdef S60_UPGRADABLE_APP_REG_RSC
-//  S60_UPGRADABLE_APP_REG_RSC(Creator)
-//#else
-//  S60_APP_AIF_RSC(Creator)
-//#endif
+#ifdef S60_UPGRADABLE_APP_REG_RSC
+  S60_UPGRADABLE_APP_REG_RSC(Creator)
+#else
+  S60_APP_AIF_RSC(Creator)
+#endif
 
 data=ZPRIVATE\20011383\backup_registration.xml        	private\20011383\backup_registration.xml
 data=ZSYSTEM\Install\Creator_stub.sis                   \system\install\Creator_stub.sis

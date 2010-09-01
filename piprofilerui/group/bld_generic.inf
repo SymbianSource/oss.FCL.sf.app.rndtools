@@ -16,5 +16,19 @@
 */
 
 PRJ_MMPFILES
+#ifndef SBSV2
+  #ifdef MARM
+  gnumakefile piprofiler_stub_sis.mk
+  #endif
+#endif
+
 PRJ_EXTENSIONS
+#ifdef SBSV2
+  #ifdef MARM
+  START EXTENSION app-services/buildstubsis
+  OPTION SRCDIR ../sis
+  OPTION SISNAME PIProfiler_stub
+  END
+  #endif  
+#endif
 
