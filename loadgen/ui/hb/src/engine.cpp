@@ -24,7 +24,7 @@
 #include "loadgen_cpuload.h"
 #include "loadgen_memoryeat.h"
 #include "loadgen_phonecall.h"
-//#include "loadgen_netconn.h"
+#include "loadgen_netconn.h"
 #include "loadgen_keypress.h"
 #include "loadgen_pointerevent.h"
 #include "loadgen_messages.h"
@@ -530,12 +530,12 @@ void CEngine::DoStartNewLoadL(TInt aCommand)
             item = CPhoneCall::NewL(iPhoneCallAttributes, iReferenceNumber);
             break;
             }
-/*        case ELoadGenCmdNewLoadNetConn:
+        case ELoadGenCmdNewLoadNetConn:
             {
             item = CNetConn::NewL(iNetConnAttributes, iReferenceNumber);
             break;
             }
-*/            
+            
         case ELoadGenCmdNewLoadKeyPress:
             {
             item = CKeyPress::NewL(iKeyPressAttributes, iReferenceNumber);
@@ -946,7 +946,7 @@ TCPULoadAttributes CEngine::GetCPULoadAttributes()
 
 // --------------------------------------------------------------------------------------------
 
-void CEngine::ChangeCPULoadAttributes(TCPULoadAttributes aAttributes) 
+void CEngine::ChangeCPULoadAttributes(const TCPULoadAttributes& aAttributes) 
 	{ 
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -976,7 +976,7 @@ TMemoryEatAttributes CEngine::GetMemoryEatAttributes()
 
 // --------------------------------------------------------------------------------------------
 
-void CEngine::ChangeMemoryEatAttributes(TMemoryEatAttributes aAttributes) 
+void CEngine::ChangeMemoryEatAttributes(const TMemoryEatAttributes& aAttributes) 
 	{ 
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -1006,7 +1006,7 @@ TPhoneCallAttributes CEngine::GetPhoneCallAttributes()
 
 // --------------------------------------------------------------------------------------------	
 
-void CEngine::ChangePhoneCallAttributes(TPhoneCallAttributes aAttributes)
+void CEngine::ChangePhoneCallAttributes(const TPhoneCallAttributes& aAttributes)
 	{
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -1023,7 +1023,7 @@ void CEngine::ChangePhoneCallAttributes(TPhoneCallAttributes aAttributes)
 
 TNetConnAttributes CEngine::GetNetConnAttributes()
 	{ 
-/*  
+  
 	if (iEditExistingLoad == EFalse)
 		{	
 		return iNetConnAttributes; 
@@ -1033,14 +1033,14 @@ TNetConnAttributes CEngine::GetNetConnAttributes()
 		CLoadBase* aItem = iLoadItemList->At(iCurrentItemIndex);
 		return (static_cast<CNetConn*>(aItem)->Attributes());
 		}
-*/		
+	
 	}
 
 // --------------------------------------------------------------------------------------------		
 	
-void CEngine::ChangeNetConnAttributes(TNetConnAttributes aAttributes)
+void CEngine::ChangeNetConnAttributes(const TNetConnAttributes& aAttributes)
 	{
-/*    
+    
 	if (iEditExistingLoad == EFalse) 
 		{
 		iNetConnAttributes = aAttributes; 
@@ -1050,7 +1050,7 @@ void CEngine::ChangeNetConnAttributes(TNetConnAttributes aAttributes)
 		CLoadBase* aItem = iLoadItemList->At(iCurrentItemIndex);
 		static_cast<CNetConn*>(aItem)->SetAttributes(aAttributes);
 		}
-*/			
+			
 	}
 	
 // --------------------------------------------------------------------------------------------	
@@ -1071,7 +1071,7 @@ TKeyPressAttributes CEngine::GetKeyPressAttributes()
 	
 // --------------------------------------------------------------------------------------------		
 	
-void CEngine::ChangeKeyPressAttributes(TKeyPressAttributes aAttributes)
+void CEngine::ChangeKeyPressAttributes(const TKeyPressAttributes& aAttributes)
 	{
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -1101,7 +1101,7 @@ TMessageAttributes CEngine::GetMessageAttributes()
 	
 // --------------------------------------------------------------------------------------------		
 	
-void CEngine::ChangeMessageAttributes(TMessageAttributes aAttributes)
+void CEngine::ChangeMessageAttributes(const TMessageAttributes& aAttributes)
 	{
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -1131,7 +1131,7 @@ TApplicationsAttributes CEngine::GetApplicationsAttributes()
 
 // --------------------------------------------------------------------------------------------		
 	
-void CEngine::ChangeApplicationsAttributes(TApplicationsAttributes aAttributes)
+void CEngine::ChangeApplicationsAttributes(const TApplicationsAttributes& aAttributes)
 	{
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -1161,7 +1161,7 @@ TPhotoCaptureAttributes CEngine::GetPhotoCaptureAttributes()
 
 // --------------------------------------------------------------------------------------------		
 	
-void CEngine::ChangePhotoCaptureAttributes(TPhotoCaptureAttributes aAttributes)
+void CEngine::ChangePhotoCaptureAttributes(const TPhotoCaptureAttributes& aAttributes)
 	{
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -1192,7 +1192,7 @@ TBluetoothAttributes CEngine::GetBluetoothAttributes()
 	
 // --------------------------------------------------------------------------------------------		
 	
-void CEngine::ChangeBluetoothAttributes(TBluetoothAttributes aAttributes)
+void CEngine::ChangeBluetoothAttributes(const TBluetoothAttributes& aAttributes)
 	{
 	if (iEditExistingLoad == EFalse) 
 		{
@@ -1222,7 +1222,7 @@ TPointerEventAttributes CEngine::GetPointerEventAttributes()
 
 // --------------------------------------------------------------------------------------------		
 	
-void CEngine::ChangePointerEventAttributes(TPointerEventAttributes aAttributes)
+void CEngine::ChangePointerEventAttributes(const TPointerEventAttributes& aAttributes)
 	{
 	if (iEditExistingLoad == EFalse) 
 		{

@@ -22,14 +22,6 @@
 #include "creator_note.h" 
 #include "creator_traces.h"
 
-
-const TInt KCreatorDiskSpaceNeededForSingleDeletion( 8192 );
-_LIT( KCreatorNotepadFile, "c:Notepad.dat" );
-
-// @see \s60\app\organizer\notepad\notepad1\LibSrc\NpdCoreModel.cpp KSecureUid.Name()
-_LIT( KCreatorNotepadFormat, "SECURE[101F8878]" ); 
-_LIT( KCreatorNotepadDeleteAllSQL, "DELETE FROM Table1");
-
 //----------------------------------------------------------------------------
 
 CNotepadParameters::CNotepadParameters()
@@ -82,12 +74,13 @@ CCreatorNotepad::~CCreatorNotepad()
     if (iParameters)
         {
         delete iParameters;
-        iParameters;
+        iParameters = NULL;
         }
     
     if (iNotepadWrapper)
     	{
 		delete iNotepadWrapper;
+		iNotepadWrapper = NULL;
     	}
     }
 

@@ -51,7 +51,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TCPULoadAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TCPULoadAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TCPULoadAttributes& aAttributes) { iAttributes = aAttributes; }
 
 public:  // New static methods
     static TInt ThreadFunction(TAny* aThreadArg);

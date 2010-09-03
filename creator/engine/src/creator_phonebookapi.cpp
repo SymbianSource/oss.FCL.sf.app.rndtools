@@ -36,18 +36,17 @@ quint32 CCreatorPhonebookAPI::saveContact( const QList<QContactDetail>& list )
     // create a new contact item
     QContact store;
     quint32 id;
-    bool success = false;
     for(int i = 0 ; i < list.count() ; i++ )
     	{
 		QContactDetail cntdetail = list.at(i);
-		success = store.saveDetail(&cntdetail);
+		store.saveDetail(&cntdetail);
     	}
     /*foreach( QContactDetail cntdetail, list )
         {
-        success = store.saveDetail( &cntdetail );
+        store.saveDetail( &cntdetail );
         }
     */
-    success = mContactMngr->saveContact( &store );
+    mContactMngr->saveContact( &store );
     id = store.localId();
     return id;
     }
@@ -157,5 +156,34 @@ bool CCreatorPhonebookAPI::deleteContacts( const QList<QContactLocalId>& list )
 QContact CCreatorPhonebookAPI::contact( const QContactLocalId& contactId )
     {
     return mContactMngr->contact( contactId );
+    }
+
+QString CCreatorPhonebookAPI::phoneNumber( const QContactLocalId& contactId )
+    {
+    QString strNumber;
+    QContact contact = mContactMngr->contact( contactId );
+    if( !contact.isEmpty() )
+        {
+        QContactPhoneNumber phoneNumber = static_cast<QContactPhoneNumber>( contact.detail( QContactPhoneNumber::DefinitionName ) );
+        strNumber = phoneNumber.number();
+        }
+    return strNumber;
+    }
+
+bool CCreatorPhonebookAPI::contactDetails( const QContactLocalId& contactId, QString& name, QString& phoneNumber, QString& email )
+    {
+    bool success(false);
+    QContact contact = mContactMngr->contact( contactId );
+    if( !contact.isEmpty() )
+        {
+        QContactPhoneNumber contactPhoneNumber = static_cast<QContactPhoneNumber>( contact.detail( QContactPhoneNumber::DefinitionName ) );
+        phoneNumber = contactPhoneNumber.number();
+        QContactEmailAddress contactEmailAddress = static_cast<QContactEmailAddress>( contact.detail( QContactEmailAddress::DefinitionName ) );
+        email = contactEmailAddress.emailAddress();
+        QContactDisplayLabel contactDisplayLabel = static_cast<QContactDisplayLabel>( contact.detail( QContactDisplayLabel::DefinitionName ) );
+        name = contactDisplayLabel.label();
+        success = true;
+        }
+    return success;
     }
 // End of File

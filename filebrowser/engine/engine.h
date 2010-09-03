@@ -165,6 +165,11 @@ public:
      */
     virtual TBool ShowConfirmationQuery(const TDesC& aDescText) = 0;
 
+    /**
+      * Notify wrapping model data has changed
+      */
+    virtual void NotifyModelHasChanged() = 0;
+
 };
 
 class CEngine : public CBase

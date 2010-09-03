@@ -51,7 +51,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TPointerEventAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TPointerEventAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TPointerEventAttributes& aAttributes) { iAttributes = aAttributes; }
 
 public:  // New static methods
     static TInt ThreadFunction(TAny* aThreadArg);

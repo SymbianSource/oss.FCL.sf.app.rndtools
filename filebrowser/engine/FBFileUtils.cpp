@@ -362,8 +362,8 @@ void CFileBrowserFileUtils::CheckForMoreCommandsL()
     //LOGSTRING("Creator: CCreatorEngine::CheckForMoreCommandsL");
     
     // update the progress bar
-    if (iProgressInfo)
-        iProgressInfo->IncrementAndDraw(1);
+//    if (iProgressInfo)
+//        iProgressInfo->IncrementAndDraw(1);
 
 	// check if we have more commands to be executed
 	if (iCurrentEntry >= CommandArrayCount() - 1)
@@ -406,15 +406,15 @@ void CFileBrowserFileUtils::CheckForMoreCommandsL()
             }
         else if (iSucceededOperations == 1 && iFailedOperations == 0)    
             {
-//            _LIT(KMessage, "Operation succeeded");
-//            iEngine->FileBrowserUI()->ShowConfirmationNote(KMessage);
+            _LIT(KMessage, "Operation succeeded");
+            iEngine->FileBrowserUI()->ShowConfirmationNote(KMessage);
             }
         else if (iSucceededOperations > 0 && iFailedOperations == 0)    
             {
-//            _LIT(KMessage, "%d operations succeeded");
-//            TBuf<128> noteMsg;
-//            noteMsg.Format(KMessage, iSucceededOperations);
-//            iEngine->FileBrowserUI()->ShowConfirmationNote(noteMsg);
+            _LIT(KMessage, "%d operations succeeded");
+            TBuf<128> noteMsg;
+            noteMsg.Format(KMessage, iSucceededOperations);
+            iEngine->FileBrowserUI()->ShowConfirmationNote(noteMsg);
             }
         else if (iSucceededOperations == 0 && iFailedOperations > 1)    
             {
@@ -443,6 +443,7 @@ void CFileBrowserFileUtils::CheckForMoreCommandsL()
             }
 
         RefreshViewL();
+        iEngine->FileBrowserUI()->NotifyModelHasChanged();
 
             }
 	else
@@ -629,16 +630,8 @@ TKeyResponse CFileBrowserFileUtils::HandleOfferKeyEventL(const TKeyEvent& /*aKey
 
 void CFileBrowserFileUtils::RefreshViewL()
     {
-	// TODO
-
 //    if (iEngine->FileListContainer())
 //        {
-//        // create a list box if it doesn't already exist
-//        if (!iEngine->FileListContainer()->ListBox())
-//            iEngine->FileListContainer()->CreateListBoxL(iEngine->Settings().iFileViewMode);
-//
-//        // clear selections if any
-//        iEngine->FileListContainer()->ListBox()->ClearSelection();
 //
 //        // make sure that the search field is disabled
 //        iEngine->FileListContainer()->DisableSearchFieldL();
@@ -651,17 +644,8 @@ void CFileBrowserFileUtils::RefreshViewL()
 //
 //        // set text items
 //        iEngine->FileListContainer()->SetListBoxTextArrayL(GenerateItemTextArrayL());
-
-//        // make sure that the current item index is not out of array
-//        if (iEngine->FileListContainer()->CurrentListBoxItemIndex() == -1 && // -1 is a hardcoded value meaning that no current item index
-//                iEngine->FileListContainer()->ListBox()->Model()->NumberOfItems() > 0)
-//            iEngine->FileListContainer()->ListBox()->SetCurrentItemIndex( iEngine->FileListContainer()->ListBox()->Model()->NumberOfItems() - 1 );
-//
 //        }
-    
-//        iEngine->FileListContainer()->UpdateToolbar();
-
-        }
+    }
     
 // --------------------------------------------------------------------------------------------
 
@@ -1537,50 +1521,11 @@ TInt CFileBrowserFileUtils::SetSelectedItemsOrCurrentItemL(const CArrayFix<TInt>
     }
 
 // --------------------------------------------------------------------------------------------
-//TInt CFileBrowserFileUtils::GetSelectedItemsOrCurrentItemL(CFileEntryList* aFileEntryList)
-//    {
-//    aFileEntryList->Reset();
-//
-//    const CArrayFix<TInt>* selectionIndexes = iEngine->GetSelectedIndices();
-//    // by default use selected items
-//    if (selectionIndexes && selectionIndexes->Count() > 0)
-//        {
-//        TInt ref(0);
-//        TKeyArrayFix key(0, ECmpTUint16);
-//        TInt index(0);
-//
-//        for (TInt i=0; i<iFileEntryList->Count(); i++)
-//            {
-//            ref = i;
-//
-//            if (selectionIndexes->Find(ref, key, index) == 0)
-//                {
-//                aFileEntryList->AppendL(iFileEntryList->At(i));
-//                }
-//            }
-//        }
-//
-//    // or if none selected, use the current item index
-//    else
-//        {
-////        TInt currentItemIndex = iEngine->FileListContainer()->CurrentListBoxItemIndex();
-//        TInt currentItemIndex = iEngine->QueryCurrentItemIndex();
-//        if (iFileEntryList->Count() > currentItemIndex && currentItemIndex >= 0)
-//            {
-//            aFileEntryList->AppendL(iFileEntryList->At(currentItemIndex));
-//            }
-//        }
-//
-//    return aFileEntryList->Count();
-//    }
-
-// --------------------------------------------------------------------------------------------
 
 TInt CFileBrowserFileUtils::ClipboardCutL(const CArrayFix<TInt>* aSelectionIndices)
     {
 	
     iClipBoardMode = EClipBoardModeCut;
-    //TInt operations = GetSelectedItemsOrCurrentItemL(iClipBoardList);
     TInt operations = SetSelectedItemsOrCurrentItemL(aSelectionIndices, iClipBoardList);
     return operations;
     }
@@ -1590,7 +1535,6 @@ TInt CFileBrowserFileUtils::ClipboardCutL(const CArrayFix<TInt>* aSelectionIndic
 TInt CFileBrowserFileUtils::ClipboardCopyL(const CArrayFix<TInt>* aSelectionIndices)
     {
     iClipBoardMode = EClipBoardModeCopy;
-    //TInt operations = GetSelectedItemsOrCurrentItemL(iClipBoardList);
     TInt operations = SetSelectedItemsOrCurrentItemL(aSelectionIndices, iClipBoardList);
     return operations;
     }
@@ -1634,16 +1578,9 @@ void CFileBrowserFileUtils::CopyToFolderL(TFileName aTargetDir,
     // run folder selection dialog
     //    CFileBrowserDestinationFolderSelectionDlg* dlg = CFileBrowserDestinationFolderSelectionDlg::NewL(destinationFolder, iDriveEntryList, iconArray);
 
-    // get entry list
-    //CFileEntryList* entryList = new(ELeave) CFileEntryList(32);
-    //GetSelectedItemsOrCurrentItemL(entryList);
-    //CleanupStack::PushL(entryList);
-
     // do the file operations
     //DoCopyToFolderL(entryList, aTargetDir, aOverwriteOptions, aMove);
     DoCopyToFolderL(iCurrentSelectionList, aTargetDir, aOverwriteOptions, aMove);
-
-    //CleanupStack::PopAndDestroy(); // entryList
 
     //    CleanupStack::Pop(); //iconArray
     }
@@ -1735,12 +1672,6 @@ void CFileBrowserFileUtils::DoCopyToFolderL(CFileEntryList* aEntryList,
                     }
 
                 }
-
-            // execute all operations
-            if (aDeleteSource)
-                StartExecutingCommandsL(_L("Moving"));
-            else
-                StartExecutingCommandsL(_L("Copying"));
             }
         }
     }
@@ -1769,9 +1700,6 @@ void CFileBrowserFileUtils::DeleteL()
             }
 
         }
-
-    // execute all operations
-    StartExecutingCommandsL(_L("Deleting"));
     }
 
 
@@ -1823,15 +1751,12 @@ void CFileBrowserFileUtils::TouchL(TBool aRecurse)
                                  );
             }
         }
-
-    // execute all operations
-    StartExecutingCommandsL(_L("Touching"));
     }
 
 TBool CFileBrowserFileUtils::TargetExists(const TInt aIndex, const TFileName &newName)
     {
     TBool alreadyExists(EFalse);
-    if (iDriveEntryList->Count() > aIndex && aIndex >= 0)
+    if (iFileEntryList->Count() > aIndex && aIndex >= 0)
         {
 
         TFileEntry fileEntry = iFileEntryList->At(aIndex);
@@ -1854,7 +1779,7 @@ TBool CFileBrowserFileUtils::TargetExists(const TInt aIndex, const TFileName &ne
 
 void CFileBrowserFileUtils::RenameL(const TInt aIndex, const TFileName &newName)
     {
-        if (iDriveEntryList->Count() > aIndex && aIndex >= 0)
+        if (iFileEntryList->Count() > aIndex && aIndex >= 0)
         {
             TFileEntry fileEntry = iFileEntryList->At(aIndex);
 
@@ -1866,91 +1791,33 @@ void CFileBrowserFileUtils::RenameL(const TInt aIndex, const TFileName &newName)
                                   new(ELeave)CCommandParamsRename(fileEntry, targetEntry, CFileMan::EOverWrite)
                                  );
         }
-    // execute all operations done from caller
-    // StartExecutingCommandsL(_L("Renaming"));
     }
 
 // --------------------------------------------------------------------------------------------
 
-void CFileBrowserFileUtils::SetAttributesL()
+void CFileBrowserFileUtils::SetAttributesL(TUint &aSetAttMask, TUint &aClearAttMask, TBool &aRecurse)
     {
-//    CFileEntryList* entries = new(ELeave) CFileEntryList(16);
-//    GetSelectedItemsOrCurrentItemL(entries);
-//    CleanupStack::PushL(entries);
-//
-//    if (entries->Count() > 0)
-//        {
-//        TFileName naviText = _L("Multiple entries");
-//
-//        TUint setAttMask(0);
-//        TUint clearAttMask(0);
-//        //TBool recurse(EFalse);
-//
-//        // set default masks if only one file selected
-//        if (entries->Count() == 1)
-//            {
-//            TFileEntry fileEntry = entries->At(0);
-//
-//            naviText.Copy(fileEntry.iEntry.iName);
-//
-//            if (fileEntry.iEntry.IsArchive())
-//                setAttMask |= KEntryAttArchive;
-//            else
-//                clearAttMask |= KEntryAttArchive;
-//
-//            if (fileEntry.iEntry.IsHidden())
-//                setAttMask |= KEntryAttHidden;
-//            else
-//                clearAttMask |= KEntryAttHidden;
-//
-//            if (fileEntry.iEntry.IsReadOnly())
-//                setAttMask |= KEntryAttReadOnly;
-//            else
-//                clearAttMask |= KEntryAttReadOnly;
-//
-//            if (fileEntry.iEntry.IsSystem())
-//                setAttMask |= KEntryAttSystem;
-//            else
-//                clearAttMask |= KEntryAttSystem;
-//            }
-//
-        //iEngine->FileListContainer()->SetScreenLayoutL(EDisplayModeNormal);
-        //iEngine->FileListContainer()->SetNaviPaneTextL(naviText);
+    for (TInt i=0; i<iCurrentSelectionList->Count(); i++)
+        {
+        TFileEntry fileEntry = iCurrentSelectionList->At(i);
 
-        //CFileBrowserAttributeEditorDlg* dlg = CFileBrowserAttributeEditorDlg::NewL(setAttMask, clearAttMask, recurse);
-        //TBool dlgResult = dlg->RunEditorLD();
+        // append the new command to the command array
+        if (fileEntry.iEntry.IsDir() && aRecurse)
+            {
+            AppendToCommandArrayL(EFileBrowserFileOpCommandAttribs,
+                                  new(ELeave)CCommandParamsAttribs(fileEntry, aSetAttMask, aClearAttMask, fileEntry.iEntry.iModified, CFileMan::ERecurse)
+                                 );
+            }
+        else
+            {
+            AppendToCommandArrayL(EFileBrowserFileOpCommandAttribs,
+                                  new(ELeave)CCommandParamsAttribs(fileEntry, aSetAttMask, aClearAttMask, fileEntry.iEntry.iModified, 0)
+                                 );
+            }
+        }
 
-        //iEngine->FileListContainer()->SetScreenLayoutL(iEngine->Settings().iDisplayMode);
-        //iEngine->FileListContainer()->SetNaviPaneTextL(iCurrentPath);        
-//
-//        if (dlgResult && (setAttMask > 0 || clearAttMask > 0))
-//            {
-//            for (TInt i=0; i<entries->Count(); i++)
-//                {
-//                TFileEntry fileEntry = entries->At(i);
-//
-//                // append the new command to the command array
-//                if (fileEntry.iEntry.IsDir() && recurse)
-//                    {
-//                    AppendToCommandArrayL(EFileBrowserFileOpCommandAttribs,
-//                                          new(ELeave)CCommandParamsAttribs(fileEntry, setAttMask, clearAttMask, fileEntry.iEntry.iModified, CFileMan::ERecurse)
-//                                         );
-//                    }
-//                else
-//                    {
-//                    AppendToCommandArrayL(EFileBrowserFileOpCommandAttribs,
-//                                          new(ELeave)CCommandParamsAttribs(fileEntry, setAttMask, clearAttMask, fileEntry.iEntry.iModified, 0)
-//                                         );
-//                    }
-//                }
-//
-//            // execute all operations
-//            StartExecutingCommandsL(_L("Changing attributes"));
-//            }
-//
-//        }
-//
-//    CleanupStack::PopAndDestroy(); //entries
+    // execute all operations
+    StartExecutingCommandsL(_L("Changing attributes"));
     }
        
 // --------------------------------------------------------------------------------------------

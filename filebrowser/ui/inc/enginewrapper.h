@@ -18,8 +18,8 @@
 #ifndef ENGINEWRAPPER_H
 #define ENGINEWRAPPER_H
 
-#include "driveentry.h"
-#include "fileentry.h"
+#include "fbdriveentry.h"
+#include "fbfileentry.h"
 #include "filebrowsersettings.h"
 
 #include "engine.h"
@@ -91,6 +91,7 @@ public: // from MFileBrowserUI
     void ProcessEvents();
 
     TBool ShowConfirmationQuery(const TDesC& aDescText);
+    void NotifyModelHasChanged();
 
 public: 
     /* Functions that are called from UI */
@@ -122,6 +123,7 @@ public:
     void rename(const QModelIndex& aIndex, const QString aNewName);
     void touch(bool aRecurse);
     void properties(const QModelIndex &aCurrentItemIndex, QStringList &aPropertyList, QString &aTitleText);
+    void setAttributes(quint32 &, quint32 &, bool &);
 
     bool openAppArc(QString fileName);
     bool openDocHandler(QString fileName, bool embeddedVal = false);
@@ -130,8 +132,8 @@ public:
     bool isCurrentDriveReadOnly();
     bool isClipBoardListInUse();
     int itemCount() const;
-    DriveEntry getDriveEntry(const QModelIndex& aIndex) const;
-    FileEntry getFileEntry(const QModelIndex& aIndex) const;
+    FbDriveEntry getDriveEntry(const QModelIndex& aIndex) const;
+    FbFileEntry getFileEntry(const QModelIndex& aIndex) const;
 	
     const CArrayFix<TInt> *convertSelectionList(const QModelIndexList &aSelectionIndices);
     void setCurrentSelection(const QModelIndexList &aSelectionIndices);
@@ -173,6 +175,11 @@ public:
     void toolsWriteAllFiles();
 
     void showFileCheckSums(const QModelIndex &aIndex, TFileBrowserCmdFileChecksums checksumType);
+
+    TClipBoardMode getClipBoardMode() { return mEngine->FileUtils()->GetClipBoardMode(); }
+
+signals:
+    void fileSystemDataChanged();
 
 private slots:
         void progressDialogCancelled();

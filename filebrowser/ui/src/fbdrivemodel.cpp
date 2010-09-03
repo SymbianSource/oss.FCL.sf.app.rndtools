@@ -17,8 +17,7 @@
 
 #include "fbdrivemodel.h"
 #include "enginewrapper.h"
-#include "driveentry.h"
-#include "settingsview.h"
+#include "fbdriveentry.h"
 #include "filebrowsersettings.h"
 #include "FB.hrh"
 
@@ -67,7 +66,7 @@ QVariant FbDriveModel::data(const QModelIndex &index, int role) const
     case Qt::EditRole:
     case Qt::DisplayRole: {
             QStringList listItem;
-            DriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
+            FbDriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
             if (mEngineWrapper->settings().fileViewMode() == EFileViewModeSimple)
             {
                 const QString SimpleDriveEntry("%1: <%2>");
@@ -112,7 +111,7 @@ QVariant FbDriveModel::headerData(int section, Qt::Orientation orientation, int 
 }
 
 
-DriveEntry FbDriveModel::driveEntry(const QModelIndex &index) const
+FbDriveEntry FbDriveModel::driveEntry(const QModelIndex &index) const
 {
     return mEngineWrapper->getDriveEntry(index);
 }
@@ -121,7 +120,7 @@ QString FbDriveModel::driveLetter(const QModelIndex &index) const
 {
     QString diskLetter;
     if (index.row() >= 0 && index.row() < mEngineWrapper->itemCount()) {
-        DriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
+        FbDriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
         diskLetter = driveEntry.driveLetter();
     }
     return diskLetter;
@@ -131,7 +130,7 @@ QString FbDriveModel::mediaTypeString(const QModelIndex &index) const
 {
     QString mediaTypeString;
     if (index.row() >= 0 && index.row() < mEngineWrapper->itemCount()) {
-        DriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
+        FbDriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
         mediaTypeString = driveEntry.mediaTypeString();
     }
     return mediaTypeString;

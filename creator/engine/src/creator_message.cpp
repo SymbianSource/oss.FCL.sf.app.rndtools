@@ -22,6 +22,7 @@
 #include "creator_message.h" 
 #include "creator_traces.h"
 #include "creator_contactsetcache.h"
+#include "creator_phonebook.h"
 #include <apgcli.h>
 #include <MuiuServiceUtilities.h>
 #include <utf.h>
@@ -1201,12 +1202,13 @@ TInt CCreatorMessages::CreateEmailEntryL(const CMessagesParameters& parameters)
     header->SetSubjectL( parameters.iMessageSubject->Des() );
     if( iSenderArray.Count() == 0 )
         {
-        GetSendersL(iSenderArray, parameters, ETrue, 1 );
+        GetSendersL(iSenderArray, parameters, ETrue, KUndef );
         }
     
     if( iSenderArray.Count() > 0 )
         {
-        header->SetFromL(iSenderArray[0]->Des());
+        TInt rndNum = iEngine->RandomNumber( iSenderArray.Count() );
+        header->SetFromL(iSenderArray[rndNum]->Des());
         }
     else
         {
@@ -1529,11 +1531,12 @@ void CCreatorMessages::SetSenderToEntryDetailsL(TMsvEntry& aMsgEntry, const CMes
     // Only one sender allowed:
     if( iSenderArray.Count() == 0 )
         {
-        GetSendersL(iSenderArray, aParameters, aUseEmailAddress, 1 );
+        GetSendersL(iSenderArray, aParameters, aUseEmailAddress, KUndef );
         }
     if( iSenderArray.Count() > 0 )
         {        
-        aMsgEntry.iDetails.Set( iSenderArray[0]->Des() );        
+        TInt rnd = iEngine->RandomNumber( iSenderArray.Count() );
+        aMsgEntry.iDetails.Set( iSenderArray[rnd]->Des() );        
         }
     else
         {
@@ -1667,9 +1670,29 @@ void CCreatorMessages::GetLinkedAddressesL(
         RPointerArray<HBufC>& aAddressArray, 
         const RArray<TLinkIdParam>& aLinkIds, 
         TBool aUseEmailAddress,
-        TInt aNumOfExistingAddresses )
+        TInt /*aNumOfExistingAddresses*/ )
     {
-}
+    CCreatorPhonebook* phonebook = dynamic_cast<CCreatorPhonebook*>(iEngine->GetPhonebook());
+    User::LeaveIfNull( phonebook );
+    CCreatorPhonebookWrapper* phonebookWrapper = phonebook->GetPhonebookWrapper();
+    
+    for( TInt i = 0; i < aLinkIds.Count(); ++i )
+        {
+        const CCreatorContactSet& set = ContactLinkCache::Instance()->ContactSet(aLinkIds[i].iLinkId);
+        const RArray<TUint32> links = set.ContactLinks();//ContactLinkCache::Instance()->ContactSets();//set.ContactLinks();
+        TInt numberOfExplicitLinks = links.Count(); // Number of defined contacts in contact-set
+        for( TInt j = 0; j < numberOfExplicitLinks; ++j )
+            {
+            TBuf<128> name;
+            TBuf<128> email;
+            TBuf<128> phoneNumber;
+            phonebookWrapper->GetContactDetailsL( links[j], name, phoneNumber, email );
+            HBufC* address = ( aUseEmailAddress ? email.AllocLC() : phoneNumber.AllocLC() );
+            aAddressArray.AppendL( address );
+            CleanupStack::Pop( address );
+            }
+        }
+    }
 
 //----------------------------------------------------------------------------
 void CCreatorMessages::DeleteAllL()

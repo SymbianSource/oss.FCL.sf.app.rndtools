@@ -391,6 +391,8 @@ TInt CFileBrowserFileOps::Copy(const TFileEntry& aSourceEntry, const TDesC& aTar
             {
             TRAP(err, DoFindEntriesRecursiveL(_L("*"), sourcePath));    // recursively under directories of current directory entry
             }
+        // ensure that target folder exists in case of copying empty folder
+        BaflUtils::EnsurePathExistsL(iFs, targetPath);
         // a path has a trailing backslash so it needs to be removed before the call
         err = FileOpAttribs(targetPath.Left(targetPath.Length()-1), aSourceEntry.iEntry.iAtt, 0, 0, 0);
         }

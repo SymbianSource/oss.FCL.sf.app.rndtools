@@ -24,7 +24,7 @@ void CCreatorPhonebookBase::QueryDialogClosedL(TBool aPositiveAction, TInt aUser
     {
     LOGSTRING("Creator: CCreatorPhonebookBase::QueryDialogClosedL");
     
-    if(aPositiveAction == EFalse && aUserData!=ECreatorPhonebookGetContactFields )
+    if(aPositiveAction == EFalse && aUserData!=ECreatorPhonebookGetContactFields && aUserData!=ECreatorPhonebookContactsAllFields )
         {
         iEngine->ShutDownEnginesL();
         return;

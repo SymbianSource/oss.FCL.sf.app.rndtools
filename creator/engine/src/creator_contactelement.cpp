@@ -196,23 +196,19 @@ void CCreatorContactElement::ExecuteCommandL()
             for( TInt i = 0; i < fieldList.Count(); ++i )
                 {
                 TPtrC fieldName = fieldList[i]->Name();
-                CCreatorContactField* field = 0;
-				field = CCreatorContactField::NewL();
-
                 const CCreatorScriptAttribute* amountAttr = fieldList[i]->FindAttributeByName(KAmount);
                 const CCreatorScriptAttribute* rndLenAttr = fieldList[i]->FindAttributeByName(KRandomLength);
                 const CCreatorScriptAttribute* increaseAttr = fieldList[i]->FindAttributeByName(KIncrease);
-                TBool increase( EFalse );
-                if ( increaseAttr )
-                    {
-                    increase = ConvertStrToBooleanL( increaseAttr->Value() );
-                    }
+                //TBool increase( EFalse );
+                //if ( increaseAttr )
+                //    {
+                //    increase = ConvertStrToBooleanL( increaseAttr->Value() );
+                //    }
                 for( TInt j = 0; j < fieldMappingTblSize; ++j )
                     {
                     const FieldMapping& mapping = fieldMappingTbl[j];
                     if( fieldName == mapping.iElementName )
                         {
-                        TInt rndLen = 0;
                         TPtrC content = fieldList[i]->Content();
                                                                         
 //                        MCreatorRandomDataField::TRandomLengthType randomLenType = MCreatorRandomDataField::ERandomLengthUndefined;

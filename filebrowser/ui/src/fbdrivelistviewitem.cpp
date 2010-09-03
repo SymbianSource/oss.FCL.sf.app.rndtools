@@ -16,7 +16,7 @@
 */
 
 #include "fbdrivelistviewitem.h"
-#include "driveentry.h"
+#include "fbdriveentry.h"
 #include "fbdrivemodel.h"
 
 #include <hblabel.h>
@@ -88,7 +88,7 @@ void FbDriveListViewItem::updateChildItems()
 
     // Get the Drive Entry
     const FbDriveModel* driveModel= qobject_cast<const FbDriveModel *>(modelIndex().model());
-    DriveEntry driveEntry = driveModel->driveEntry(modelIndex());
+    FbDriveEntry driveEntry = driveModel->driveEntry(modelIndex());
 
     const QString SimpleDriveEntry("%1: <%2>");
 

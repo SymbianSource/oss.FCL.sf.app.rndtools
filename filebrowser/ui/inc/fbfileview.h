@@ -42,7 +42,7 @@ class HbAbstractViewItem;
 class HbMenu;
 class HbSearchPanel;
 
-class EditorView;
+class FbEditorView;
 class SearchView;
 class SettingsView;
 class EngineWrapper;
@@ -67,8 +67,8 @@ private:
 
     void openPropertyDialog(const QStringList &propertyList, const QString &title);
 
-    QModelIndex currentItemIndex();
     void storeSelectedItemsOrCurrentItem();
+    QModelIndex currentItemIndex();
 
     // Menu related methods
     void createMenu();
@@ -102,14 +102,14 @@ private slots:
     void doFileNewDirectory(HbAction *);
 
     void fileDelete();
-    void doFileDelete(HbAction *);
+    void doFileDelete(int);
 
     void fileRename();
     void doFileRename(HbAction *);
-    void doFileRenameFileExist(HbAction *);
+    void doFileRenameFileExist(int);
 
     void fileTouch();
-    void doFileTouch(HbAction *);
+    void doFileTouch(int);
     void fileProperties();
 
     void fileChecksumsMD5();
@@ -126,10 +126,10 @@ private slots:
     void editPaste();
 
     void editCopyToFolder();
-    void doEditCopyToFolder(HbAction *);
+    void doEditCopyToFolder(int);
 
     void editMoveToFolder();
-    void doEditMoveToFolder(HbAction *);
+    void doEditMoveToFolder(int);
 
     void editSelect();
     void editUnselect();
@@ -187,6 +187,7 @@ signals:
     void aboutToShowSettingsView();
     void aboutToShowEditorView(const QString &, bool);
     void aboutToShowSearchView(const QString &);
+    void aboutToShowAttributesView(const QString &, quint32 &, quint32 &, bool &);
     void aboutToSimulateLeave(int);
 
 private slots:
@@ -201,6 +202,11 @@ private slots:
     void fileOpen(HbAction *);
     void fileOverwrite(HbAction *);
     void fileOverwritePostfix(HbAction *);
+
+private:
+    // Internal methods
+    void proceedFileRename();
+    void proceedFileTouch(bool recurse);
 
 private:
     EngineWrapper *mEngineWrapper;
@@ -222,6 +228,8 @@ private:
     ContextMenuActions mContextMenuActions;
     HbMenu *mContextMenu;
     HbAction *mToolbarBackAction;
+    HbAction* mToolbarFilterAction;
+    HbAction *mToolbarPasteAction;
 
     // flags
     bool mItemHighlighted;

@@ -579,7 +579,7 @@ void CCreatorPhonebook::TestPrintOut(CPhonebookParameters* aParam)
     }
 
 // Checks if the link is a group or not
-TBool CCreatorPhonebook::IsContactGroupL( TUint32& aLink )
+TBool CCreatorPhonebook::IsContactGroupL( TUint32& /*aLink*/ )
 	{
 	//not used right now
 	return EFalse;

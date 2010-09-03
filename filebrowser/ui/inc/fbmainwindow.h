@@ -26,9 +26,10 @@ class HbView;
 class EngineWrapper;
 class FbDriveView;
 class FbFileView;
-class SettingsView;
-class EditorView;
-class SearchView;
+class FbSettingsView;
+class FbEditorView;
+class FbSearchView;
+class FbAttributesView;
 
 class FbMainWindow : public HbMainWindow
 {
@@ -48,14 +49,18 @@ private slots:
     void openSettingsView();
     void openEditorView(const QString &, bool);
     void openSearchView(const QString &);
+
+    void openAttributesView(const QString &, quint32 &, quint32 &, bool &);
+    void closeAttributesView(bool);
     
 private:
     EngineWrapper *mEngineWrapper;
     FbDriveView *mDriveView;
     FbFileView *mFileView;
-    SettingsView *mSettingsView;
-    EditorView *mEditorView;
-    SearchView *mSearchView;
+    FbSettingsView *mSettingsView;
+    FbEditorView *mEditorView;
+    FbSearchView *mSearchView;
+    FbAttributesView *mAttributesView;
     HbView *mPreviousView;
 };
 

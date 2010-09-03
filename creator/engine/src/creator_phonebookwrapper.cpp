@@ -25,8 +25,6 @@
 
 #include <bautils.h> 
 
-_LIT(KTempPath, "C:\\Data\\Creator\\");
-
 typedef struct {
 TInt iFieldCode;
 QString iDetail;
@@ -172,7 +170,6 @@ QList<QContactDetail> CCreatorPhonebookWrapper::CreateContactDetailsFromParamete
 			QContactDetail contactDetail =  CreateContactDetail(contDetList, CreatorPbkTextFields[i].iDetail,CreatorPbkTextFields[i].iFieldContext,CreatorPbkTextFields[i].iFieldString, content );
 			AddFieldToList( contDetList, contactDetail );
 			}
-		
 		}
 	arraySize = sizeof(CreatorPhoneNumberFields)/sizeof(PhoneNumInfo);
 		for (TInt i = 0; i < arraySize; i++)
@@ -460,23 +457,6 @@ QContactDetail CCreatorPhonebookWrapper::CreateContactDetail( QList<QContactDeta
         if( aDetail == QContactAvatar::DefinitionName)                      //--Contact Picture-----------------------------
                 {
                 QContactAvatar contactAvatar;
-                /*TBuf<KMaxFileName> srcPath;
-                aEngine->RandomPictureFileL(srcPath);
-                TBuf<KMaxFileName> destPath(KTempPath);
-                            
-                if(!BaflUtils::FolderExists( fs, destPath ))
-                    {
-                    BaflUtils::EnsurePathExistsL( fs, destPath );
-                    }
-                
-                TInt err=BaflUtils::CopyFile( fs, srcPath, destPath );
-
-                TParse temp;
-                temp.Set( srcPath,NULL,NULL );
-                destPath.Append(temp.NameAndExt());
-                
-                QString avatarFile = QString::fromUtf16( destPath.Ptr(),destPath.Length() );
-                */
                 QUrl imageUrl;
                 imageUrl.setUrl(aData);
                 contactAvatar.setImageUrl(imageUrl);
@@ -652,3 +632,30 @@ TInt CCreatorPhonebookWrapper::CreateSubscribedContactEntryL()
     return KErrNotSupported;
     }
 
+
+HBufC* CCreatorPhonebookWrapper::GetPhoneNumberL( TUint32 aContactId )
+    {
+    QContactLocalId contact = QContactLocalId(aContactId);
+    QString phoneNumber = iPhonebookAPI->phoneNumber(contact);
+    HBufC *buf = HBufC::NewLC( phoneNumber.length() );
+    buf->Des().Copy( phoneNumber.utf16() );
+    CleanupStack::Pop( buf );
+    return buf;
+    }
+
+TBool CCreatorPhonebookWrapper::GetContactDetailsL( TUint32 aContactId, TDes& aName, TDes& aPhoneNumber, TDes& aEmail )
+    {
+    QString name;
+    QString phoneNumber;
+    QString email;
+    
+    QContactLocalId contact = QContactLocalId(aContactId);
+    bool success = iPhonebookAPI->contactDetails( contact, name, phoneNumber, email);
+    if( success )
+        {
+        aName.Copy( name.utf16() );
+        aPhoneNumber.Copy( phoneNumber.utf16() );
+        aEmail.Copy( email.utf16() );
+        }
+    return success ? ETrue : EFalse ;
+    }

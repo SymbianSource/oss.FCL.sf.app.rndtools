@@ -26,6 +26,8 @@
 #include <e32math.h>
 #include <calrrule.h> 
 #include <calalarm.h>
+#include "creator_contactsetcache.h"
+#include "creator_phonebook.h"
 
 static const TInt KCalendarFieldLength = 128;
 
@@ -814,6 +816,32 @@ void CCreatorInterimCalendar::AddAttendeesL(CCalEntry& aCalEntry, CCalenderInter
         	aCalEntry.AddAttendeeL(attendee);
         	CleanupStack::Pop(); // attendee
         	}
+        }
+    // linked attendees:
+     for( TInt i = 0; i < parameters->iAttendeeLinkIds.Count(); ++i )
+        {
+        CCreatorPhonebook* phonebook = dynamic_cast<CCreatorPhonebook*>(iEngine->GetPhonebook());
+        User::LeaveIfNull( phonebook );
+        CCreatorPhonebookWrapper* phonebookWrapper = phonebook->GetPhonebookWrapper();
+        
+        TLinkIdParam attendeeLinkId = parameters->iAttendeeLinkIds[i];
+        const CCreatorContactSet& set = ContactLinkCache::Instance()->ContactSet(attendeeLinkId.iLinkId);
+        const RArray<TUint32> links = set.ContactLinks();
+        TInt numberOfExplicitLinks = links.Count(); // Number of defined contacts in contact-set
+        for( TInt j = 0; j < numberOfExplicitLinks; ++j )
+            {
+            TBuf<128> email;
+            TBuf<128> name;
+            TBuf<128> phoneNumber;
+            phonebookWrapper->GetContactDetailsL( links[j], name, phoneNumber, email );
+            CCalAttendee* attendee = CCalAttendee::NewL( email );
+            CleanupStack::PushL(attendee);
+            if( name.Length() > 0 )
+                attendee->SetCommonNameL( name );
+            attendee->SetResponseRequested(ETrue);
+            aCalEntry.AddAttendeeL(attendee);
+            CleanupStack::Pop(); // attendee
+            }
         }
     }
 //----------------------------------------------------------------------------

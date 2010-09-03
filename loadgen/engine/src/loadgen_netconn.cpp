@@ -184,8 +184,8 @@ CNetConnManager::CNetConnManager(TNetConnAttributes& aAttributes) :
 CNetConnManager::~CNetConnManager()
     {
     Cancel();
-    
-    iDownloadMgr.Close();
+
+    delete iHTTPReceiver;
     }
 
 // --------------------------------------------------------------------------------------------
@@ -201,10 +201,7 @@ void CNetConnManager::ConstructL()
     // set the death status pointer point to the request status of this ao
     iAttributes.iDeathStatus = &iStatus;
     
-    // init
-    TUid dlUid;
-    dlUid.iUid = 0x00011100 + iAttributes.iId; // generate unique identifier instead of using the LoadGen uid for all instances
-    iDownloadMgr.ConnectL(dlUid, *this, ETrue);
+    iHTTPReceiver = CHTTPReceiver::NewL( *this );
     
     // start timer    
     iPeriodicTimer = CPeriodic::NewL(CActive::EPriorityStandard);
@@ -241,42 +238,23 @@ TInt CNetConnManager::PeriodicTimerCallBack(TAny* aAny)
  
 void CNetConnManager::StartDownloadL()
     {
-    iDownloadMgr.SetIntAttribute(EDlMgrExitAction, EExitPause);
-    iDownloadMgr.DeleteAll();
 
     // create new download    
     TBuf8<256> url;
     url.Copy(iAttributes.iDestination);
-
-    RHttpDownload& download = iDownloadMgr.CreateDownloadL( url );
     
-    download.SetIntAttribute(EDlAttrAction, EDoNothing);            // do nothing when download has finished
-    download.SetBoolAttribute(EDlAttrHidden, ETrue);                // download is hidden
-    download.SetIntAttribute(EDlAttrRestartAction, ERestartForced); // force to download always ignoring cache
-
-    // start the download
-    download.Start();         
+    iHTTPReceiver->SendHTTPGetL( url );
     }
 
 // --------------------------------------------------------------------------------------------
 
-void CNetConnManager::HandleDMgrEventL(RHttpDownload& aDownload, THttpDownloadEvent aEvent)
+void CNetConnManager::HTTPFileReceived( TInt aStatus )
     {
-    if (aEvent.iProgressState == EHttpContentTypeReceived)
+    switch ( aStatus )
         {
-        // need to start the download if already not started
-        aDownload.Start();
-        }
-    
-    switch ( aEvent.iDownloadState )
-        {
-        case EHttpDlPaused:
-        case EHttpDlCompleted:
-        case EHttpDlFailed:
+        case 200:
             {
             // assume that the download has finished in this stage
-            // delete download and restart
-            aDownload.Delete();
             iPeriodicTimer->Start(CLoadGenUtils::MilliSecondsToMicroSeconds(iAttributes.iIdle, iAttributes.iRandomVariance), KDefaultPeriod, TCallBack(PeriodicTimerCallBack, this));
             break;
             }

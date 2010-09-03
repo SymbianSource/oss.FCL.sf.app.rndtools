@@ -16,8 +16,6 @@
 */
 
 
-#include <DRMRights.h>
-
 #include "engine.h"
 #include "enginewrapper.h"
 #include "creator_file.h" 

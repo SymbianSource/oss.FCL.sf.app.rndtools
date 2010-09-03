@@ -221,6 +221,9 @@ class ContextMenuActions
 {
 public:
     ContextMenuActions() :
+            mOpenDirectory(0),
+            mSearch(0),
+            //File -
             mFileMenu(0),
             mFileBackMoveUp(0),
             mFileOpenDrive(0),
@@ -246,10 +249,6 @@ public:
             mEditPaste(0),
             mEditCopyToFolder(0),
             mEditMoveToFolder(0),
-//            mEditSelect(0),
-//            mEditUnselect(0),
-//            mEditSelectAll(0),
-//            mEditUnselectAll(0),
             // View -
 //            mViewMenu(0),
 //            mViewFilterEntries(0),
@@ -270,43 +269,14 @@ public:
             mDiskAdminDismountDrive(0),
             mDiskAdminEraseMBR(0),
             mDiskAdminPartitionDrive(0)
-            // Tools -
-//            mToolsMenu(0),
-//            mToolsAllAppsToTextFile(0),
-//            mToolsAllFilesToTextFile(0),
-//            mToolsAvkonIconCacheMenu(0),
-//            mToolsAvkonIconCacheEnable(0),
-//            mToolsAvkonIconCacheDisable(0),
-//            mToolsDisableExtendedErrors(0),
-//            mToolsDumpMsgStoreWalk(0),
-//            mToolsEditDataTypes(0),
-//            mToolsEnableExtendedErrors(0),
-//            mToolsErrorSimulateMenu(0),
-//            mToolsErrorSimulateLeave(0),
-//            mToolsErrorSimulatePanic(0),
-//            mToolsErrorSimulateException(0),
-//            mToolsMessageAttachmentsMenu(0),
-//            mToolsMessageInbox(0),
-//            mToolsMessageDrafts(0),
-//            mToolsMessageSentItems(0),
-//            mToolsMessageOutbox(0),
-//            //    mLocalConnectivityMenu(0),
-//            //    mToolsLocalConnectivityActivateInfrared(0),
-//            //    mToolsLocalConnectivityLaunchBTUI(0),
-//            //    mToolsLocalConnectivityLaunchUSBUI(0),
-//            mToolsMemoryInfo(0),
-//            mToolsSecureBackupMenu(0),
-//            mToolsSecureBackStart(0),
-//            mToolsSecureBackRestore(0),
-//            mToolsSecureBackStop(0),
-//            mToolsSetDebugMask(0),
-//            mToolsShowOpenFilesHere(0)
     {
 
     }
 
     ~ContextMenuActions() { }
 public:
+    HbAction *mOpenDirectory;
+    HbAction *mSearch;
     //File menu operations
     HbMenu *mFileMenu;
     HbAction *mFileBackMoveUp;
@@ -334,11 +304,7 @@ public:
     HbAction *mEditPaste;
     HbAction *mEditCopyToFolder;
     HbAction *mEditMoveToFolder;
-//    HbAction *mEditSelect;
-//    HbAction *mEditUnselect;
-//    HbAction *mEditSelectAll;
-//    HbAction *mEditUnselectAll;
-//
+
 //    // View -
 //    HbMenu *mViewMenu;
 //    HbAction *mViewFilterEntries;
@@ -360,48 +326,6 @@ public:
     HbAction *mDiskAdminDismountDrive;
     HbAction *mDiskAdminEraseMBR;
     HbAction *mDiskAdminPartitionDrive;
-//
-//    // Tools -
-//    HbMenu *mToolsMenu;
-//    HbAction *mToolsAllAppsToTextFile;
-//    HbAction *mToolsAllFilesToTextFile;
-//
-//    HbMenu *mToolsAvkonIconCacheMenu;
-//    HbAction *mToolsAvkonIconCacheEnable;
-//    HbAction *mToolsAvkonIconCacheDisable;
-//
-//    HbAction *mToolsDisableExtendedErrors;
-//    HbAction *mToolsDumpMsgStoreWalk;
-//    HbAction *mToolsEditDataTypes;
-//
-//    HbAction *mToolsEnableExtendedErrors;
-//
-//    HbMenu *mToolsErrorSimulateMenu;
-//    HbAction *mToolsErrorSimulateLeave;
-//    HbAction *mToolsErrorSimulatePanic;
-//    HbAction *mToolsErrorSimulateException;
-//
-//    HbMenu *mToolsMessageAttachmentsMenu;
-//    HbAction *mToolsMessageInbox;
-//    HbAction *mToolsMessageDrafts;
-//    HbAction *mToolsMessageSentItems;
-//    HbAction *mToolsMessageOutbox;
-//
-//    HbMenu *mToolsLocalConnectivityMenu;
-//    HbAction *mToolsLocalConnectivityActivateInfrared;
-//    HbAction *mToolsLocalConnectivityLaunchBTUI;
-//    HbAction *mToolsLocalConnectivityLaunchUSBUI;
-//
-//    HbAction *mToolsMemoryInfo;
-//
-//    HbMenu *mToolsSecureBackupMenu;
-//    HbAction *mToolsSecureBackStart;
-//    HbAction *mToolsSecureBackRestore;
-//    HbAction *mToolsSecureBackStop;
-//
-//    HbAction *mToolsSetDebugMask;
-//    HbAction *mToolsShowOpenFilesHere;
 };
-
 
 #endif // MENUACTION_H

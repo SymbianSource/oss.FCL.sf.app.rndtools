@@ -52,7 +52,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TMemoryEatAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TMemoryEatAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TMemoryEatAttributes& aAttributes) { iAttributes = aAttributes; }
 
 public:  // New static methods
     static TInt ThreadFunction(TAny* aThreadArg);

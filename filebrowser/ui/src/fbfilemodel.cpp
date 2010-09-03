@@ -17,9 +17,7 @@
 
 #include "fbfilemodel.h"
 #include "enginewrapper.h"
-#include "fileentry.h"
-#include "driveentry.h"
-#include "settingsview.h"
+#include "fbfileentry.h"
 #include "filebrowsersettings.h"
 #include "FB.hrh"
 
@@ -68,53 +66,30 @@ QVariant FbFileModel::data(const QModelIndex &index, int role) const
     case Qt::EditRole:
     case Qt::DisplayRole: {
             QStringList listItem;
-//            if (mEngineWrapper->isDriveListViewActive()) {
-//                DriveEntry driveEntry(mEngineWrapper->getDriveEntry(index));
-//                if (mEngineWrapper->settings().fileViewMode() == EFileViewModeSimple)
-//                {
-//                    const QString SimpleDriveEntry("%1: <%2>");
-//                    listItem /*<< driveEntry.IconId() */
-//                            << SimpleDriveEntry.arg(driveEntry.driveLetter())
-//                                               .arg(driveEntry.mediaTypeString());
-//                } else if (mEngineWrapper->settings().fileViewMode() == EFileViewModeExtended) {
-//                    const QString SimpleDriveEntry("%1: <%2>");
-//                    const QString ExtendedDriveEntry("%1/%2 kB");
-//                    listItem /*<< driveEntry.IconId()*/
-//                            << SimpleDriveEntry.arg(driveEntry.driveLetter())
-//                                               .arg(driveEntry.mediaTypeString())
-//                            << ExtendedDriveEntry.arg(QString::number(driveEntry.volumeInfoFree()/1024))
-//                                                 .arg(QString::number(driveEntry.volumeInfoSize()/1024));
-//
-//                }
-//            } else {
-                FileEntry fileEntry(mEngineWrapper->getFileEntry(index));
-                if (mEngineWrapper->settings().fileViewMode() == EFileViewModeSimple)
-                {
-                    listItem /*<< fileEntry.IconId()*/
-                            << fileEntry.name();
-                } else if (mEngineWrapper->settings().fileViewMode() == EFileViewModeExtended) {
-                    QString extraData;
-                    extraData.append(fileEntry.modifiedString());
-                    if (fileEntry.isDir() && fileEntry.dirEntries() >= 0) {
-                        extraData.append(" - ");
-                        extraData.append(fileEntry.dirEntriesString());
-                    } else if (!fileEntry.isDir()) {
-                        extraData.append(" - ");
-                        extraData.append(fileEntry.sizeString());
-                    }
-                    listItem /*<< fileEntry.IconId()*/
-                            << fileEntry.name() << extraData << fileEntry.attributesString();
+            FbFileEntry fileEntry(mEngineWrapper->getFileEntry(index));
+            if (mEngineWrapper->settings().fileViewMode() == EFileViewModeSimple)
+            {
+                listItem /*<< fileEntry.IconId()*/
+                        << fileEntry.name();
+            } else if (mEngineWrapper->settings().fileViewMode() == EFileViewModeExtended) {
+                QString extraData;
+                extraData.append(fileEntry.modifiedString());
+                if (fileEntry.isDir() && fileEntry.dirEntries() >= 0) {
+                    extraData.append(" - ");
+                    extraData.append(fileEntry.dirEntriesString());
+                } else if (!fileEntry.isDir()) {
+                    extraData.append(" - ");
+                    extraData.append(fileEntry.sizeString());
                 }
-//            }
+                listItem /*<< fileEntry.IconId()*/
+                        << fileEntry.name() << extraData << fileEntry.attributesString();
+            }
             return listItem;
         }
     case Qt::DecorationRole: {
             if (mEngineWrapper) {
                 QIcon icon;
-//                if (mEngineWrapper->isDriveListViewActive()) {
-//                    icon = mFileIconProvider->icon(QFileIconProvider::Drive);
-//                } else {
-                    FileEntry fileEntry(mEngineWrapper->getFileEntry(index));
+                    FbFileEntry fileEntry(mEngineWrapper->getFileEntry(index));
                     if (fileEntry.isDir()) {
                         icon = mFileIconProvider->icon(QFileIconProvider::Folder);
                     } else {

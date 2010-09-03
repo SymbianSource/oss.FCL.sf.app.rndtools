@@ -241,9 +241,10 @@ public:
     static CCreatorEngine* NewLC(EngineWrapper *aEngineWrapper);	
     ~CCreatorEngine();
 	
-    inline RPointerArray<TMemoryDetails> GetMemoryDetailsList(){ return iMemoryDetailsList; };
-	inline TMemoryDetails GetMemoryDetails(){ return iMemoryDetails; };
+    inline const RPointerArray<TMemoryDetails>& GetMemoryDetailsList(){ return iMemoryDetailsList; };
+	inline const TMemoryDetails& GetMemoryDetails(){ return iMemoryDetails; };
 	inline EngineWrapper* GetEngineWrapper(){ return iEngineWrapper; };
+	inline CCreatorPhonebookBase* GetPhonebook(){ return  iPhonebook; };
 	
 private:
     CCreatorEngine();

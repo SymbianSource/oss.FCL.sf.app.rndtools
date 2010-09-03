@@ -172,14 +172,14 @@ bool EngineWrapper::stopLoad(bool stopAll)
         if (listIndices.count() > 0)
             {
             QString message = QString("Stop %1 selections?").arg( listIndices.count() );
-            HbMessageBox::question(message, this, SLOT(StopLoadYesNoDialogClosed(HbAction *)));
+            HbMessageBox::question(message, this, SLOT(StopLoadYesNoDialogClosed(HbAction *)), HbMessageBox::Yes|HbMessageBox::No);
             }
         else{
              TInt currentItemIndex = mMainView.currentItemIndex();
              if (mEngine->LoadItemCount() > currentItemIndex && currentItemIndex >= 0)
                  {
                  QString message("Stop highlighted selections?");
-                 HbMessageBox::question(message, this, SLOT(StopLoadYesNoDialogClosed(HbAction *)));
+                 HbMessageBox::question(message, this, SLOT(StopLoadYesNoDialogClosed(HbAction *)), HbMessageBox::Yes|HbMessageBox::No);
                  }
             }
         return true;
@@ -352,7 +352,7 @@ CPULoadAttributes EngineWrapper::getCpuLoadAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setCpuLoadAttributes(CPULoadAttributes attributes)
+void EngineWrapper::setCpuLoadAttributes(const CPULoadAttributes& attributes)
 {
     TCPULoadAttributes tCpuLoadAttributes;
 
@@ -406,7 +406,7 @@ MemoryEatAttributes EngineWrapper::getMemoryEatAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setMemoryEatAttributes(MemoryEatAttributes attributes)
+void EngineWrapper::setMemoryEatAttributes(const MemoryEatAttributes& attributes)
 {
 	TMemoryEatAttributes tMemoryEatAttributes = mEngine->GetMemoryEatAttributes();//TMemoryEatAttributes tMemoryEatAttributes;
 
@@ -456,7 +456,7 @@ PhoneCallAttributes EngineWrapper::getPhoneCallAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setPhoneCallAttributes(PhoneCallAttributes attributes)
+void EngineWrapper::setPhoneCallAttributes(const PhoneCallAttributes& attributes)
 {
 	TPhoneCallAttributes tPhoneCallAttributes = mEngine->GetPhoneCallAttributes(); //TPhoneCallAttributes tPhoneCallAttributes;
 
@@ -483,9 +483,7 @@ NetConnAttributes EngineWrapper::getNetConnAttributes()
 	attributes.mId = tNetConnAttributes.iId;
 	attributes.mPriority = tNetConnAttributes.iPriority;
 
-    TBuf<128> dest;
-    dest.Copy(tNetConnAttributes.iDestination);
-    attributes.mDestination = QString((QChar*)dest.Ptr(), dest.Length()); 	
+    attributes.mDestination = QString::fromUtf16(tNetConnAttributes.iDestination.Ptr(), tNetConnAttributes.iDestination.Length()); 	
 
 	attributes.mIdle = tNetConnAttributes.iIdle;
 	attributes.mRandomVariance = tNetConnAttributes.iRandomVariance;
@@ -494,7 +492,7 @@ NetConnAttributes EngineWrapper::getNetConnAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setNetConnAttributes(NetConnAttributes attributes)
+void EngineWrapper::setNetConnAttributes(const NetConnAttributes& attributes)
 {
 	TNetConnAttributes tNetConnAttributes = mEngine->GetNetConnAttributes(); //TNetConnAttributes tNetConnAttributes;
 
@@ -526,7 +524,7 @@ KeyPressAttributes EngineWrapper::getKeyPressAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setKeyPressAttributes(KeyPressAttributes attributes)
+void EngineWrapper::setKeyPressAttributes(const KeyPressAttributes& attributes)
 {
 	TKeyPressAttributes tKeyPressAttributes = mEngine->GetKeyPressAttributes(); //TKeyPressAttributes tKeyPressAttributes;
 
@@ -554,7 +552,7 @@ PointerEventAttributes EngineWrapper::getPointerEventAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setPointerEventAttributes(PointerEventAttributes attributes)
+void EngineWrapper::setPointerEventAttributes(const PointerEventAttributes& attributes)
 {
 	TPointerEventAttributes tPointerEventAttributes = mEngine->GetPointerEventAttributes();//TPointerEventAttributes tPointerEventAttributes;
 
@@ -590,7 +588,7 @@ MessageAttributes EngineWrapper::getMessageAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setMessageAttributes(MessageAttributes attributes)
+void EngineWrapper::setMessageAttributes(const MessageAttributes& attributes)
 {
 	TMessageAttributes tMessageAttributes = mEngine->GetMessageAttributes();//TMessageAttributes tMessageAttributes;
 
@@ -629,7 +627,7 @@ ApplicationsAttributes EngineWrapper::getApplicationsAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setApplicationsAttributes(ApplicationsAttributes attributes)
+void EngineWrapper::setApplicationsAttributes(const ApplicationsAttributes& attributes)
 {
 	TApplicationsAttributes tApplicationsAttributes = mEngine->GetApplicationsAttributes(); //TApplicationsAttributes tApplicationsAttributes;
 
@@ -664,7 +662,7 @@ PhotoCaptureAttributes EngineWrapper::getPhotoCaptureAttributes()
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setPhotoCaptureAttributes(PhotoCaptureAttributes attributes)
+void EngineWrapper::setPhotoCaptureAttributes(const PhotoCaptureAttributes& attributes)
 {
 	TPhotoCaptureAttributes tPhotoCaptureAttributes;
 
@@ -689,12 +687,13 @@ BluetoothAttributes EngineWrapper::getBluetoothAttributes()
 	attributes.mPriority = tBluetoothAttributes.iPriority;
 	attributes.mIdle = tBluetoothAttributes.iIdle;
 	attributes.mRandomVariance = tBluetoothAttributes.iRandomVariance;
+	attributes.mBluetoothSupported = tBluetoothAttributes.iBluetoothSupported ? true : false;
 	return attributes;
 }
 
 // ---------------------------------------------------------------------------	
 
-void EngineWrapper::setBluetoothAttributes(BluetoothAttributes attributes)
+void EngineWrapper::setBluetoothAttributes(const BluetoothAttributes& attributes)
 {
     TBluetoothAttributes tBluetoothAttributes;
 

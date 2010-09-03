@@ -285,4 +285,10 @@ enum TListingMode
     EMsgAttachmentsOutbox
     };
 
+enum TClipBoardMode
+    {
+    EClipBoardModeCut = 0,
+    EClipBoardModeCopy
+    };
+
 #endif      // FILEBROWSER_HRH

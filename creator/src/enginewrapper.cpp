@@ -47,9 +47,11 @@ EngineWrapper::~EngineWrapper()
 {
     if (iEngine != 0) {
         delete iEngine;
+        iEngine = NULL;
     }
     if (iProgressDialog != 0) {
         delete iProgressDialog;
+        iProgressDialog = NULL;
     }
 }
 
@@ -76,12 +78,12 @@ QList<MemoryDetails> EngineWrapper::GetMemoryDetailsList()
 		for(int i=0; i<tMemDetList.Count(); i++)
 			{
 			TMemoryDetails* temp = tMemDetList.operator [](i);
-			QString free = QString::fromUtf16(tMemDetList.operator [](i)->iFree.Ptr(), tMemDetList.operator [](i)->iFree.Length());//QString((QChar*) temp->iFree.Ptr(), temp->iFree.Length());
-			QString size = QString::fromUtf16(tMemDetList.operator [](i)->iSize.Ptr(), tMemDetList.operator [](i)->iSize.Length());//QString((QChar*) temp->iSize.Ptr(), temp->iSize.Length());
-			QString driveLetter = QString::fromUtf8((const char*) &tMemDetList.operator [](i)->iDriveLetter, (int) sizeof(char) );//QString((QChar*) &temp->iDriveLetter, (int) sizeof( char ) );
+			QString free = QString::fromUtf16( temp->iFree.Ptr(), temp->iFree.Length() );
+			QString size = QString::fromUtf16( temp->iSize.Ptr(), temp->iSize.Length() );
+			QChar drive(temp->iDriveLetter.GetUpperCase());
 			memDet.mFree = free; //QString((QChar*)tMemDetList[i]->iFree.Ptr(), tMemDetList[i]->iFree.Length());
 			memDet.mSize = size; //QString((QChar*) tMemDetList[i]->iSize.Ptr(), tMemDetList[i]->iSize.Length());
-			memDet.mDriveLetter = driveLetter;
+			memDet.mDriveLetter = QString(drive);
 			
 			//memDetList[i].mDriveLetter = QString::fromUtf8( (char *) &tMemDetList[i]->iDriveLetter, (int) sizeof( char ) );
 			memDetList.append( memDet );
@@ -96,8 +98,8 @@ MemoryDetails EngineWrapper::GetMemoryDetails()
     MemoryDetails memoryDetails;
 
     // Convert TMemoryDetails to MemoryDetails 
-	memoryDetails.mRamFree  = QString((QChar*)tMemoryDetails.iRamFree.Ptr(), tMemoryDetails.iRamFree.Length());
-	memoryDetails.mRamSize  = QString((QChar*)tMemoryDetails.iRamSize.Ptr(), tMemoryDetails.iRamSize.Length());
+	memoryDetails.mRamFree  = QString::fromUtf16( tMemoryDetails.iRamFree.Ptr(), tMemoryDetails.iRamFree.Length() );
+	memoryDetails.mRamSize  = QString::fromUtf16( tMemoryDetails.iRamSize.Ptr(), tMemoryDetails.iRamSize.Length() );
 
 	return memoryDetails;
 }
@@ -117,7 +119,7 @@ void EngineWrapper::ShowErrorMessage(const TDesC& aErrorMessage)
 void EngineWrapper::ShowNote(const TDesC& aNoteMessage, TInt /*aResourceId*/)
 {
     QString note((QChar*)aNoteMessage.Ptr(),aNoteMessage.Length());
-    Notifications::showGlobalNote(note, HbMessageBox::MessageTypeInformation, HbPopup::ConfirmationNoteTimeout);
+    Notifications::showGlobalNote(note, HbMessageBox::MessageTypeInformation, 1000);
 }
 
 // ---------------------------------------------------------------------------
@@ -125,10 +127,7 @@ void EngineWrapper::ShowNote(const TDesC& aNoteMessage, TInt /*aResourceId*/)
 void EngineWrapper::ShowProgressBar(const TDesC& aPrompt, int aMax)
 {
 	QString text((QChar*)aPrompt.Ptr(), aPrompt.Length());
-	if(iProgressDialog){
-        delete iProgressDialog;
-        iProgressDialog = NULL;
-	}
+	CloseProgressbar();
     iProgressDialog = Notifications::showProgressBar(text, aMax);
 	connect(iProgressDialog, SIGNAL(cancelled()), this, SLOT(ProgressDialogCancelled()));
 }
@@ -275,12 +274,15 @@ TBool EngineWrapper::DirectoryQueryDialog(const TDesC& aPrompt, TDes& aDirectory
 
 void EngineWrapper::ProgressDialogCancelled()
 {
-	CloseProgressbar();
 	TRAPD(err, iEngine->ProgressDialogCancelledL());
 	// error handling
     if(err != KErrNone) {
         Notifications::error("Error in operation cancel.");
-    }	
+    }
+    // disconnect & delete iProgressDialog to free memory
+    disconnect(iProgressDialog, SIGNAL(cancelled()), this, SLOT(ProgressDialogCancelled()));
+    iProgressDialog->deleteLater();
+    iProgressDialog = NULL;
 }
 
 // ---------------------------------------------------------------------------

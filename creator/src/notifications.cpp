@@ -39,6 +39,7 @@ void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QStr
 {
     HbMessageBox *messageBox = new HbMessageBox(type);
     messageBox->setText(text);
+    messageBox->setStandardButtons( HbMessageBox::Ok );
     if(label.length())
         {
         HbLabel *header = new HbLabel(label, messageBox);
@@ -54,7 +55,7 @@ void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QStr
 void Notifications::about()
 {
     showMessageBox(HbMessageBox::MessageTypeInformation,
-        "Version 6.1.0 - June 18th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.",
+        "Version 6.1.1 - August 27th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.",
         "About Creator", 
         HbPopup::NoTimeout
         );
@@ -83,7 +84,7 @@ HbProgressDialog* Notifications::showProgressBar(const QString& text, int max)
 
 // ---------------------------------------------------------------------------
 
-void Notifications::showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type, HbPopup::DefaultTimeout timeout)
+void Notifications::showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type, int timeout)
 {
     showMessageBox(type, text, QString("Creator"), timeout);
 }
@@ -100,6 +101,7 @@ CreatorYesNoDialog::CreatorYesNoDialog(MUIObserver* observer, int userData) :
 void CreatorYesNoDialog::launch(const QString& text, const QString& label, MUIObserver* observer, int userData) throw(std::exception)
 {
     CreatorYesNoDialog* dlg = new CreatorYesNoDialog(observer, userData);
+    dlg->setStandardButtons( HbMessageBox::Yes | HbMessageBox::No );
     dlg->setText(text);
     if(label.length())
         dlg->setHeadingWidget(new HbLabel(label, dlg));
@@ -143,10 +145,10 @@ void CreatorInputDialog::launch(const QString& label, int* value, bool acceptsZe
     HbValidator *validator = new HbValidator(dlg);
     QString tmp;
     if (acceptsZero == false) {
-        tmp.append("[1-9]{1}\\d{1,4}");
+        tmp.append("^[1-9]{1}\\d{0,4}");
     }
     else {
-        tmp.append("^[0-9]{5}");
+        tmp.append("^[0-9]{1,5}");
     }
         
     QRegExp rxBasic(tmp);
@@ -213,6 +215,7 @@ void CreatorSelectionDialog::launch(const QString& label, const QStringList& ite
         dlg->setHeadingWidget(new HbLabel(label, dlg));
     dlg->setStringItems(items);
     dlg->setSelectionMode(HbAbstractItemView::SingleSelection); 
+    dlg->setSelectedItems(QList<QVariant>());
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->open(dlg, SLOT(DialogClosed(HbAction*)));
 }

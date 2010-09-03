@@ -476,7 +476,7 @@ void CMemoryEatManager::DoEatMemoryL( TInt64 aNewSize )
         {
         aNewSize = 0;
         }
-    LOGSTRING2("Loadgen::DoEatMemoryL aNewSize = %d", aNewSize );
+    LOGSTRING2("Loadgen::DoEatMemoryL aNewSize = %ld", aNewSize );
     // set new size
     if (iAttributes.iSource == EMemoryEatSourceTypeRAM)
         {

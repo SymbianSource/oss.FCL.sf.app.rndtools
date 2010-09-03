@@ -57,6 +57,7 @@ public:
     TTime           iMinDate;
     TTime           iMaxDate;
     TBool           iRecurse;
+    TBool           iDefaultWildCard;
 	};
 
 class TDriveEntry
@@ -182,11 +183,11 @@ private:
     	EIdle = 0,              // do nothing
     	};
 
-    enum TClipBoardMode
-    	{
-    	EClipBoardModeCut = 0,
-    	EClipBoardModeCopy
-    	};
+//    enum TClipBoardMode
+//    	{
+//    	EClipBoardModeCut = 0,
+//    	EClipBoardModeCopy
+//    	};
 
 public:
 	static CFileBrowserFileUtils* NewL(CEngine* aEngine);
@@ -261,7 +262,7 @@ public: // public interfaces
     TBool SelectionHasDirs();
     void TouchL(TBool aRecurse);
     void RenameL(const TInt aIndex, const TFileName &newName);
-    void SetAttributesL();
+    void SetAttributesL(TUint &aSetAttMask, TUint &aClearAttMask, TBool &aRecurse);
     void SearchL();
     void NewFileL(const TFileName &aNewFileName);
     void NewDirectoryL(const TFileName &aNewDirectoryName);
@@ -330,6 +331,7 @@ public:
     inline TSearchResults SearchResults(){ return iFileSearchResults; };
     inline CFileEntryList* FoundFiles() { return iFileEntryList; };    
     inline void SetAllowProcessing(TBool aAllowProcessing) { iAllowProcessing = aAllowProcessing; }
+    TClipBoardMode GetClipBoardMode() { return iClipBoardMode; }
 	
 private:
     TState                          iState;
@@ -339,7 +341,7 @@ private:
     TBool                           isWaitDialog;
     TBool                           isProgressDialog;
 
-    CEikProgressInfo*               iProgressInfo;
+    //CEikProgressInfo*               iProgressInfo;
     CCommandArray*                  iCommandArray;
     TInt                            iCurrentEntry;
     TInt                            iSucceededOperations;
@@ -353,7 +355,7 @@ private:
     TFileName                       iCurrentPath;
     TInt                            iSortMode;
     TInt                            iOrderMode;
-    TInt                            iClipboardMode;
+//    TInt                            iClipboardMode;
     CDesCArray*                     iClipboardPaths;
     CDriveEntryList*                iDriveEntryList;
     CFileEntryList*                 iFileEntryList;

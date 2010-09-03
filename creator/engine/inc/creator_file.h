@@ -25,8 +25,9 @@
 #include "engine.h"
 #include "creator_modulebase.h"
 
-#include <caf/caf.h>
+#include <caf/cafplatform.h>
 using namespace ContentAccess;
+#include <DRMRights.h>
 
 #include <e32base.h>
 #include <bautils.h>

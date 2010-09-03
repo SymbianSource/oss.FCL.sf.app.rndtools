@@ -50,7 +50,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TBluetoothAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TBluetoothAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TBluetoothAttributes& aAttributes) { iAttributes = aAttributes; }
     
 public:  // New static methods
     static TInt ThreadFunction(TAny* aThreadArg);

@@ -42,6 +42,9 @@ public:
     bool deleteContacts( const QList<QContactLocalId>& list );
     QContact contact( const QContactLocalId& contactId );
 
+    QString phoneNumber( const QContactLocalId& contactId );
+    bool contactDetails( const QContactLocalId& contactId, QString& name, QString& phoneNumber, QString& email );
+    
 private:
     bool IsContactGroupL( const QContact& contact );
     

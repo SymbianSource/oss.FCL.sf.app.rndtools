@@ -143,52 +143,52 @@ public:
 	/**
 	* Set attributes for CPU load
 	*/
-	void setCpuLoadAttributes(CPULoadAttributes attributes);
+	void setCpuLoadAttributes(const CPULoadAttributes& attributes);
 	
 	/**
 	* Set attributes for memory eat
 	*/
-	void setMemoryEatAttributes(MemoryEatAttributes attributes);
+	void setMemoryEatAttributes(const MemoryEatAttributes& attributes);
 
 	/**
 	* Set attributes for phone call
 	*/	
-	void setPhoneCallAttributes(PhoneCallAttributes attributes);
+	void setPhoneCallAttributes(const PhoneCallAttributes& attributes);
 
 	/**
 	* Set attributes for network connection
 	*/		
-	void setNetConnAttributes(NetConnAttributes attributes);
+	void setNetConnAttributes(const NetConnAttributes& attributes);
 	
 	/**
 	* Set attributes for key presses
 	*/
-	void setKeyPressAttributes(KeyPressAttributes attributes);
+	void setKeyPressAttributes(const KeyPressAttributes& attributes);
 	
 	/**
 	* Set pointer event for messages
 	*/
-	void setPointerEventAttributes(PointerEventAttributes attributes);
+	void setPointerEventAttributes(const PointerEventAttributes& attributes);
 
 	/**
 	* Set message attributes
 	*/
-	void setMessageAttributes(MessageAttributes attributes);
+	void setMessageAttributes(const MessageAttributes& attributes);
 	
 	/**
 	* Set applications attributes
 	*/
-	void setApplicationsAttributes(ApplicationsAttributes attributes);
+	void setApplicationsAttributes(const ApplicationsAttributes& attributes);
 	
 	/**
 	* Set photo capture attributes
 	*/
-	void setPhotoCaptureAttributes(PhotoCaptureAttributes attributes);
+	void setPhotoCaptureAttributes(const PhotoCaptureAttributes& attributes);
 	
 	/**
 	* Set BT attributes
 	*/	
-	void setBluetoothAttributes(BluetoothAttributes attributes);
+	void setBluetoothAttributes(const BluetoothAttributes& attributes);
 	
 	/**
 	* Stop load

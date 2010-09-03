@@ -18,7 +18,7 @@
 #ifndef FBDRIVEMODELH_H_
 #define FBDRIVEMODELH_H_
 
-#include "driveentry.h"
+#include "fbdriveentry.h"
 
 #include <QAbstractListModel>
 #include <QVariant>
@@ -41,7 +41,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-    DriveEntry driveEntry(const QModelIndex &index) const;
+    FbDriveEntry driveEntry(const QModelIndex &index) const;
     QString driveLetter( const QModelIndex &index ) const;
     QString mediaTypeString(const QModelIndex &index) const;
 

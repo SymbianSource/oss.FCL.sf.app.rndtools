@@ -459,9 +459,6 @@ void CLauncherEngine::DoLaunchApplicationL()
         {
         TApaAppInfo appInfo;
         User::LeaveIfError( iLs.GetAppInfo( appInfo, iCurrentAppUid ) );
-        TApaAppCapabilityBuf capBuf;
-        User::LeaveIfError( iLs.GetAppCapability( capBuf, iCurrentAppUid ) );
-        TApaAppCapability& caps = capBuf();
 
         CApaCommandLine* cmdLine=CApaCommandLine::NewLC();
         cmdLine->SetExecutableNameL( appInfo.iFullName );

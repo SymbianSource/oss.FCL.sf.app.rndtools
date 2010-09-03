@@ -52,7 +52,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TMessageAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TMessageAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TMessageAttributes& aAttributes) { iAttributes = aAttributes; }
 
 public:  // New static methods
     static TInt ThreadFunction( TAny* aThreadArg );

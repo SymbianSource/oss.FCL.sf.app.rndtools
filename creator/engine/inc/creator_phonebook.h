@@ -56,7 +56,7 @@ public:
     void DeleteAllGroupsCreatedByCreatorL();
     
     void TestPrintOut(CPhonebookParameters* aParam);
-    
+    inline CCreatorPhonebookWrapper* GetPhonebookWrapper(){ return iPhonebookWrapper; };
 private:
     
     void InitializeContactParamsL();

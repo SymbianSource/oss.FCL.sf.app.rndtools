@@ -30,6 +30,7 @@ symbian: {
     MMP_RULES *= UNPAGED
     BLD_INF_RULES.prj_exports += "./rom/loadgen.iby CORE_IBY_EXPORT_PATH(tools,loadgen.iby)"
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
+    INCLUDEPATH += /epoc32/include/mw/http
     HEADERS += inc/engine.h \
         inc/enginewrapper.h
     SOURCES += src/engine.cpp \
@@ -44,7 +45,9 @@ symbian: {
         ../../engine/src/loadgen_applications.cpp \
         ../../engine/src/loadgen_photocapture.cpp \
         ../../engine/src/loadgen_bluetooth.cpp \
-        ../../engine/src/loadgen_pointerevent.cpp
+        ../../engine/src/loadgen_pointerevent.cpp \
+        ../../engine/src/loadgen_netconn.cpp \
+        ../../engine/src/loadgen_httpreceiver.cpp
     RSS_RULES += "group_name = \"RnD Tools\"";
     LIBS += -leuser \
         -lcommonengine \
@@ -74,7 +77,9 @@ symbian: {
         -lcentralrepository \
         -lesock \
         -lbluetooth \
-        -lhal
+        -lhal \
+        -lhttp \
+        -linetprotutil
     TARGET.CAPABILITY = swevent \
         ReadUserData \
         WriteUserData \

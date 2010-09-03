@@ -22,8 +22,7 @@
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-//#include <DownloadMgrClient.h> 
-//#include <downloadcontroller.h>
+#include "loadgen_httpreceiver.h"
 
 #include "loadgen_loadbase.h"
 #include "loadgen_loadattributes.h"
@@ -52,7 +51,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TNetConnAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TNetConnAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TNetConnAttributes& aAttributes) { iAttributes = aAttributes; }
 
 public:  // New static methods
     static TInt ThreadFunction(TAny* aThreadArg);
@@ -66,7 +65,7 @@ private: // Data
     };
 
 
-class CNetConnManager : public CActive, public MHttpDownloadMgrObserver
+class CNetConnManager : public CActive, public MHTTPRecvObserver
     {
 public:
     static CNetConnManager* NewL(TNetConnAttributes& aAttributes);
@@ -84,15 +83,15 @@ private:
     static TInt PeriodicTimerCallBack(TAny* aAny);
     void StartDownloadL();
 
-private: // MHttpDownloadMgrObserver
-    void HandleDMgrEventL(RHttpDownload& aDownload, THttpDownloadEvent aEvent); 
+private: // MHTTPRecvObserver
+    void HTTPFileReceived( TInt aStatus );
 public:
     inline CPeriodic* PeriodicTimer() { return iPeriodicTimer; }
 
 private:
     TNetConnAttributes&     iAttributes;    
     CPeriodic*              iPeriodicTimer;
-    RHttpDownloadMgr        iDownloadMgr;
+    CHTTPReceiver*          iHTTPReceiver;
     }; 
 
 #endif

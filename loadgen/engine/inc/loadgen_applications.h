@@ -53,7 +53,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TApplicationsAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TApplicationsAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TApplicationsAttributes& aAttributes) { iAttributes = aAttributes; }
 	
 
 public:  // New static methods

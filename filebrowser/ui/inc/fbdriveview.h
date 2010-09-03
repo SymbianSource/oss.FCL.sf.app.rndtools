@@ -114,18 +114,18 @@ private slots:
     void doDiskAdminClearDrivePassword(HbAction *);
 
     void diskAdminEraseDrivePassword();
-    void doDiskAdminEraseDrivePassword(HbAction *);
+    void doDiskAdminEraseDrivePassword(int);
 
     void diskAdminFormatDrive();
-    void doDiskAdminFormatDrive(HbAction *);
+    void doDiskAdminFormatDrive(int);
 
     void diskAdminQuickFormatDrive();
-    void doDiskAdminQuickFormatDrive(HbAction *);
+    void doDiskAdminQuickFormatDrive(int);
 
     void diskAdminCheckDisk();
 
     void diskAdminScanDrive();
-    void doDiskAdminScanDrive(HbAction *);
+    void doDiskAdminScanDrive(int);
 
     void diskAdminSetDriveName();
     void doDiskAdminSetDriveName(HbAction *);
@@ -135,19 +135,19 @@ private slots:
 
     void diskAdminEjectDrive();
     void diskAdminDismountDrive();
-    void doDiskAdminDismountDrive(HbAction *);
+    void doDiskAdminDismountDrive(int);
 
     void diskAdminEraseMBR();
-    void doDiskAdminEraseMBR(HbAction *);
-    void doDiskAdminReallyEraseMBR(HbAction *);
-    void doDiskAdminNotRemovableReallyEraseMBR(HbAction *);
+    void doDiskAdminEraseMBR(int);
+    void doDiskAdminReallyEraseMBR(int);
+    void doDiskAdminNotRemovableReallyEraseMBR(int);
     
     void diskAdminPartitionDrive();
-    void diskAdminPartitionDriveProceed(HbAction *);
-    void diskAdminPartitionDriveReallyProceed(HbAction *);
-    void diskAdminPartitionDriveIsNotRemovable(HbAction *);
-    void diskAdminPartitionDriveEraseMbr(HbAction *);
-    void diskAdminPartitionDriveGetCount(HbAction*);
+    void diskAdminPartitionDriveProceed(int);
+    void diskAdminPartitionDriveReallyProceed(int);
+    void diskAdminPartitionDriveIsNotRemovable(int);
+    void diskAdminPartitionDriveEraseMbr(int);
+    void diskAdminPartitionDriveGetCount(HbAction *);
 
     // tools menu
     void toolsAllAppsToTextFile();

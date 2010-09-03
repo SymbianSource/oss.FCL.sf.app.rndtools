@@ -24,7 +24,14 @@
 
 enum TCreatorIds
     {
-    ECmdCreateFromFile=1,
+
+    // Phonebook entries shuld be the first, bacause some other entries references them
+    ECmdCreatePhoneBookEntries = 1,
+    ECmdCreatePhoneBookEntryContacts,
+    ECmdCreatePhoneBookEntryGroups,
+    ECmdCreatePhoneBookEntrySubscribedContacts,
+    
+    ECmdCreateFromFile,
 
     ECmdCreateCalendarEntries,
     ECmdCreateCalendarEntryAppointments,
@@ -128,11 +135,6 @@ enum TCreatorIds
     ECmdCreateMiscEntryNotes,
     ECmdCreateMiscEntrySyncSettings,
     ECmdCreateMiscEntryLandmarks,
-
-    ECmdCreatePhoneBookEntries,
-    ECmdCreatePhoneBookEntryContacts,
-    ECmdCreatePhoneBookEntryGroups,
-    ECmdCreatePhoneBookEntrySubscribedContacts,
 
     ECmdDeleteEntries,
     ECmdDeleteAllEntries,

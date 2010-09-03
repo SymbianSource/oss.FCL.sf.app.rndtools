@@ -59,7 +59,7 @@ public:
     /**
      * shows global HbGlobalCommonNote type note
      */
-	static void showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type, HbPopup::DefaultTimeout timeout = HbPopup::ConfirmationNoteTimeout);
+	static void showGlobalNote(const QString& text, HbMessageBox::MessageBoxType type, int timeout = 1000 );
     };
 
 class CreatorDialog

@@ -150,6 +150,9 @@ public:
     void DeleteAllGroupsL();
     void DeleteContactsL( RArray<TUint32>& aContactsToDelete, TUid aStoreUid );
     
+    HBufC* GetPhoneNumberL( TUint32 aContactId );
+    TBool GetContactDetailsL( TUint32 aContactId, TDes& aName, TDes& aPhoneNumber, TDes& aEmail );
+    
 private:
     QList<QContactDetail> CreateContactDetailsFromParameters( const TCreatorContactFields& Map );
     QContactDetail CreateContactDetail( QList<QContactDetail>& aContactDetailList,QString aDetail, QString aFieldContext, QString aFieldString, QString aData );

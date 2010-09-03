@@ -20,9 +20,9 @@
 #include "FBFileUtils.h"
 #include "notifications.h"
 #include "fbfileview.h"
-#include "searchview.h"
+#include "fbsearchview.h"
 #include "filebrowsersettings.h"
-#include "settingsview.h"
+//#include "fbsettingsview.h"
 
 #include <HbProgressDialog>
 
@@ -97,6 +97,7 @@ SearchAttributes EngineWrapper::getFileSearchAttributes()
     attributes.mMinSize    = tAttributes.iMinSize;
     attributes.mMaxSize    = tAttributes.iMaxSize;
     attributes.mRecurse    = tAttributes.iRecurse;
+    attributes.mDefaultWildCard = tAttributes.iDefaultWildCard;
     
     // TTime to QDate
     TBuf<20> timeString;
@@ -130,6 +131,7 @@ int EngineWrapper::setFileSearchAttributes(SearchAttributes attributes)
     tAttributes.iMinSize    = attributes.mMinSize;
     tAttributes.iMaxSize    = attributes.mMaxSize;    
     tAttributes.iRecurse    = attributes.mRecurse;
+    tAttributes.iDefaultWildCard = attributes.mDefaultWildCard;
     
     // QDate to TTime for both min- and max Date
     QString temp = attributes.mMinDate.toString("yyyy-MM-dd");
@@ -403,6 +405,18 @@ void EngineWrapper::properties(const QModelIndex &aCurrentItemIndex, QStringList
         delete entryLines;
     }
 }
+
+// ---------------------------------------------------------------------------
+
+void EngineWrapper::setAttributes(quint32 &setAttributesMask, quint32 &clearAttributesMask, bool &recurse)
+{
+    if (mEngine->FileUtils()) {
+        TBool tRecurse = recurse ? ETrue : EFalse;
+        TRAPD(err, mEngine->FileUtils()->SetAttributesL(setAttributesMask, clearAttributesMask, tRecurse));
+        Q_UNUSED(err); //TODO
+    }
+}
+
 // ---------------------------------------------------------------------------
 
 bool EngineWrapper::openAppArc(QString fileName)
@@ -449,24 +463,24 @@ int EngineWrapper::itemCount() const
 
 // ---------------------------------------------------------------------------
 
-DriveEntry EngineWrapper::getDriveEntry(const QModelIndex& aIndex) const
+FbDriveEntry EngineWrapper::getDriveEntry(const QModelIndex& aIndex) const
 {
     TDriveEntry driveEntry;
     if (mEngine->FileUtils()->DriveEntries()->Count() > aIndex.row() && aIndex.row() >= 0) {
         driveEntry = mEngine->FileUtils()->DriveEntries()->At(aIndex.row());
     }
-    return DriveEntry(driveEntry);
+    return FbDriveEntry(driveEntry);
 }
 
 // ---------------------------------------------------------------------------
 
-FileEntry EngineWrapper::getFileEntry(const QModelIndex& aIndex) const
+FbFileEntry EngineWrapper::getFileEntry(const QModelIndex& aIndex) const
 {
     TFileEntry fileEntry;
     if (mEngine->FileUtils()->FileEntries()->Count() > aIndex.row() && aIndex.row() >= 0) {
         fileEntry = mEngine->FileUtils()->FileEntries()->At(aIndex.row());
     }
-    return FileEntry(fileEntry);
+    return FbFileEntry(fileEntry);
 }
 
 // ---------------------------------------------------------------------------
@@ -501,7 +515,8 @@ void EngineWrapper::setCurrentSelection(const QModelIndexList &aSelectionIndices
 bool EngineWrapper::isDestinationEntriesExists(const QModelIndexList &aSelectionIndices, QString aTargetDir)
 {
     TFileName targetDir = TFileName(aTargetDir.utf16());
-    setCurrentSelection(aSelectionIndices);
+    //setCurrentSelection(aSelectionIndices);
+    Q_UNUSED(aSelectionIndices);
 
     TBool someEntryExists = mEngine->FileUtils()->IsDestinationEntriesExists(targetDir);
     return someEntryExists;
@@ -803,6 +818,11 @@ TBool EngineWrapper::ShowConfirmationQuery(const TDesC& aDescText)
 {
     QString qText = QString::fromUtf16(aDescText.Ptr(), aDescText.Length());
     return Notifications::showConfirmationQuery(qText);
+}
+
+void EngineWrapper::NotifyModelHasChanged()
+{
+    emit fileSystemDataChanged();
 }
 
 // ---------------------------------------------------------------------------

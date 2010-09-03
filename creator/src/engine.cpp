@@ -57,7 +57,6 @@
 #include <eikapp.h>
 #include <bitmaptransforms.h>
 
-_LIT(KEDriveError, "Not available");
 _LIT(KTempPathDrive, "d");
 _LIT(KTempPath, ":\\Creator\\");
 const TInt KRegisterDrive = EDriveC;
@@ -623,7 +622,6 @@ void CCreatorEngine::CheckForMoreCommandsL()
 		
 		// remove the progress dialog from the screen
         iEngineWrapper->CloseProgressbar();
-		//ProgressDialogCancelledL();
 		
 		if (iFailedCommands == 0)
 		    {
@@ -679,12 +677,7 @@ void CCreatorEngine::ProgressDialogCancelledL()
 				}
             }
 
-        if ( iPhonebook /*&& iPhonebook->IsActive()*/ )
-            {
-            // virtual phonebook is known to require asynchronous
-            // cancelling of operation
-            }
-        else if ( iDecoder  )
+        if ( iDecoder  )
             {
             iDecoder->Cancel();
             // CancelComplete() will be called from GenerateSourceImageFileL
@@ -1837,7 +1830,7 @@ TUint32 CCreatorEngine::GetDefaultIAPL()
 
 // ---------------------------------------------------------------------------
 
-TUint32 CCreatorEngine::AccessPointNameToIdL(const TDesC& aAPName, TBool aAnyIfNotFound )
+TUint32 CCreatorEngine::AccessPointNameToIdL(const TDesC& /*aAPName*/, TBool /*aAnyIfNotFound*/ )
     {
     LOGSTRING("Creator: CCreatorEngine::AccessPointNameToIdL");
     // Accespoint impl moved from engine to accespoint implementations for supporting 3.0-3.1 and 3.2->

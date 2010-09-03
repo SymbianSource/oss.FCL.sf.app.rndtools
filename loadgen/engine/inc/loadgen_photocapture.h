@@ -51,7 +51,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TPhotoCaptureAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TPhotoCaptureAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TPhotoCaptureAttributes& aAttributes) { iAttributes = aAttributes; }
 
 
 public:  // New static methods

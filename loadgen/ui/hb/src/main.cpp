@@ -17,7 +17,7 @@
 
 #include <hbmainwindow.h>
 #include <hbapplication.h>
-
+#include <eikenv.h>
 #include "mainview.h"
 
 
@@ -25,6 +25,9 @@ int main(int argc, char *argv[])
 {
 	HbApplication app(argc, argv);
     HbMainWindow mainWindow;
+    
+    // set as system application to prevent getting shut down events 
+    CEikonEnv::Static()->SetSystem( ETrue );
     
     //Create main view
     MainView* view = new MainView(mainWindow);

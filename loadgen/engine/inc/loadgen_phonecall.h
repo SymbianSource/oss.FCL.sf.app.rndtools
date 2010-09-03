@@ -53,7 +53,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TPhoneCallAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TPhoneCallAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TPhoneCallAttributes& aAttributes) { iAttributes = aAttributes; }
 	
 public:  // New static methods
     static TInt ThreadFunction(TAny* aThreadArg);

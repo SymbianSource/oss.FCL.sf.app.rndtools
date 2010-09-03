@@ -16,9 +16,9 @@
 */
 
 #include "fbdriveview.h"
-#include "settingsview.h"
-#include "editorview.h"
-#include "searchview.h"
+#include "fbsettingsview.h"
+#include "fbeditorview.h"
+#include "fbsearchview.h"
 #include "enginewrapper.h"
 #include "notifications.h"
 
@@ -160,7 +160,6 @@ void FbDriveView::createFileMenu()
 {
     mOptionMenuActions.mFileMenu = menu()->addMenu("File");
 
-//    mOptionMenuActions.mFileOpenDrive = mOptionMenuActions.mFileMenu->addAction("Open drive", this, SLOT(fileOpenDrive()));
     mOptionMenuActions.mFileSearch = mOptionMenuActions.mFileMenu->addAction("Search...", this, SLOT(fileSearch()));
     //mOptionMenuActions.mFileSearch->setVisible(false);
 
@@ -311,7 +310,6 @@ void FbDriveView::updateOptionMenu()
     mOptionMenuActions.mEditMenu->menuAction()->setVisible(showEditMenu);
 
     //aMenuPane->SetItemDimmed(EFileBrowserCmdFileOpen, isFileItemListEmpty || isDriveListViewActive || isCurrentItemDirectory);
-//    mOptionMenuActions.mFileOpenDrive->setVisible( !(isFileItemListEmpty || !isDriveListViewActive));
 
     //aMenuPane->SetItemDimmed(EFileBrowserCmdFileView, isFileItemListEmpty || !hasSelectedItems || isCurrentItemDirectory || isDriveListViewActive);
     //aMenuPane->SetItemDimmed(EFileBrowserCmdFileEdit, isFileItemListEmpty || !hasSelectedItems || isCurrentItemDirectory || isDriveListViewActive);
@@ -575,7 +573,7 @@ void FbDriveView::fileSearch()
     if (contextrMenuAction
         && contextrMenuAction->text().compare(QString("Search..."), Qt::CaseInsensitive) == 0
         && contextrMenuAction == mContextMenuActions.mFileSearch) {
-        DriveEntry driveEntry(mEngineWrapper->getDriveEntry(currentItemIndex()));
+        FbDriveEntry driveEntry(mEngineWrapper->getDriveEntry(currentItemIndex()));
         searchPath = driveEntry.driveLetter() + QString(":\\");
     } else {
         searchPath = mEngineWrapper->currentPath();
@@ -631,10 +629,10 @@ void FbDriveView::diskAdminSetDrivePassword()
     // check if the drive has a password
     if (mEngineWrapper->hasDrivePassword(currentIndex)) {
         QString heading = QString("Existing password");
-        HbInputDialog::getText(heading, this, SLOT(diskAdminSetDrivePasswordNew(HbAction*)), QString(), scene());
+        HbInputDialog::queryText(heading, this, SLOT(diskAdminSetDrivePasswordNew(HbAction*)), QString(), scene());
     } else {
         QString heading = QString("New password");
-        HbInputDialog::getText(heading, this, SLOT(doDiskAdminSetDrivePassword(HbAction*)), mOldPassword, scene());
+        HbInputDialog::queryText(heading, this, SLOT(doDiskAdminSetDrivePassword(HbAction*)), mOldPassword, scene());
     }
 }
 
@@ -647,7 +645,7 @@ void FbDriveView::diskAdminSetDrivePasswordNew(HbAction *action)
     if (dlg && action && action->text().compare(QString("Ok"), Qt::CaseInsensitive) == 0) {
         mOldPassword = dlg->value().toString();
         QString heading = QString("New password");
-        HbInputDialog::getText(heading, this, SLOT(doDiskAdminSetDrivePassword(HbAction*)), mOldPassword, scene());
+        HbInputDialog::queryText(heading, this, SLOT(doDiskAdminSetDrivePassword(HbAction*)), mOldPassword, scene());
     }
 }
 
@@ -676,7 +674,7 @@ void FbDriveView::diskAdminUnlockDrive()
     // check if the drive is locked
     if (mEngineWrapper->isDriveLocked(currentIndex)) {
         QString heading = QString("Existing password");
-        HbInputDialog::getText(heading, this, SLOT(doDiskAdminUnlockDrive(HbAction*)), QString(), scene());
+        HbInputDialog::queryText(heading, this, SLOT(doDiskAdminUnlockDrive(HbAction*)), QString(), scene());
     } else {
         Notifications::showInformationNote(QString("This drive is not locked"));
     }
@@ -705,7 +703,7 @@ void FbDriveView::diskAdminClearDrivePassword()
     // check if the drive has a password
     if (mEngineWrapper->hasDrivePassword(currentIndex)) {
         QString heading = QString("Existing password");
-        HbInputDialog::getText(heading, this, SLOT(doDiskAdminClearDrivePassword(HbAction*)), QString(), scene());
+        HbInputDialog::queryText(heading, this, SLOT(doDiskAdminClearDrivePassword(HbAction*)), QString(), scene());
     } else {
         Notifications::showInformationNote(QString("This drive has no password"));
     }
@@ -734,7 +732,10 @@ void FbDriveView::diskAdminEraseDrivePassword()
     // check if the drive has a password
     QModelIndex currentIndex = currentItemIndex();
     if (mEngineWrapper->hasDrivePassword(currentIndex)) {
-        HbMessageBox::question(QString("Are you sure? All data can be lost!"), this, SLOT(doDiskAdminEraseDrivePassword(HbAction*)));
+        HbMessageBox::question(QString("Are you sure? All data can be lost!"),
+                               this,
+                               SLOT(doDiskAdminEraseDrivePassword(int)),
+                               HbMessageBox::Yes | HbMessageBox::No);
     } else {
         Notifications::showInformationNote(QString("This drive has no password"));
     }
@@ -743,9 +744,9 @@ void FbDriveView::diskAdminEraseDrivePassword()
 /**
   Erase password of the selected drive
   */
-void FbDriveView::doDiskAdminEraseDrivePassword(HbAction* action)
+void FbDriveView::doDiskAdminEraseDrivePassword(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         mEngineWrapper->DiskAdminEraseDrivePassword(currentIndex);
         refreshList();
@@ -757,15 +758,18 @@ void FbDriveView::doDiskAdminEraseDrivePassword(HbAction* action)
   */
 void FbDriveView::diskAdminFormatDrive()
 {
-    HbMessageBox::question(QString("Are you sure? All data will be lost!"), this, SLOT(doDiskAdminFormatDrive(HbAction*)));
+    HbMessageBox::question(QString("Are you sure? All data will be lost!"),
+                           this,
+                           SLOT(doDiskAdminFormatDrive(int)),
+                           HbMessageBox::Yes | HbMessageBox::No);
 }
 
 /**
   Performs format on the selected drive
   */
-void FbDriveView::doDiskAdminFormatDrive(HbAction* action)
+void FbDriveView::doDiskAdminFormatDrive(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         mEngineWrapper->DiskAdminFormatDrive(currentIndex, false);
     }
@@ -776,15 +780,18 @@ void FbDriveView::doDiskAdminFormatDrive(HbAction* action)
   */
 void FbDriveView::diskAdminQuickFormatDrive()
 {
-    HbMessageBox::question(QString("Are you sure? All data will be lost!"), this, SLOT(doDiskAdminQuickFormatDrive(HbAction*)));
+    HbMessageBox::question(QString("Are you sure? All data will be lost!"),
+                           this,
+                           SLOT(doDiskAdminQuickFormatDrive(int)),
+                           HbMessageBox::Yes | HbMessageBox::No);
 }
 
 /**
   Performs quick format on the selected drive
   */
-void FbDriveView::doDiskAdminQuickFormatDrive(HbAction* action)
+void FbDriveView::doDiskAdminQuickFormatDrive(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         mEngineWrapper->DiskAdminFormatDrive(currentIndex, true);
     }
@@ -804,15 +811,18 @@ void FbDriveView::diskAdminCheckDisk()
   */
 void FbDriveView::diskAdminScanDrive()
 {
-    HbMessageBox::question(QString("This finds errors on disk and corrects them. Proceed?"), this, SLOT(doDiskAdminScanDrive(HbAction*)));
+    HbMessageBox::question(QString("This finds errors on disk and corrects them. Proceed?"),
+                           this,
+                           SLOT(doDiskAdminScanDrive(int)),
+                           HbMessageBox::Yes | HbMessageBox::No);
 }
 
 /**
   Checks the selected drive for errors and corrects them
   */
-void FbDriveView::doDiskAdminScanDrive(HbAction* action)
+void FbDriveView::doDiskAdminScanDrive(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         mEngineWrapper->DiskAdminScanDrive(currentIndex);
         refreshList();
@@ -831,7 +841,7 @@ void FbDriveView::diskAdminSetDriveName()
     mEngineWrapper->GetDriveName(currentIndex, driveName);
 
     QString heading = QString("New name");
-    HbInputDialog::getText(heading, this, SLOT(doDiskAdminSetDriveName(HbAction*)), driveName, scene());
+    HbInputDialog::queryText(heading, this, SLOT(doDiskAdminSetDriveName(HbAction*)), driveName, scene());
 }
 
 /**
@@ -862,7 +872,7 @@ void FbDriveView::diskAdminSetDriveVolumeLabel()
     mEngineWrapper->GetDriveVolumeLabel(currentIndex, volumeLabel);
 
     QString heading = QString("New volume label");
-    HbInputDialog::getText(heading, this, SLOT(doDiskAdminSetDriveVolumeLabel(HbAction*)), volumeLabel, scene());
+    HbInputDialog::queryText(heading, this, SLOT(doDiskAdminSetDriveVolumeLabel(HbAction*)), volumeLabel, scene());
 }
 
 /**
@@ -896,12 +906,15 @@ void FbDriveView::diskAdminEjectDrive()
   */
 void FbDriveView::diskAdminDismountDrive()
 {
-    HbMessageBox::question(QString("Are you sure you know what are you doing?"), this, SLOT(doDiskAdminDismountDrive(HbAction*)));
+    HbMessageBox::question(QString("Are you sure you know what are you doing?"),
+                           this,
+                           SLOT(doDiskAdminDismountDrive(int)),
+                           HbMessageBox::Yes | HbMessageBox::No);
 }
 
-void FbDriveView::doDiskAdminDismountDrive(HbAction* action)
+void FbDriveView::doDiskAdminDismountDrive(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         mEngineWrapper->DiskAdminDismountDrive(currentIndex);
         refreshList();
@@ -914,34 +927,43 @@ void FbDriveView::doDiskAdminDismountDrive(HbAction* action)
 void FbDriveView::diskAdminEraseMBR()
 {
     // TODO What to do with FB LITE macros?
-    HbMessageBox::question(QString("Are you sure? Your media driver must support this!"), this, SLOT(doDiskAdminEraseMBR(HbAction*)));
+    HbMessageBox::question(QString("Are you sure? Your media driver must support this!"),
+                           this,
+                           SLOT(doDiskAdminEraseMBR(int)),
+                           HbMessageBox::Yes | HbMessageBox::No);
 }
 
-void FbDriveView::doDiskAdminEraseMBR(HbAction* action)
+void FbDriveView::doDiskAdminEraseMBR(int action)
 {
     // TODO What to do with FB LITE macros?
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        HbMessageBox::question(QString("Are you really sure you know what are you doing ?!?"), this, SLOT(doDiskAdminReallyEraseMBR(HbAction*)));
+    if (action == HbMessageBox::Yes) {
+        HbMessageBox::question(QString("Are you really sure you know what are you doing ?!?"),
+                               this,
+                               SLOT(doDiskAdminReallyEraseMBR(int)),
+                               HbMessageBox::Yes | HbMessageBox::No);
     }
 }
 
-void FbDriveView::doDiskAdminReallyEraseMBR(HbAction* action)
+void FbDriveView::doDiskAdminReallyEraseMBR(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         // warn if the selected drive is not detected as removable
         if (mEngineWrapper->isDriveRemovable(currentIndex)) {
             mEngineWrapper->DiskAdminEraseMBR(currentIndex);
             refreshList();
         } else {
-            HbMessageBox::question(QString("Selected drive is not removable, really continue?"), this, SLOT(doDiskAdminNotRemovableReallyEraseMBR(HbAction*)));
+            HbMessageBox::question(QString("Selected drive is not removable, really continue?"),
+                                   this,
+                                   SLOT(doDiskAdminNotRemovableReallyEraseMBR(int)),
+                                   HbMessageBox::Yes | HbMessageBox::No);
         }
     }
 }
 
-void FbDriveView::doDiskAdminNotRemovableReallyEraseMBR(HbAction* action)
+void FbDriveView::doDiskAdminNotRemovableReallyEraseMBR(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         mEngineWrapper->DiskAdminEraseMBR(currentIndex);
         refreshList();
@@ -954,27 +976,31 @@ void FbDriveView::doDiskAdminNotRemovableReallyEraseMBR(HbAction* action)
   */
 void FbDriveView::diskAdminPartitionDrive()
 {
-    const QString message("Are you sure? Your media driver must support this!");
-    HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveProceed(HbAction *)));
+    HbMessageBox::question(QString("Are you sure? Your media driver must support this!"),
+                           this,
+                           SLOT(diskAdminPartitionDriveProceed(int)),
+                           HbMessageBox::Yes | HbMessageBox::No);
 }
 
 /**
   Partition the selected drive if user is sure
   */
-void FbDriveView::diskAdminPartitionDriveProceed(HbAction *action)
+void FbDriveView::diskAdminPartitionDriveProceed(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
-        const QString message("Are you really sure you know what are you doing ?!?");
-        HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveReallyProceed(HbAction *)));
+    if (action == HbMessageBox::Yes) {
+        HbMessageBox::question(QString("Are you really sure you know what are you doing ?!?"),
+                               this,
+                               SLOT(diskAdminPartitionDriveReallyProceed(int)),
+                               HbMessageBox::Yes | HbMessageBox::No);
     }
 }
 
 /**
   Partition the selected drive if user is really sure
   */
-void FbDriveView::diskAdminPartitionDriveReallyProceed(HbAction *action)
+void FbDriveView::diskAdminPartitionDriveReallyProceed(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         QModelIndex currentIndex = currentItemIndex();
         mEraseMBR = false;
         // warn if the selected drive is not detected as removable
@@ -982,16 +1008,20 @@ void FbDriveView::diskAdminPartitionDriveReallyProceed(HbAction *action)
         if (mEngineWrapper->isDriveRemovable(currentIndex)) {
             mProceed = true;
         } else {
-            const QString message("Selected drive is not removable, really continue?");
-            HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveIsNotRemovable(HbAction *)));
+            HbMessageBox::question(QString("Selected drive is not removable, really continue?"),
+                                   this,
+                                   SLOT(diskAdminPartitionDriveIsNotRemovable(int)),
+                                   HbMessageBox::Yes | HbMessageBox::No);
         }
 
         if (mProceed) {
             // query if erase mbr
             mEraseMBR = false;
 
-            QString message("Erase MBR first (normally needed)?");
-            HbMessageBox::question(message, this, SLOT(diskAdminPartitionDriveEraseMbr(HbAction *)));
+            HbMessageBox::question(QString("Erase MBR first (normally needed)?"),
+                                   this,
+                                   SLOT(diskAdminPartitionDriveEraseMbr(int)),
+                                   HbMessageBox::Yes | HbMessageBox::No);
 
             // TODO use HbListDialog
             QStringList list;
@@ -1004,9 +1034,9 @@ void FbDriveView::diskAdminPartitionDriveReallyProceed(HbAction *action)
 /**
   Store result of user query about proceeding when drive is not removable.
   */
-void FbDriveView::diskAdminPartitionDriveIsNotRemovable(HbAction *action)
+void FbDriveView::diskAdminPartitionDriveIsNotRemovable(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         mProceed = true;
     } else {
         mProceed = false;
@@ -1016,9 +1046,9 @@ void FbDriveView::diskAdminPartitionDriveIsNotRemovable(HbAction *action)
 /**
   Store result of user query about erase MBR
   */
-void FbDriveView::diskAdminPartitionDriveEraseMbr(HbAction *action)
+void FbDriveView::diskAdminPartitionDriveEraseMbr(int action)
 {
-    if (action && action->text().compare(QString("Yes"), Qt::CaseInsensitive) == 0) {
+    if (action == HbMessageBox::Yes) {
         mEraseMBR = true;
     }
 }
@@ -1095,8 +1125,7 @@ void FbDriveView::toolsErrorSimulateLeave()
 {
     int leaveCode = -6;
     QString heading = QString("Leave code");
-    //HbInputDialog::getInteger(heading, this, SLOT(doToolsErrorSimulateLeave(HbAction*)), leaveCode, scene());
-    HbInputDialog::getText(heading, this, SLOT(doToolsErrorSimulateLeave(HbAction*)), QString::number(leaveCode), scene());
+    HbInputDialog::queryText(heading, this, SLOT(doToolsErrorSimulateLeave(HbAction*)), QString::number(leaveCode), scene());
 }
 
 
@@ -1122,7 +1151,7 @@ void FbDriveView::toolsErrorSimulatePanic()
 {
     mPanicCategory = QString ("Test Category");
     QString heading = QString("Panic category");
-    HbInputDialog::getText(heading, this, SLOT(doToolsErrorSimulatePanicCode(HbAction*)), mPanicCategory, scene());
+    HbInputDialog::queryText(heading, this, SLOT(doToolsErrorSimulatePanicCode(HbAction*)), mPanicCategory, scene());
 }
 
 /**
@@ -1135,7 +1164,7 @@ void FbDriveView::doToolsErrorSimulatePanicCode(HbAction *action)
         mPanicCategory = dlg->value().toString();
         int panicCode(555);
         QString heading = QString("Panic code");
-        HbInputDialog::getInteger(heading, this, SLOT(doToolsErrorSimulatePanic(HbAction*)), panicCode, scene());
+        HbInputDialog::queryInt(heading, this, SLOT(doToolsErrorSimulatePanic(HbAction*)), panicCode, scene());
     }
 }
 
@@ -1161,7 +1190,7 @@ void FbDriveView::toolsErrorSimulateException()
 {
     int exceptionCode = 0;
     QString heading = QString("Exception code");
-    HbInputDialog::getInteger(heading, this, SLOT(doToolsErrorSimulateException(HbAction*)), exceptionCode, scene());
+    HbInputDialog::queryInt(heading, this, SLOT(doToolsErrorSimulateException(HbAction*)), exceptionCode, scene());
 }
 
 /**
@@ -1232,7 +1261,7 @@ void FbDriveView::toolsSetDebugMaskQuestion()
     quint32 dbgMask = mEngineWrapper->getDebugMask();
     QString dbgMaskText = QString("0x").append(QString::number(dbgMask, 16));
     QString heading = QString("Kernel debug mask in hex format");
-    HbInputDialog::getText(heading, this, SLOT(toolsSetDebugMask(HbAction*)), dbgMaskText, scene());
+    HbInputDialog::queryText(heading, this, SLOT(toolsSetDebugMask(HbAction*)), dbgMaskText, scene());
 }
 
 /**

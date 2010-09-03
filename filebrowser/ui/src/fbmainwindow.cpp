@@ -21,9 +21,10 @@
 #include "enginewrapper.h"
 #include "fbfileview.h"
 #include "fbdriveview.h"
-#include "settingsview.h"
-#include "editorview.h"
-#include "searchview.h"
+#include "fbsettingsview.h"
+#include "fbeditorview.h"
+#include "fbsearchview.h"
+#include "fbattributesview.h"
 
 FbMainWindow::FbMainWindow(QWidget *parent)
     : HbMainWindow(parent),
@@ -33,6 +34,7 @@ FbMainWindow::FbMainWindow(QWidget *parent)
     mSettingsView(0),
     mEditorView(0),
     mSearchView(0),
+    mAttributesView(0),
     mPreviousView(0)
 {
 }
@@ -66,22 +68,25 @@ void FbMainWindow::init()
     addView(mFileView);
 
     // Create settings view
-    mSettingsView = new SettingsView(*mEngineWrapper);
+    mSettingsView = new FbSettingsView(*mEngineWrapper);
     connect(mSettingsView, SIGNAL(finished(bool)), this, SLOT(openPreviousBrowserView()));
     addView(mSettingsView);
 
     // Create editor view
-    mEditorView = new EditorView();
+    mEditorView = new FbEditorView();
     connect(mFileView, SIGNAL(aboutToShowEditorView(const QString &, bool)), this, SLOT(openEditorView(const QString &, bool)));
     connect(mEditorView, SIGNAL(finished(bool)), this, SLOT(openFileView()));
     addView(mEditorView);
 
     // Create Search view
-    mSearchView = new SearchView(*mEngineWrapper);
+    mSearchView = new FbSearchView(*mEngineWrapper);
     connect(mDriveView, SIGNAL(aboutToShowSearchView(QString)), this, SLOT(openSearchView(QString)));
     connect(mFileView, SIGNAL(aboutToShowSearchView(QString)), this, SLOT(openSearchView(QString)));
     connect(mSearchView, SIGNAL(finished(bool)), this, SLOT(openFileBrowserView(bool)));
     addView(mSearchView);
+
+    connect(mFileView, SIGNAL(aboutToShowAttributesView(const QString &, quint32 &, quint32 &, bool &)),
+            this, SLOT(openAttributesView(const QString &, quint32 &, quint32 &, bool &)));
 
     // Show ApplicationView at startup
     setCurrentView(mDriveView);
@@ -143,3 +148,31 @@ void FbMainWindow::openSearchView(const QString &path)
     mSearchView->open(path);
     setCurrentView(mSearchView);
 }
+
+void FbMainWindow::openAttributesView(const QString &attributesViewTitle,
+                                      quint32 &setAttributesMask,
+                                      quint32 &clearAttributesMask,
+                                      bool &recurse)
+{
+    if (!mAttributesView) {
+        // Create attributes view
+        mAttributesView = new FbAttributesView(setAttributesMask, clearAttributesMask, recurse);
+        connect(mAttributesView, SIGNAL(finished(bool)), this, SLOT(closeAttributesView(bool)));
+        mAttributesView->setTitle(attributesViewTitle);
+        addView(mAttributesView);
+        setCurrentView(mAttributesView);
+    }
+}
+
+void FbMainWindow::closeAttributesView(bool accepted)
+{
+    if (accepted) {
+        mEngineWrapper->setAttributes(mAttributesView->setAttributesMask(), mAttributesView->clearAttributesMask(), mAttributesView->recurse());
+    }
+    openFileView();
+    removeView(mAttributesView);
+    mAttributesView->deleteLater();
+    mAttributesView = 0;
+}
+
+// End of file

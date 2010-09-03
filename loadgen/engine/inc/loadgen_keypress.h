@@ -51,7 +51,7 @@ public:  // New methods
     virtual void Close();
     virtual TPtrC Description();
     inline TKeyPressAttributes& Attributes() { return iAttributes; }
-	inline void SetAttributes(TKeyPressAttributes aAttributes) { iAttributes = aAttributes; }
+	inline void SetAttributes(const TKeyPressAttributes& aAttributes) { iAttributes = aAttributes; }
 
 public:  // New static methods
     static TInt ThreadFunction(TAny* aThreadArg);

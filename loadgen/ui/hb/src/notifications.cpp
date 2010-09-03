@@ -27,7 +27,7 @@
 void Notifications::about()
 {
     HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeInformation);
-    messageBox->setText("Version 1.5.0 - March 10th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
+    messageBox->setText("Version 1.5.1 - August 27th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
     HbLabel *header = new HbLabel("About LoadGen", messageBox);
     messageBox->setHeadingWidget(header);
     messageBox->setAttribute(Qt::WA_DeleteOnClose);

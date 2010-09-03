@@ -104,16 +104,16 @@ public:
 	TPhotoCaptureAttributes GetPhotoCaptureAttributes();
 	TBluetoothAttributes    GetBluetoothAttributes();
 	TPointerEventAttributes GetPointerEventAttributes();
-	void ChangeCPULoadAttributes(TCPULoadAttributes aAttributes); 
-	void ChangeMemoryEatAttributes(TMemoryEatAttributes aAttributes);
-	void ChangePhoneCallAttributes(TPhoneCallAttributes aAttributes);
-	void ChangeNetConnAttributes(TNetConnAttributes aAttributes);
-	void ChangeKeyPressAttributes(TKeyPressAttributes aAttributes);
-	void ChangeMessageAttributes(TMessageAttributes aAttributes);
-	void ChangeApplicationsAttributes(TApplicationsAttributes aAttributes);
-	void ChangePhotoCaptureAttributes(TPhotoCaptureAttributes aAttributes);
-	void ChangeBluetoothAttributes(TBluetoothAttributes aAttributes);
-	void ChangePointerEventAttributes(TPointerEventAttributes aAttributes);
+	void ChangeCPULoadAttributes(const TCPULoadAttributes& aAttributes); 
+	void ChangeMemoryEatAttributes(const TMemoryEatAttributes& aAttributes);
+	void ChangePhoneCallAttributes(const TPhoneCallAttributes& aAttributes);
+	void ChangeNetConnAttributes(const TNetConnAttributes& aAttributes);
+	void ChangeKeyPressAttributes(const TKeyPressAttributes& aAttributes);
+	void ChangeMessageAttributes(const TMessageAttributes& aAttributes);
+	void ChangeApplicationsAttributes(const TApplicationsAttributes& aAttributes);
+	void ChangePhotoCaptureAttributes(const TPhotoCaptureAttributes& aAttributes);
+	void ChangeBluetoothAttributes(const TBluetoothAttributes& aAttributes);
+	void ChangePointerEventAttributes(const TPointerEventAttributes& aAttributes);
 	
     inline TLoadGenSettings& Settings() { return iSettings; }
     inline CEikonEnv* EikonEnv() 		{ return iEnv; }

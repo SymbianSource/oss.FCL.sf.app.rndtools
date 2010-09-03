@@ -21,39 +21,45 @@ INCLUDEPATH += ./inc
 load(hb.prf)
 symbian:CONFIG -= symbian_i18n
 
-HEADERS += ./inc/fbmainwindow.h \
+HEADERS += ./inc/menuaction.h \
+           ./inc/enginewrapper.h \
+           ./inc/fbmainwindow.h \
            ./inc/fbdrivelistviewitem.h \
            ./inc/fbdrivemodel.h \
+           ./inc/fbdriveentry.h \
            ./inc/fbdriveview.h \
            ./inc/fbfilelistviewitem.h \
            ./inc/fbfilemodel.h \
+           ./inc/fbfileentry.h \
            ./inc/fbfileview.h \
            ./inc/filebrowsersortfilterproxymodel.h \
-           ./inc/menuaction.h \
            ./inc/filebrowsersettings.h \
-           ./inc/settingsview.h \
-           ./inc/editorview.h \
-           ./inc/searchview.h \
-           ./inc/enginewrapper.h \
-           ./inc/notifications.h \
-           ./inc/fileentry.h \
-           ./inc/driveentry.h
-SOURCES += ./src/main.cpp \
+           ./inc/fbsettingsview.h \
+           ./inc/fbeditorview.h \
+           ./inc/fbsearchview.h \
+           ./inc/fbattributesview.h \
+           ./inc/fbfolderselectiondialog.h \
+           ./inc/fbfolderselectorwrapper.h \
+           ./inc/notifications.h
+SOURCES += ./src/filebrowser.cpp \
+           ./src/enginewrapper.cpp \
            ./src/fbmainwindow.cpp \
            ./src/fbdrivelistviewitem.cpp \
            ./src/fbdrivemodel.cpp \
+           ./src/fbdriveentry.cpp \
            ./src/fbdriveview.cpp \
            ./src/fbfilelistviewitem.cpp \
            ./src/fbfilemodel.cpp \
+           ./src/fbfileentry.cpp \
            ./src/fbfileview.cpp \
            ./src/filebrowsersortfilterproxymodel.cpp \
-           ./src/settingsview.cpp \
-           ./src/editorview.cpp \
-           ./src/searchview.cpp \
-           ./src/enginewrapper.cpp \
-           ./src/notifications.cpp \
-           ./src/fileentry.cpp \
-           ./src/driveentry.cpp
+           ./src/fbsettingsview.cpp \
+           ./src/fbeditorview.cpp \
+           ./src/fbsearchview.cpp \
+           ./src/fbattributesview.cpp \
+           ./src/fbfolderselectiondialog.cpp \
+           ./src/fbfolderselectorwrapper.cpp \
+           ./src/notifications.cpp
 RESOURCES += ./ui.qrc
 
 symbian {
@@ -70,7 +76,6 @@ symbian {
             -lfbscli \
             -lImageConversion \
             -lPlatformEnv \
-            -leikcoctl \
             -lapgrfx \
             -lefsrv \
             -lbafl \
@@ -78,9 +83,6 @@ symbian {
             -lmediaclientaudio \
             -lestor \
             -lgdi \
-            -leikctl \
-            -leikcdlg \
-            -leikdlg \
             -legul \
             -lsendui \
             -lmsgs \
@@ -104,12 +106,14 @@ symbian {
                ../engine/FB.hrh \
                ../engine/FBStd.h \
                ../engine/FBTraces.h \
+               ../engine/FBFolderSelector.h \
             #ifndef FILEBROWSER_LITE
-               ../fileopclient\inc\FBFileOpClient.h
+               ../fileopclient/inc/FBFileOpClient.h
             #endif
     SOURCES += ../engine/engine.cpp \
                ../engine/FBFileUtils.cpp \
-               ../engine/FBFileOps.cpp
+               ../engine/FBFileOps.cpp \
+               ../engine/FBFolderSelector.cpp
     RSS_RULES += "group_name = \"RnD Tools\";"
     TARGET.CAPABILITY = NetworkServices LocalServices CAP_APPLICATION AllFiles DiskAdmin
     TARGET.UID3 = 0xE85157B0
