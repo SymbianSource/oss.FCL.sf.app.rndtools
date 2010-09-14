@@ -27,7 +27,4 @@ data=ZRESOURCE\apps\PIProfilerUI.rsc resource\apps\PIProfilerUI.rsc
 //S60_APP_RESOURCE(PIProfilerUI)
 data=ZPRIVATE\10003a3f\import\apps\PIProfilerUI_reg.rsc private\10003a3f\import\apps\PIProfilerUI_reg.rsc
 
-data=ZPRIVATE\2001E5AE\backup_registration.xml        	private\2001E5AE\backup_registration.xml
-data=ZSYSTEM\Install\PIProfilerUI_stub.sis              system\install\PIProfilerUI_stub.sis
-
 #endif // __PROFILERGUI_IBY__
