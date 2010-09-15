@@ -186,7 +186,7 @@ void PIMainView::loadItemsFromResources(HbDocumentLoader &loader)
 void PIMainView::showAboutPopup()
 {
 
-    Notifications::showMessageBox("Version 2.2.1 - 10th August 2010. \n"
+    Notifications::showMessageBox("Version 2.2.2 - 23rd August 2010. \n"
             "Copyright © 2010 Nokia Corporation "
             "and/or its subsidiary(-ies). "
             "All rights reserved.");

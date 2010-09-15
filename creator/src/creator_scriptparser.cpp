@@ -316,7 +316,11 @@ void CCreatorScriptParser::OnEndElementL(const RTagInfo& /*aElement*/, TInt aErr
     // Execute the command if this is a command element:
     if( elementInfo.iElement->IsCommandElement() )
         {
+        #if(!defined __SERIES60_30__ && !defined __SERIES60_31__)
+        elementInfo.iElement->AsyncExecuteCommandAndWaitL();
+        #else
         elementInfo.iElement->ExecuteCommandL();
+        #endif
         }
     
     // Remove element from the stack:

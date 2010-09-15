@@ -1009,7 +1009,7 @@ RESOURCE DIALOG r_creator_about_dialog
             id = EAknMessageQueryContentId;
             control = AVKON_MESSAGE_QUERY
             {
-                message = "Version 5.3.5 - 30th October 2009. Copyright © 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
+                message = "Version 5.3.6 - 30th August 2010. Copyright © 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
             };
         }
     };

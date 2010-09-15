@@ -43,6 +43,76 @@ CCreatorScriptElement(aEngine)
     iIsCommandElement = ETrue;
     }
 
+void CCreatorNoteElement::AsyncExecuteCommandL()
+    {
+    const CCreatorScriptAttribute* amountAttr = FindAttributeByName(KAmount);
+    TInt noteAmount = 1;    
+    if( amountAttr )
+        {
+        noteAmount = ConvertStrToIntL(amountAttr->Value());
+        }
+    // Get 'fields' element 
+    CCreatorScriptElement* fieldsElement = FindSubElement(KFields);
+    if( fieldsElement && fieldsElement->SubElements().Count() > 0)
+        {
+        // Get sub-elements
+        const RPointerArray<CCreatorScriptElement>& fields = fieldsElement->SubElements();        
+        // Create note entries, the amount of entries is defined by noteAmount:
+        if( iLoopIndex < noteAmount )
+            {            
+            CNotepadParameters* param = new (ELeave) CNotepadParameters;
+            CleanupStack::PushL(param);
+            
+            for( TInt i = 0; i < fields.Count(); ++i )
+                {
+                CCreatorScriptElement* field = fields[i];
+                TPtrC elemName = field->Name();
+                TPtrC elemContent = field->Content();
+                const CCreatorScriptAttribute* randomAttr = fields[i]->FindAttributeByName(KRandomLength);
+                TBool useMax = EFalse;
+                if( randomAttr && randomAttr->Value() == KMax )
+                    {
+                    useMax = ETrue;
+                    }
+                
+                if( elemName == KText )
+                    {
+                    if( randomAttr || elemContent.Length() == 0 )
+                        {
+                        if( useMax )
+                            {
+                            TDesC* temp = iEngine->CreateRandomStringLC(KNotepadFieldLength);                            
+                            SetContentToTextParamL(param->iNoteText, *temp);
+                            CleanupStack::PopAndDestroy(); // temp
+                            }
+                        else
+                            {
+                            SetContentToTextParamL(param->iNoteText, iEngine->RandomString(CCreatorEngine::EMessageText));
+                            }
+                        }
+                    else
+                        {
+                        SetContentToTextParamL(param->iNoteText, elemContent);
+                        }
+                    }
+                }
+            iEngine->AppendToCommandArrayL(ECmdCreateMiscEntryNotes, param);
+            CleanupStack::Pop(); // param
+            StartNextLoop();
+            }
+        else
+            {
+            AsyncCommandFinished();
+            }
+        }
+    else
+        {
+        iEngine->AppendToCommandArrayL(ECmdCreateMiscEntryNotes, 0, noteAmount);
+        // signal end of the executing command
+        AsyncCommandFinished();
+        }
+    }
+
 void CCreatorNoteElement::ExecuteCommandL()
     {
     const CCreatorScriptAttribute* amountAttr = FindAttributeByName(KAmount);

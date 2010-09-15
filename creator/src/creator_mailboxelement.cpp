@@ -433,6 +433,74 @@ TBool CCreatorMailboxElement::SetEnumParamL(const TDesC& aElemName, const TDesC&
     return ETrue;
     }
 
+void CCreatorMailboxElement::AsyncExecuteCommandL()
+    {
+    const CCreatorScriptAttribute* amountAttr = FindAttributeByName(KAmount);
+    const CCreatorScriptAttribute* typeAttr = FindAttributeByName(KMailboxType);
+    TInt amount = 1;    
+    if( amountAttr )
+        {
+        amount = ConvertStrToIntL(amountAttr->Value());
+        }
+    
+    TMailboxType mailboxType = EMailboxPOP3;
+    
+    if( typeAttr && CompareIgnoreCase(typeAttr->Value(), Kimap4) == 0 )
+        {
+        mailboxType = EMailboxIMAP4;
+        }
+    
+    // Get 'fields' element 
+    CCreatorScriptElement* fieldsElement = FindSubElement(KFields);
+    if( fieldsElement && fieldsElement->SubElements().Count() > 0)
+        {
+        // Get sub-elements
+        const RPointerArray<CCreatorScriptElement>& fields = fieldsElement->SubElements();        
+        // Create mailbox entries, the amount of entries is defined by amount:
+        if( iLoopIndex < amount )
+            {            
+            CMailboxesParameters* param = new (ELeave) CMailboxesParameters;
+            CleanupStack::PushL(param);
+            
+            param->iMailboxType = mailboxType;
+            
+            for( TInt i = 0; i < fields.Count(); ++i )
+                {
+                CCreatorScriptElement* field = fields[i];
+                TPtrC elemName = field->Name();
+                TPtrC elemContent = field->Content();
+                const CCreatorScriptAttribute* randomAttr = fields[i]->FindAttributeByName(KRandomLength);
+                TBool useRandom = EFalse;
+                if( randomAttr || elemContent.Length() == 0 )
+                    {
+                    useRandom = ETrue;
+                    }
+                
+                if( SetTextParamL(elemName, elemContent, param, useRandom ) == EFalse &&
+                    SetBooleanParamL(elemName, elemContent, param, useRandom ) == EFalse &&
+                    SetIntegerParamL(elemName, elemContent, param, useRandom ) == EFalse &&
+                    SetEnumParamL(elemName, elemContent, param, useRandom ) )
+                    {
+                    LOGSTRING2("CCreatorMailboxElement::AsyncExecuteCommandL: Unknown mailbox field: %S", &elemName);
+                    }
+                }
+            iEngine->AppendToCommandArrayL(ECmdCreateMessagingEntryMailboxes, param);
+            CleanupStack::Pop(); // param
+            StartNextLoop();
+            }
+        else
+            {
+            AsyncCommandFinished();
+            }
+        }
+    else
+        {
+        iEngine->AppendToCommandArrayL(ECmdCreateMessagingEntryMailboxes, 0, amount);
+        AsyncCommandFinished();
+        }
+    }
+
+
 void CCreatorMailboxElement::ExecuteCommandL()
     {
     const CCreatorScriptAttribute* amountAttr = FindAttributeByName(KAmount);

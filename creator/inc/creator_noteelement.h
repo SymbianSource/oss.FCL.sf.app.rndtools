@@ -32,6 +32,7 @@ class CCreatorNoteElement : public CCreatorScriptElement
 public:
     static CCreatorNoteElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
+    void AsyncExecuteCommandL();
     
 protected:
     CCreatorNoteElement(CCreatorEngine* aEngine);

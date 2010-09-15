@@ -146,7 +146,7 @@ void CCreatorAppUi::HandleCommandL(TInt aCommand)
         // run script
         case ECmdCreateFromFile:
             {
-            iEngine->RunScriptL();
+            iEngine->AsyncRunScript();
 			}
 			break;
 

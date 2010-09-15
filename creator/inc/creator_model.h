@@ -180,9 +180,24 @@ private:
     		             const CCreatorRandomDataParser::TRandomDataType aRandomDataType);
     void GenerateSourceImageFileL( const TTestDataPath aFileType, const TDesC& aFileName );
     void GenereteSourceTextFileL( const TDesC& aFileName, TInt aSize );
+    
+    /**
+    * CallBack for an asynchronous call of RunScriptL.
+    * @param aObject TAny object.
+    * @return KErrNone or error code.
+    */
+    static TInt AsyncRunScriptCB( TAny* aObject );
+    
 
 public:
     void ExecuteOptionsMenuCommandL(TInt aCommand);
+    
+    /**
+    * It starts asynchronous call of RunScriptL, because it can take a long time
+    * @return None.
+    */
+    void AsyncRunScript();
+    
     void RunScriptL();
     TInt RunScriptL(const TDesC& aScriptFile);
 
@@ -311,6 +326,7 @@ private:
     CImageEncoder* iEncoder;
     CFrameImageData* iFrameImageData;
     CBitmapScaler* iScaler;
+    CAsyncCallBack iAsyncRunScript;
 
 public:
 

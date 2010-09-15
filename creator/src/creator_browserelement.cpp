@@ -44,6 +44,140 @@ CCreatorScriptElement(aEngine)
     iIsCommandElement = ETrue;
     }
 
+void CCreatorBrowserElement::AsyncExecuteCommandL()
+    {
+    const CCreatorScriptAttribute* amountAttr = FindAttributeByName(KAmount);
+    TInt entryAmount = 1;
+    if( amountAttr )
+        {
+        entryAmount = ConvertStrToIntL(amountAttr->Value());
+        }
+    // Get 'fields' element 
+    CCreatorScriptElement* fieldsElement = FindSubElement(KFields);
+    if( fieldsElement && fieldsElement->SubElements().Count() > 0 )
+        {
+        // Get sub-elements
+        const RPointerArray<CCreatorScriptElement>& fields = fieldsElement->SubElements();
+        // Create browser entries, the amount of entries is defined by entryAmount:
+        if( iLoopIndex < entryAmount )
+            {
+            CBrowserParameters* param = new (ELeave) CBrowserParameters;
+            CleanupStack::PushL(param);
+            
+            for( TInt i = 0; i < fields.Count(); ++i )
+                {
+                CCreatorScriptElement* field = fields[i];
+                TPtrC elemName = field->Name();                
+                TPtrC elemContent = field->Content();
+                const CCreatorScriptAttribute* randomAttr = fields[i]->FindAttributeByName(KRandomLength);
+                if( elemName == KName )
+                    {
+                    if( randomAttr || elemContent.Length() == 0)
+                        {
+                        elemContent.Set(iEngine->RandomString(CCreatorEngine::ECompany));
+                        }
+                    if( iName->Des() == KBookmark )
+                        {
+                        SetContentToTextParamL(param->iBookmarkName, elemContent);                        
+                        }
+                    else if( iName->Des() == KBookmarkFolder )
+                        {
+                        SetContentToTextParamL(param->iBookmarkFolderName, elemContent);
+                        }
+                    else if( iName->Des() == KSavedPage )
+                        {
+                        SetContentToTextParamL(param->iSavedDeckLinkName, elemContent);
+                        }
+                    else if( iName->Des() == KSavedPageFolder )
+                        {
+                        SetContentToTextParamL(param->iSavedDeckFolderName, elemContent);
+                        }
+                    }
+                
+                else if( elemName == KPath )
+                    {                    
+                    if( randomAttr || elemContent.Length() == 0)
+                        {
+                        SetContentToTextParamL(param->iSavedDeckLocalAddress, iEngine->TestDataPathL(CCreatorEngine::ESavedDeck_1kB));
+                        }
+                    else
+                        {
+                        SetContentToTextParamL(param->iSavedDeckLocalAddress, elemContent);
+                        }
+                    }
+                else if( elemName == KUsername )
+                    {
+                    if( randomAttr || elemContent.Length() == 0)
+                        {
+                        // Set username and password to same string
+                        if( param->iBookmarkPassword && param->iBookmarkPassword->Length() > 0 )
+                            {
+                            SetContentToTextParamL(param->iBookmarkUsername, param->iBookmarkPassword->Des());
+                            }
+                        else
+                            {
+                            SetContentToTextParamL(param->iBookmarkUsername, iEngine->RandomString(CCreatorEngine::EFirstName));
+                            }
+                        }
+                    else
+                        {
+                        SetContentToTextParamL(param->iBookmarkUsername, elemContent);
+                        }
+                    }
+                else if( elemName == KPassword )
+                    {
+                    if( randomAttr || elemContent.Length() == 0)
+                        {
+                        // Set username and password to same string
+                        if( param->iBookmarkUsername && param->iBookmarkUsername->Length() > 0 )
+                            {
+                            SetContentToTextParamL(param->iBookmarkPassword, param->iBookmarkUsername->Des());
+                            }
+                        else
+                            {
+                            SetContentToTextParamL(param->iBookmarkPassword, iEngine->RandomString(CCreatorEngine::EFirstName));                                                    
+                            }
+                        }
+                    else
+                        {
+                        SetContentToTextParamL(param->iBookmarkPassword, elemContent);
+                        }
+                    }
+                else if( elemName == KUrl )
+                    {
+                    if( randomAttr || elemContent.Length() == 0)
+                        {
+                        TDesC* tmpUrl = iEngine->CreateHTTPUrlLC();
+                        if( tmpUrl )
+                            {
+                            SetContentToTextParamL(param->iBookmarkAddress, *tmpUrl );
+                            }
+                        CleanupStack::PopAndDestroy(); // tmpUrl                        
+                        }
+                    else
+                        {
+                        SetContentToTextParamL(param->iBookmarkAddress, elemContent);
+                        }
+                    }
+                }
+            iEngine->AppendToCommandArrayL(GetBrowserCommandL(), param);
+            CleanupStack::Pop(); // param
+            StartNextLoop();
+            }
+        else
+            {
+            // stop loop and signal end of the executing command
+            AsyncCommandFinished();
+            }
+        }
+    else
+        {
+        // No fields defined --> Add all fields with random values:
+        iEngine->AppendToCommandArrayL(GetBrowserCommandL(), 0, entryAmount);
+        // signal end of the executing command
+        AsyncCommandFinished();
+        }
+    }
 
 /*
  * 
@@ -59,24 +193,14 @@ void CCreatorBrowserElement::ExecuteCommandL()
         }
     // Get 'fields' element 
     CCreatorScriptElement* fieldsElement = FindSubElement(KFields);
-    if( fieldsElement )
+    if( fieldsElement && fieldsElement->SubElements().Count() > 0 )
         {
         // Get sub-elements
         const RPointerArray<CCreatorScriptElement>& fields = fieldsElement->SubElements();
         // Create browser entries, the amount of entries is defined by entryAmount:
         for( TInt cI = 0; cI < entryAmount; ++cI )
             {
-            CBrowserParameters* param = 0;
-            
-            if( fields.Count() > 0 )
-            	param = new (ELeave) CBrowserParameters;
-            else
-            	{
-            	// No fields defined --> Add all fields with random values:
-            	addAll = ETrue;
-            	break;
-            	}
-            
+            CBrowserParameters* param = new (ELeave) CBrowserParameters;
             CleanupStack::PushL(param);
             
             for( TInt i = 0; i < fields.Count(); ++i )
@@ -181,6 +305,7 @@ void CCreatorBrowserElement::ExecuteCommandL()
         }
     else
     	{
+        // No fields defined --> Add all fields with random values:
     	addAll = ETrue;
     	}
     

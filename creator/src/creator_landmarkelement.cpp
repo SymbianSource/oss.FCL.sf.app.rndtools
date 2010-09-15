@@ -43,6 +43,224 @@ CCreatorScriptElement(aEngine)
     iIsCommandElement = ETrue;
     }
 
+void CCreatorLandmarkElement::AsyncExecuteCommandL()
+    {
+    const CCreatorScriptAttribute* amountAttr = FindAttributeByName(KAmount);
+    TInt lmAmount = 1;    
+    if( amountAttr )
+        {
+        lmAmount = ConvertStrToIntL(amountAttr->Value());
+        }
+    // Get 'fields' element 
+    CCreatorScriptElement* fieldsElement = FindSubElement(KFields);
+    if( fieldsElement && fieldsElement->SubElements().Count() > 0 )
+        {
+        // Get sub-elements
+        const RPointerArray<CCreatorScriptElement>& fields = fieldsElement->SubElements();        
+        // Create note entries, the amount of entries is defined by noteAmount:
+        if( iLoopIndex < lmAmount )
+            {            
+            CLandmarkParameters* param = new (ELeave) CLandmarkParameters;
+            CleanupStack::PushL(param);
+            
+            for( TInt i = 0; i < fields.Count(); ++i )
+                {
+                CCreatorScriptElement* field = fields[i];
+                TPtrC elemName = field->Name();
+                TPtrC elemContent = field->Content();
+                const CCreatorScriptAttribute* randomAttr = fields[i]->FindAttributeByName(KRandomLength);
+                TBool useRandom = EFalse;
+                if( randomAttr || elemContent.Length() == 0 )
+                    {
+                    useRandom = ETrue;
+                    }
+                
+                if( elemName == KName )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomNameL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iName, elemContent);
+                        }
+                    }
+                else if( elemName == KCategory )
+                    {
+                    if( useRandom )
+                        {
+                        param->AddRandomCategoryL(*iEngine);
+                        }                    
+                    else
+                        {
+                        TPosLmItemId categoryId = CCreatorLandmarks::GetCategoryIdL(elemContent);
+                        if( categoryId > 0 )
+                            {
+                            param->iCategories.AppendL(categoryId);
+                            }
+                        }
+                    }
+                else if( elemName == KDescription )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomDescriptionL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iDescription, elemContent);
+                        }
+                    }
+                else if( elemName == KStreet )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomStreetL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iStreet, elemContent);
+                        }
+                    }
+                else if( elemName == KPostalcode )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomPostCodeL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iPostCode, elemContent);
+                        }
+                    }
+                else if( elemName == KCity )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomCityL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iCity, elemContent);
+                        }
+                    }
+                else if( elemName == KState )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomStateL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iState, elemContent);
+                        }
+                    }
+                else if( elemName == KCountry )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomCountryL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iCountry, elemContent);
+                        }
+                    }
+                else if( elemName == KPhonenumber )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomPhoneNumberL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iPhonenumber, elemContent);
+                        }
+                    }
+                else if( elemName == KUrl )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomUrlL(*iEngine);
+                        }                    
+                    else
+                        {
+                        SetContentToTextParamL(param->iUrl, elemContent);
+                        }
+                    }
+                else if( elemName == KLatitude )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomLatitudeL(*iEngine);
+                        }                    
+                    else
+                        {
+                        ConvertStrToReal64L(elemContent, param->iLatitude);
+                        }
+                    }
+                else if( elemName == KLongitude )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomLongitudeL(*iEngine);
+                        }                    
+                    else
+                        {
+                        ConvertStrToReal64L(elemContent, param->iLongitude);
+                        }
+                    }
+                else if( elemName == KPositionaccuracy )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomPositionAccuracyL(*iEngine);
+                        }                    
+                    else
+                        {
+                        param->iPositionAccuracy = ConvertStrToIntL(elemContent);
+                        }
+                    }
+                else if( elemName == KAltitude )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomAltitudeL(*iEngine);
+                        }                    
+                    else
+                        {
+                        ConvertStrToReal32L(elemContent, param->iAltitude);
+                        }
+                    }
+                else if( elemName == KAltitudeaccuracy )
+                    {
+                    if( useRandom )
+                        {
+                        param->SetRandomAltitudeAccuracyL(*iEngine);
+                        }                    
+                    else
+                        {
+                        param->iAltitudeAccuracy = ConvertStrToIntL(elemContent);
+                        }
+                    }
+                }
+            iEngine->AppendToCommandArrayL(ECmdCreateMiscEntryLandmarks, param);
+            CleanupStack::Pop(); // param
+            StartNextLoop();
+            }
+        else
+            {
+            AsyncCommandFinished();
+            }
+        }
+    else
+        {
+        iEngine->AppendToCommandArrayL(ECmdCreateMiscEntryLandmarks, 0, lmAmount);
+        AsyncCommandFinished();
+        }
+    }
+
 void CCreatorLandmarkElement::ExecuteCommandL()
     {
     const CCreatorScriptAttribute* amountAttr = FindAttributeByName(KAmount);

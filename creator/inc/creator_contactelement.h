@@ -143,6 +143,7 @@ class CCreatorContactElement : public CCreatorContactElementBase
 public:
     static CCreatorContactElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
+    void AsyncExecuteCommandL();
 protected:
     CCreatorContactElement(CCreatorEngine* aEngine);
 };
@@ -154,6 +155,7 @@ class CCreatorContactSetElement : public CCreatorContactElementBase
 {
 public:
     static CCreatorContactSetElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
+    void AsyncExecuteCommand();    
     void ExecuteCommandL();
     virtual void AddToCacheL();
 protected:
@@ -167,6 +169,7 @@ class CCreatorContactGroupElement : public CCreatorContactElementBase
 {
 public:
     static CCreatorContactGroupElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
+    void AsyncExecuteCommandL();
     void ExecuteCommandL();
 protected:
     CCreatorContactGroupElement(CCreatorEngine* aEngine);

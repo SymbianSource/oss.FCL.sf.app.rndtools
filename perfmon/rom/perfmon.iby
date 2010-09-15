@@ -22,11 +22,8 @@
 S60_APP_EXE(PerfMon)
 S60_APP_AIF_ICONS(PerfMon)
 S60_APP_RESOURCE(PerfMon)
-#ifdef S60_UPGRADABLE_APP_REG_RSC
-  S60_UPGRADABLE_APP_REG_RSC(PerfMon)
-#else
-  S60_APP_AIF_RSC(PerfMon)
-#endif
+SCALABLE_IMAGE(APP_BITMAP_DIR,APP_BITMAP_DIR,PerfMon)
+data=ZPRIVATE\10003a3f\import\APPS\PerfMon_reg.RSC Private\10003a3f\import\Apps\PerfMon_reg.rsc
 
 data=ZPRIVATE\20011385\backup_registration.xml        	private\20011385\backup_registration.xml
 data=ZSYSTEM\Install\PerfMon_stub.sis                   \system\install\PerfMon_stub.sis

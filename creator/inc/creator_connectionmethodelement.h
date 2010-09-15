@@ -90,7 +90,7 @@ class CCreatorConnectionMethodElement : public CCreatorScriptElement
 public:
     static CCreatorConnectionMethodElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    
+    void AsyncExecuteCommandL();
 protected:
     CCreatorConnectionMethodElement(CCreatorEngine* aEngine);
 };

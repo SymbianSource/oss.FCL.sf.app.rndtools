@@ -416,6 +416,15 @@ RESOURCE TBUF r_keepbacklighton_setting_title
 
 
 //
+// resources for enablepowermonitoring selections
+//
+RESOURCE TBUF r_powermonitoringenabled_setting_title
+    {
+    buf = "Enable power monitoring";
+    }
+
+
+//
 // resources for datapopupvisibility selection
 //
 RESOURCE TBUF r_datapopupvisibility_setting_title
@@ -585,7 +594,7 @@ RESOURCE DIALOG r_perfmon_about_dialog
             id = EAknMessageQueryContentId;
             control = AVKON_MESSAGE_QUERY
                 {
-                message = "Version 1.0.0 - 6th March 2008. Copyright © 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
+                message = "Version 1.2.0 - 26th August 2010. Copyright © 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
                 };
             }
         };

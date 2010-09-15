@@ -181,7 +181,10 @@ int PIProfilerEnginePrivate::FindProcessL(RProcess& aProc)
 
     // check now if a second appearance exists in process list, 
     // i.e. engine started from eshell => two engine processes appear in normal case
-    procName.Next(aResult2);
+    err = procName.Next(aResult2);
+    if (err != KErrNone) {
+        return err;
+    }
 
     // check if aResult2 contained the second appearance of profiler engine
     if(aResult2.CompareF(aResult) > 0)

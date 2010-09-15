@@ -35,7 +35,7 @@ NAME MEMS
 
 
 // User includes
-#include "MemSpy.hrh"
+#include "../ui/avkon/inc/MemSpy.hrh"
 
 
 RESOURCE RSS_SIGNATURE { }
@@ -220,9 +220,9 @@ RESOURCE MENU_PANE r_memspy_menupane_phone_info_general
     items=
         {
 		MENU_ITEM { command = EMemSpyCmdPhoneInfoGeneralSummary;			txt = "Summary"; },
-		MENU_ITEM { command = EMemSpyCmdPhoneInfoGeneralDetailed;			txt = "Detailed Info"; },
-		MENU_ITEM { command = EMemSpyCmdPhoneInfoGeneralHandles;			txt = "Handle Info"; },
-		MENU_ITEM { command = EMemSpyCmdPhoneInfoGeneralKernelContainers;	txt = "Kernel Containers"; }
+		MENU_ITEM { command = EMemSpyCmdPhoneInfoGeneralDetailed;			txt = "Detailed Info"; }//,
+		//MENU_ITEM { command = EMemSpyCmdPhoneInfoGeneralHandles;			txt = "Handle Info"; },
+		//MENU_ITEM { command = EMemSpyCmdPhoneInfoGeneralKernelContainers;	txt = "Kernel Containers"; }
         };
     }
 
@@ -278,7 +278,7 @@ RESOURCE MENU_PANE r_memspy_menupane_phone_info
 
 
 
-
+/*
 RESOURCE MENU_PANE r_memspy_menupane_process_sort
     {
     items=
@@ -292,7 +292,6 @@ RESOURCE MENU_PANE r_memspy_menupane_process_sort
         };
     }
 
-
 RESOURCE MENU_PANE r_memspy_menupane_process_info
     {
     items=
@@ -301,6 +300,7 @@ RESOURCE MENU_PANE r_memspy_menupane_process_info
 		MENU_ITEM { command = EMemSpyCmdProcessInfoHandles;			txt = "Handles"; }
         };
     }
+*/
 
 
 RESOURCE MENU_PANE r_memspy_menupane_process_end
@@ -318,11 +318,11 @@ RESOURCE MENU_PANE r_memspy_menupane_process
     {
     items=
         {
-		MENU_ITEM { command = EMemSpyCmdProcessInfo;                txt = "Info";       cascade = r_memspy_menupane_process_info; },
-		MENU_ITEM { command = EMemSpyCmdProcessSort;                txt = "Sort";       cascade = r_memspy_menupane_process_sort; },
-		MENU_ITEM { command = EMemSpyCmdProcessEnd;                 txt = "End";       cascade = r_memspy_menupane_process_end; }
+        //MENU_ITEM { command = EMemSpyCmdProcessInfo;                txt = "Info";       cascade = r_memspy_menupane_process_info; },
+        //MENU_ITEM { command = EMemSpyCmdProcessSort;                txt = "Sort";       cascade = r_memspy_menupane_process_sort; },
+		MENU_ITEM { command = EMemSpyCmdProcessEnd;                 txt = "End";       cascade = r_memspy_menupane_process_end; }		
         };
-    }
+    }       
 
 
 
@@ -354,7 +354,7 @@ RESOURCE MENU_PANE r_memspy_menupane_thread_priority
         };
     }
 
-
+/*
 RESOURCE MENU_PANE r_memspy_menupane_thread_info
     {
     items=
@@ -362,7 +362,7 @@ RESOURCE MENU_PANE r_memspy_menupane_thread_info
 		MENU_ITEM { command = EMemSpyCmdThreadInfoHandles;			txt = "Handles"; }
         };
     }
-
+*/
 
 RESOURCE MENU_PANE r_memspy_menupane_thread_end
     {
@@ -379,7 +379,7 @@ RESOURCE MENU_PANE r_memspy_menupane_thread
     {
     items=
         {
- 		MENU_ITEM { command = EMemSpyCmdThreadInfo;					txt = "Info";				cascade = r_memspy_menupane_thread_info; },
+ 		//MENU_ITEM { command = EMemSpyCmdThreadInfo;					txt = "Info";				cascade = r_memspy_menupane_thread_info; },
 		MENU_ITEM { command = EMemSpyCmdThreadSetPriority;          txt = "Change Priority";	cascade = r_memspy_menupane_thread_priority; },
 		MENU_ITEM { command = EMemSpyCmdThreadEnd;					txt = "End";				cascade = r_memspy_menupane_thread_end; }
         };
@@ -1019,7 +1019,7 @@ RESOURCE DIALOG r_memspyui_about_dialog
             id = EAknMessageQueryContentId;
             control = AVKON_MESSAGE_QUERY
 				{
-                message = "Version 1.2.1 - 15th June 2010. Copyright © 2009 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
+                message = "Version 2.1.0 - 15th June 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
 				};
 			}
 		};
