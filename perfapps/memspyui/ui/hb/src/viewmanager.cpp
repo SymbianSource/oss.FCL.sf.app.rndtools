@@ -40,6 +40,8 @@
 #include "memspyecominterfaceview.h"
 #include "memspyecomimplementationview.h"
 #include "memspyecomimplementationdetailview.h"
+#include "memspywindowgroupsview.h"
+#include "memspywindowgroupsdetailview.h"
 
 template <typename T>
 static MemSpyView* factory(EngineWrapper &engine, ViewManager &viewManager)
@@ -64,6 +66,8 @@ MemSpyView* (*sFactories[])(EngineWrapper&, ViewManager&) = {
 	&factory<MemSpyEComInterfaceView>,
 	&factory<MemSpyEComImplementationView>,
 	&factory<MemSpyEComImplementationDetailView>,
+	&factory<MemSpyWindowGroupsView>,
+	&factory<MemSpyWindowGroupsDetailView>,
 };
 
 

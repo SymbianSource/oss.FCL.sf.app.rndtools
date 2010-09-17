@@ -39,6 +39,8 @@ enum ViewIndex {
 	EComInterfaceView,
 	EComImplementationView,
 	EComImplementationDetailView,
+	WindowGroupsView,
+	WindowGroupsDetailView,
 };
 
 class HbMainWindow;

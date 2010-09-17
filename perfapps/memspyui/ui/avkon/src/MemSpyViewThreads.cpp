@@ -46,6 +46,7 @@ CMemSpyViewThreads::CMemSpyViewThreads( RMemSpySession& aSession, MMemSpyViewObs
 
 CMemSpyViewThreads::~CMemSpyViewThreads()
     {
+	iThreads.Reset();
     }
 
  

@@ -2231,7 +2231,7 @@ void CCreatorEngine::ReadEntryIdsFromStoreL( RArray<TInt>& aEntryIds, const TUid
             TRAP( err, id = in.ReadInt32L() );  // will leave with KErrEof
             if ( !err )
                 {
-                aEntryIds.Append( id );
+                aEntryIds.AppendL( id );
                 }
             }
         CleanupStack::PopAndDestroy( &in );
@@ -2262,7 +2262,7 @@ void CCreatorEngine::WriteEntryIdsToStoreL( RArray<TInt>& aEntryIds, const TUid 
             TRAP( err, id = in.ReadInt32L() ); // will leave with KErrEof
             if ( !err )
                 {
-                previousIds.Append( id );
+                previousIds.AppendL( id );
                 }
             }
         CleanupStack::PopAndDestroy( &in );
@@ -2309,7 +2309,7 @@ void CCreatorEngine::ReadEntryIdsFromStoreL( RArray<TUint32>& aEntryIds, const T
             TRAP( err, id = in.ReadUint32L() );  // will leave with KErrEof
             if ( !err )
                 {
-                aEntryIds.Append( id );
+                aEntryIds.AppendL( id );
                 }
             }
         CleanupStack::PopAndDestroy( &in );
@@ -2340,7 +2340,7 @@ void CCreatorEngine::WriteEntryIdsToStoreL( RArray<TUint32>& aEntryIds, const TU
             TRAP( err, id = in.ReadUint32L() ); // will leave with KErrEof
             if ( !err )
                 {
-                previousIds.Append( id );
+                previousIds.AppendL( id );
                 }
             }
         CleanupStack::PopAndDestroy( &in );

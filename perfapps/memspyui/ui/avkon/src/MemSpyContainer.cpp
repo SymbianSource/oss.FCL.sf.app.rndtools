@@ -20,7 +20,6 @@
 // System includes
 #include <eikrted.h>  // for example label control
 #include <txtrich.h>
-#include <apgtask.h>
 
 // Engine includes
 #include <memspy/engine/memspyengine.h>

@@ -30,7 +30,7 @@ HEADERS += inc/application.h \
     inc/valuedatacontainer.h \
     inc/graphdatacontainer.h \
     inc/settingsview.h \
-#    inc/datapopup.h \
+    inc/datapopup.h \
     inc/enginewrapper.h
 
 SOURCES += src/main.cpp \
@@ -40,7 +40,7 @@ SOURCES += src/main.cpp \
     src/valuedatacontainer.cpp \
     src/graphdatacontainer.cpp \
     src/settingsview.cpp \
-#    src/datapopup.cpp \
+    src/datapopup.cpp \
     src/enginewrapper.cpp
 
 RESOURCES +=

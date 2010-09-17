@@ -327,77 +327,77 @@ void CSWMTCategorySelectionCheckBoxSettingItem::CompleteConstructionL()
     {
     SetEmptyItemTextL(_L("Nothing selected"));
     iItemArray = new(ELeave) CSelectionItemList(16);
-    AddNewItemToArrayL( _L("User Heap") );       // 0
-    AddNewItemToArrayL( _L("Kernel Heap") );     // 1
-    AddNewItemToArrayL( _L("User Stacks") );     // 2
-    AddNewItemToArrayL( _L("Global Data") );     // 3
-    AddNewItemToArrayL( _L("Disk Usage") );      // 4
-    AddNewItemToArrayL( _L("Open Files") );      // 5
-    AddNewItemToArrayL( _L("RAM-loaded Code") ); // 6
-    AddNewItemToArrayL( _L("System Memory") );   // 7
-    AddNewItemToArrayL( _L("Local Chunks") );    // 8
-    AddNewItemToArrayL( _L("Global Chunks") );   // 9
-    AddNewItemToArrayL( _L("RAM Drive") );       // 10
-    AddNewItemToArrayL( _L("FileServer Cache") );// 11
-    AddNewItemToArrayL( _L("Kernel Handles") );  // 12
-    AddNewItemToArrayL( _L("Bitmap Handles") );  // 13
-    AddNewItemToArrayL( _L("Window Groups") );   // 14
+    AddNewItemToArrayL( _L("User Heap") );       // 0 >> 0
+    //AddNewItemToArrayL( _L("Kernel Heap") );     // 1
+    //AddNewItemToArrayL( _L("User Stacks") );     // 2
+    //AddNewItemToArrayL( _L("Global Data") );     // 3
+    AddNewItemToArrayL( _L("Disk Usage") );      // 4 >> 1
+    AddNewItemToArrayL( _L("Open Files") );      // 5 >> 2
+    AddNewItemToArrayL( _L("RAM-loaded Code") ); // 6 >> 3
+    AddNewItemToArrayL( _L("System Memory") );   // 7 >> 4
+    AddNewItemToArrayL( _L("Local Chunks") );    // 8 >> 5
+    AddNewItemToArrayL( _L("Global Chunks") );   // 9 >> 6
+    AddNewItemToArrayL( _L("RAM Drive") );       // 10 >> 7
+    AddNewItemToArrayL( _L("FileServer Cache") );// 11 >> 8
+    AddNewItemToArrayL( _L("Kernel Handles") );  // 12 >> 9
+    //AddNewItemToArrayL( _L("Bitmap Handles") );  // 13
+    AddNewItemToArrayL( _L("Window Groups") );   // 14 >> 10
     }
 
 
 void CSWMTCategorySelectionCheckBoxSettingItem::StoreL()
     {
     iExtCategories = 0;
-    if ( iItemArray->At( 11 )->SelectionStatus() )
+    if ( iItemArray->At( 8 )->SelectionStatus() )
         iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryFileServerCache; 
-    if ( iItemArray->At( 13 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryBitmapHandles; 
+    //if ( iItemArray->At( 13 )->SelectionStatus() )
+    //    iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryBitmapHandles; 
     if ( iItemArray->At( 0 )->SelectionStatus() )
         iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserHeap; 
-    if ( iItemArray->At( 1 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHeap; 
-    if ( iItemArray->At( 8 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryLocalChunks; 
-    if ( iItemArray->At( 9 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalChunks; 
-    if ( iItemArray->At( 10 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMDrive; 
-    if ( iItemArray->At( 2 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks; 
-    if ( iItemArray->At( 3 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData; 
-    if ( iItemArray->At( 6 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMLoadedCode; 
-    if ( iItemArray->At( 12 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHandles; 
+    //if ( iItemArray->At( 1 )->SelectionStatus() )
+    //    iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHeap; 
     if ( iItemArray->At( 5 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryOpenFiles; 
-    if ( iItemArray->At( 4 )->SelectionStatus() )
-        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryDiskusage; 
+        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryLocalChunks; 
+    if ( iItemArray->At( 6 )->SelectionStatus() )
+        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalChunks; 
     if ( iItemArray->At( 7 )->SelectionStatus() )
+        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMDrive; 
+    //if ( iItemArray->At( 2 )->SelectionStatus() )
+    //    iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks; 
+    //if ( iItemArray->At( 3 )->SelectionStatus() )
+    //    iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData; 
+    if ( iItemArray->At( 3 )->SelectionStatus() )
+        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMLoadedCode; 
+    if ( iItemArray->At( 9 )->SelectionStatus() )
+        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHandles; 
+    if ( iItemArray->At( 2 )->SelectionStatus() )
+        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryOpenFiles; 
+    if ( iItemArray->At( 1 )->SelectionStatus() )
+        iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryDiskusage; 
+    if ( iItemArray->At( 4 )->SelectionStatus() )
         iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategorySystemMemory; 
-    if ( iItemArray->At( 14 )->SelectionStatus() )
+    if ( iItemArray->At( 10 )->SelectionStatus() )
         iExtCategories |= TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryWindowGroups; 
     }
 
 
 void CSWMTCategorySelectionCheckBoxSettingItem::LoadL()
     {
-    iItemArray->At( 11 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryFileServerCache );
-    iItemArray->At( 13 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryBitmapHandles );
+    iItemArray->At( 8 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryFileServerCache );
+    //iItemArray->At( 13 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryBitmapHandles );
     iItemArray->At( 0 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserHeap );
-    iItemArray->At( 1 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHeap );
-    iItemArray->At( 8 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryLocalChunks );
-    iItemArray->At( 9 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalChunks );
-    iItemArray->At( 10 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMDrive );
-    iItemArray->At( 2 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks );
-    iItemArray->At( 3 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData );
-    iItemArray->At( 6 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMLoadedCode );
-    iItemArray->At( 12 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHandles );
-    iItemArray->At( 5 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryOpenFiles );
-    iItemArray->At( 4 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryDiskusage );
-    iItemArray->At( 7 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategorySystemMemory );
-    iItemArray->At( 14 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryWindowGroups );
+    //iItemArray->At( 1 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHeap );
+    iItemArray->At( 5 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryLocalChunks );
+    iItemArray->At( 6 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalChunks );
+    iItemArray->At( 7 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMDrive );
+    //iItemArray->At( 2 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks );
+    //iItemArray->At( 3 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData );
+    iItemArray->At( 3 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryRAMLoadedCode );
+    iItemArray->At( 9 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryKernelHandles );
+    iItemArray->At( 2 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryOpenFiles );
+    iItemArray->At( 1 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryDiskusage );
+    iItemArray->At( 4 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategorySystemMemory );
+    iItemArray->At( 10 )->SetSelectionStatus( iExtCategories & TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryWindowGroups );
     }
 
 

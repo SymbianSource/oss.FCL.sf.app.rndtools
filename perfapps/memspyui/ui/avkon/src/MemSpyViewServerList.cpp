@@ -32,7 +32,7 @@
 // User includes
 #include "MemSpyUiUtils.h"
 #include "MemSpyViewMainMenu.h"
-#include "MemSpyViewProcesses.h"
+#include "MemSpyViewThreads.h"
 #include "MemSpyContainerObserver.h"
 
 
@@ -53,6 +53,7 @@ CMemSpyViewServerList::CMemSpyViewServerList( RMemSpySession& aSession, MMemSpyV
 CMemSpyViewServerList::~CMemSpyViewServerList()
     {
     delete iList;
+    iServers.Reset();    
     }
 
 
@@ -121,9 +122,10 @@ CMemSpyViewBase* CMemSpyViewServerList::PrepareChildViewL()
     {
     CMemSpyViewBase* child = NULL;
 
-    if  ( iActionedItemIndex )
+    if  ( iActionedItemIndex >= 0 )
         {
-		child = new(ELeave) CMemSpyViewProcesses( iMemSpySession, iObserver, iServers[iActionedItemIndex]->Id() );
+		//child = new(ELeave) CMemSpyViewProcesses( iMemSpySession, iObserver, iServers[iActionedItemIndex]->ProcessId() );
+		child = new(ELeave) CMemSpyViewThreads( iMemSpySession, iObserver, iServers[iActionedItemIndex]->ProcessId(), iServers[iActionedItemIndex]->ThreadId() );
 		CleanupStack::PushL( child );
 		child->ConstructL( Rect(), *Parent() );
 		CleanupStack::Pop( child );        	
@@ -192,7 +194,7 @@ void CMemSpyViewServerList::HandleListBoxItemActionedL( TInt aCurrentIndex )
         }
     else
         {
-        iActionedItem = NULL;
+		iActionedItemIndex = -1;
         }
 
     // Notify observer about an item being 'fired'

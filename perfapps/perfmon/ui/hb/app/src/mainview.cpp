@@ -128,7 +128,7 @@ void MainView::toggleLogging()
 void MainView::showAbout()
 {
     HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeInformation);
-    messageBox->setText("Version 1.2.0 - 26th August 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
+    messageBox->setText("Version 1.2.1 - 10th September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
     HbLabel *header = new HbLabel("About PerfMon", messageBox);
     messageBox->setHeadingWidget(header);
     messageBox->setAttribute(Qt::WA_DeleteOnClose);

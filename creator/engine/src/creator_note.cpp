@@ -114,21 +114,20 @@ TInt CCreatorNotepad::CreateNoteEntryL(CNotepadParameters *aParameters)
     delete iParameters;
     iParameters = NULL;
     
-    CNotepadParameters* parameters = aParameters;
-    
     // random data needed if no predefined data available
-    if (!parameters)
+    if (!aParameters)
         {
         iParameters = new(ELeave) CNotepadParameters;
-        parameters = iParameters;
-        parameters->iNoteText->Des() = iEngine->RandomString(CCreatorEngine::EMessageText);
         }
-    
-    TInt err = KErrNone;
+    else
+        {
+        iParameters = aParameters;
+        }
 
-    iNotepadWrapper->CreateNoteL(parameters->iNoteText->Des());
+    TPtr noteTextPtr = iParameters->iNoteText->Des();
+    noteTextPtr.Copy( iEngine->RandomString(CCreatorEngine::EMessageText).Left( noteTextPtr.MaxLength() ) );
     
-    return err;
+    return iNotepadWrapper->CreateNoteL( noteTextPtr );
     }
 
 //----------------------------------------------------------------------------

@@ -433,6 +433,20 @@ QList<MemSpyEComImplementation*> EngineWrapper::getEComImplementations(int inter
     return result;
 }
 
+QList<MemSpyWindowGroup*> EngineWrapper::getWindowGroups()
+{
+    QList<MemSpyWindowGroup*> result;
+                    
+    RArray<CMemSpyApiWindowGroup*> groups;
+    
+    QT_TRAP_THROWING(mSession.GetWindowGroupsL(groups));
+    
+    for (TInt i=0; i<groups.Count(); i++)
+        result.append(new MemSpyWindowGroup(groups[i]));
+    
+    return result;
+}
+
 
 MemSpyDwoTracker* EngineWrapper::createDeviceWideOperation(DeviceWideOperation operation)
 {
@@ -457,8 +471,8 @@ void EngineWrapper::setSwmtSettings(SwmtMode mode, const QVariantList& categorie
 	{
 	case SwmtModeBasic:
 		bits = TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserHeap | 
-			TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks |
-			TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData |
+			//TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks |
+			//TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData |
 			TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategorySystemMemory;
 		
 		break;

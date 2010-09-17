@@ -411,7 +411,7 @@ TInt CCreatorConnectionSettings::CreateConnectionSettingsEntryL(CCreatorModuleBa
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( dest.Id() );
+    iEntryIds.AppendL( dest.Id() );
     
     conMethod.Close();
     CleanupStack::Pop(  );//conMethod

@@ -75,31 +75,31 @@ TBool CLauncherDLLElement::CompareL(const CLauncherDLLElement& aReferenceElement
     if( iUID1 != aReferenceElement.UID1()) 
         {
         diff = ETrue;
-        aDifferenceList.Append(this->EDifference_UID1);      
+        aDifferenceList.AppendL(this->EDifference_UID1);      
         LOGSTRING3("Launcher: CLauncherDLLElement::CompareL - UID1s differs: %x vs. %x", iUID1, aReferenceElement.UID1());  
         }
     if( iUID2!= aReferenceElement.UID2()) 
         {
         diff = ETrue;
-        aDifferenceList.Append(this->EDifference_UID2);        
+        aDifferenceList.AppendL(this->EDifference_UID2);        
         LOGSTRING3("Launcher: CLauncherDLLElement::CompareL - UID2s differs: %x vs. %x", iUID2, aReferenceElement.UID2());  
         }
     if( iUID3 != aReferenceElement.UID3()) 
         {
         diff = ETrue;
-        aDifferenceList.Append(this->EDifference_UID3);        
+        aDifferenceList.AppendL(this->EDifference_UID3);        
         LOGSTRING3("Launcher: CLauncherDLLElement::CompareL - UID3s differs: %x vs. %x", iUID3, aReferenceElement.UID3());  
         }
     if( iSID != aReferenceElement.SID()) 
         {
         diff = ETrue;
-        aDifferenceList.Append(this->EDifference_SID);        
+        aDifferenceList.AppendL(this->EDifference_SID);        
         LOGSTRING3("Launcher: CLauncherDLLElement::CompareL - SIDs differs: %x vs. %x", iSID, aReferenceElement.SID());  
         }
     if( iCapability != aReferenceElement.Capability()) 
         {
         diff = ETrue;
-        aDifferenceList.Append(this->EDifference_Capability);        
+        aDifferenceList.AppendL(this->EDifference_Capability);        
         LOGSTRING3("Launcher: CLauncherDLLElement::CompareL - Capabilities differs: %x vs. %x", iCapability, aReferenceElement.Capability());  
         }
     

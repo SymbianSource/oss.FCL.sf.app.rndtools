@@ -559,7 +559,7 @@ void CCreatorFiles::EncryptFileL( const TDesC& aInFileName, const TDesC& aOutFil
         RFile file;
         User::LeaveIfError( file.Create( iFs, aOutFileName, EFileWrite ) );
         CleanupClosePushL( file );
-        importFile->ContinueWithNewOutputFile( file, aOutFileName );
+        User::LeaveIfError( importFile->ContinueWithNewOutputFile( file, aOutFileName ) );
         CleanupStack::PopAndDestroy( &file );
         }
     else

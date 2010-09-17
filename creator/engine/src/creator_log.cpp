@@ -259,7 +259,7 @@ TInt CCreatorLogs::CreateMissedCallEntryL(CLogsParameters *aParameters)
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( iLogEvent->Id() );
+    TRAP_IGNORE( iEntryIds.AppendL( iLogEvent->Id() ) );
 
     return iStatus.Int();  // should be KErrNone if writing was succesful
     }
@@ -344,7 +344,7 @@ TInt CCreatorLogs::CreateReceivedCallEntryL(CLogsParameters *aParameters)
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( iLogEvent->Id() );
+    TRAP_IGNORE( iEntryIds.AppendL( iLogEvent->Id() ) );
 
     return iStatus.Int();  // should be KErrNone if writing was succesful
     }
@@ -431,7 +431,7 @@ TInt CCreatorLogs::CreateDialledNumberEntryL(CLogsParameters *aParameters)
 
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( iLogEvent->Id() );
+    TRAP_IGNORE( iEntryIds.AppendL( iLogEvent->Id() ) );
     
     return iStatus.Int();  // should be KErrNone if writing was succesful
     }

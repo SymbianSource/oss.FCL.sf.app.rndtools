@@ -18,6 +18,7 @@
 
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
+#include "../../../symbian_version.hrh"
 
 
 TARGET            PerfMon.exe
@@ -63,7 +64,11 @@ SOURCE            perfmon_datapopupcontainer.cpp
 USERINCLUDE       ../../../engine/inc
 SOURCEPATH        ../../../engine/src
 SOURCE            perfmon_engine.cpp
+#if ( SYMBIAN_VERSION_SUPPORT >= SYMBIAN_3 )
 SOURCE            perfmon_powerlistener.cpp
+#else
+SOURCE            perfmon_powerlistener_stub.cpp
+#endif
 
 LIBRARY           euser.lib
 LIBRARY           commonengine.lib

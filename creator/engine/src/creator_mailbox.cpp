@@ -311,7 +311,7 @@ TInt CCreatorMailboxes::CreateMailboxEntryL(CMailboxesParameters *aParameters)
   
     // appending mailbox type to array to be able to use
     // correct type when deleting mailboxes
-    iEntryIds.Append( parameters->iMailboxType );
+    iEntryIds.AppendL( parameters->iMailboxType );
     
     if (parameters->iMailboxType == EMailboxIMAP4)
         {
@@ -321,12 +321,12 @@ TInt CCreatorMailboxes::CreateMailboxEntryL(CMailboxesParameters *aParameters)
         TSmtpAccount smtpAccountId = account->CreateSmtpAccountL(imapAccountId, *smtpSet, *outgoingIAPSet, EFalse);
         account->SetDefaultSmtpAccountL(smtpAccountId);
 
-        iEntryIds.Append( imapAccountId.iImapAccountId );
-        iEntryIds.Append( imapAccountId.iImapService );
-        iEntryIds.Append( imapAccountId.iSmtpService );      
-        iEntryIds.Append( smtpAccountId.iSmtpAccountId );
-        iEntryIds.Append( smtpAccountId.iSmtpService );
-        iEntryIds.Append( smtpAccountId.iRelatedService );
+        iEntryIds.AppendL( imapAccountId.iImapAccountId );
+        iEntryIds.AppendL( imapAccountId.iImapService );
+        iEntryIds.AppendL( imapAccountId.iSmtpService );      
+        iEntryIds.AppendL( smtpAccountId.iSmtpAccountId );
+        iEntryIds.AppendL( smtpAccountId.iSmtpService );
+        iEntryIds.AppendL( smtpAccountId.iRelatedService );
         
         StoreIMEIToEntryL( imapAccountId.iImapService );
         StoreIMEIToEntryL( smtpAccountId.iSmtpService );
@@ -339,12 +339,12 @@ TInt CCreatorMailboxes::CreateMailboxEntryL(CMailboxesParameters *aParameters)
         TSmtpAccount smtpAccountId = account->CreateSmtpAccountL(popAccountId, *smtpSet, *outgoingIAPSet, EFalse);     
         account->SetDefaultSmtpAccountL(smtpAccountId);
         
-        iEntryIds.Append( popAccountId.iPopAccountId );
-        iEntryIds.Append( popAccountId.iPopService );
-        iEntryIds.Append( popAccountId.iSmtpService );
-        iEntryIds.Append( smtpAccountId.iSmtpAccountId );
-        iEntryIds.Append( smtpAccountId.iSmtpService );
-        iEntryIds.Append( smtpAccountId.iRelatedService );
+        iEntryIds.AppendL( popAccountId.iPopAccountId );
+        iEntryIds.AppendL( popAccountId.iPopService );
+        iEntryIds.AppendL( popAccountId.iSmtpService );
+        iEntryIds.AppendL( smtpAccountId.iSmtpAccountId );
+        iEntryIds.AppendL( smtpAccountId.iSmtpService );
+        iEntryIds.AppendL( smtpAccountId.iRelatedService );
 
         StoreIMEIToEntryL( popAccountId.iPopService );
         StoreIMEIToEntryL( smtpAccountId.iSmtpService );

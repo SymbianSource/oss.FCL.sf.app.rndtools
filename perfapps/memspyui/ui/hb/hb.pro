@@ -44,7 +44,9 @@ HEADERS += inc/enginewrapper.h \
 	inc/memspyecomcategoryview.h \
 	inc/memspyecominterfaceview.h \
 	inc/memspyecomimplementationview.h \
-	inc/memspyecomimplementationdetailview.h
+	inc/memspyecomimplementationdetailview.h \
+	inc/memspywindowgroupsview.h \
+	inc/memspywindowgroupsdetailview.h
 
 SOURCES += src/main.cpp \
 	src/enginewrapper.cpp \
@@ -67,7 +69,9 @@ SOURCES += src/main.cpp \
 	src/memspyecomcategoryview.cpp \
 	src/memspyecominterfaceview.cpp \
 	src/memspyecomimplementationview.cpp \
-	src/memspyecomimplementationdetailview.cpp
+	src/memspyecomimplementationdetailview.cpp \
+	src/memspywindowgroupsview.cpp \
+	src/memspywindowgroupsdetailview.cpp
 
 RESOURCES +=
 
@@ -76,7 +80,6 @@ symbian: {
         -lbafl \
         -lMemSpyClient \
         -lefsrv
-        
 
     TARGET.CAPABILITY = ReadUserData WriteUserData ReadDeviceData WriteDeviceData SwEvent PowerMgmt
 

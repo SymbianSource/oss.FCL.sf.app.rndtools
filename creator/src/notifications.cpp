@@ -55,7 +55,7 @@ void Notifications::showMessageBox(HbMessageBox::MessageBoxType type, const QStr
 void Notifications::about()
 {
     showMessageBox(HbMessageBox::MessageTypeInformation,
-        "Version 6.1.1 - August 27th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.",
+        "Version 6.1.2 - September 9th 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.",
         "About Creator", 
         HbPopup::NoTimeout
         );

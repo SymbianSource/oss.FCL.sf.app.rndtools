@@ -20,6 +20,5 @@ TEMPLATE = subdirs
 DEFINES += QT_NO_DEBUG_OUTPUT QT_NO_WARNING_OUTPUT QT_NO_DEBUG
 
 SUBDIRS = group \
-          #TODO: Functionality broken
-          #ui/hb/datapopup \
+          ui/hb/datapopup \
           ui/hb/app

@@ -48,6 +48,7 @@ CMemSpyViewKernelContainers::CMemSpyViewKernelContainers( RMemSpySession& aSessi
 
 CMemSpyViewKernelContainers::~CMemSpyViewKernelContainers()
     {
+	iKernelObjects.Reset();	
     //delete iModel;
     }
 
@@ -87,7 +88,7 @@ CMemSpyViewBase* CMemSpyViewKernelContainers::PrepareParentViewL()
 CMemSpyViewBase* CMemSpyViewKernelContainers::PrepareChildViewL()
     {	
     CMemSpyViewBase* child = NULL;
-    const TInt index = iListBox->CurrentItemIndex();
+    const TInt index = iListBox->CurrentItemIndex();    
     //child = new(ELeave) CMemSpyViewKernelObjects( iEngine, iObserver, iModel->At( index ).Type() );
     child = new(ELeave) CMemSpyViewKernelObjects( iMemSpySession, iObserver, iKernelObjects[index]->Type() );
     CleanupStack::PushL( child );

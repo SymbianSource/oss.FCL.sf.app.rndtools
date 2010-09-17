@@ -26,7 +26,6 @@
 #include <avkon.hrh>
 #include <barsread.h>
 #include <f32file.h>
-#include <apgtask.h>
 #include <memspyui.rsg>
 
 // Engine includes
@@ -746,8 +745,10 @@ void CMemSpyAppUi::OnCmdToolsBitmapsSaveToMemoryCardL()
 
 void CMemSpyAppUi::OnCmdToolsSendToBackgroundL()
     {
+	/*
     TApaTask task( iCoeEnv->WsSession() );
     task.SendToBackground();
+    */
     }
 
 

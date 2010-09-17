@@ -348,7 +348,9 @@ public:
     
     virtual  ~MemSpyServer() { delete mServer; }
     
-    ProcessId id() const { return mServer->Id(); }
+    ProcessId processId() const { return mServer->ProcessId(); }
+    
+    ThreadId threadId() const { return mServer->ThreadId(); }
     
     QString name() const { return QString((QChar*) mServer->Name().Ptr(), mServer->Name().Length()); }
         
@@ -429,6 +431,47 @@ public:
     
 private:
     CMemSpyApiEComImplementation *mData;
+};
+
+class MemSpyWindowGroup
+{
+public:
+    MemSpyWindowGroup(CMemSpyApiWindowGroup* group)
+        : mData(group)
+    {}
+    
+    virtual  ~MemSpyWindowGroup() { delete mData; }
+    
+    int id() const { return mData->Id(); }
+    
+    QString name() const { return QString((QChar*) mData->Name().Ptr(), mData->Name().Length()); }
+    
+    QString fullName() const { return QString((QChar*) mData->FullName().Ptr(), mData->FullName().Length()); }
+    
+    ThreadId threadId() const { return mData->ThreadId(); }
+    
+    int ordinalPosition() const { return mData->OrdinalPosition(); }
+    
+    int priority() const { return mData->Priority(); }
+    
+    int windowGroupHandle() const { return mData->WindowGroupHandle(); }
+    
+    int uid() const { return mData->Uid().iUid; }
+    
+    bool isBusy() const { return mData->IsBusy(); }
+    
+    bool isSystem() const { return mData->IsSystem(); }
+    
+    bool isHidden() const { return mData->IsHidden(); }
+        
+    bool isFocused() const { return mData->IsFocused(); }
+    
+    QString caption() const { return QString((QChar*) mData->Caption().Ptr(), mData->Caption().Length()); }
+    
+    QString docName() const { return QString((QChar*) mData->DocName().Ptr(), mData->DocName().Length()); }
+    
+private:
+    CMemSpyApiWindowGroup *mData;
 };
 
 
@@ -596,6 +639,8 @@ public:
 	QList<MemSpyEComInterface*> getEComInterfaces(int categoryId);
 	
 	QList<MemSpyEComImplementation*> getEComImplementations(int interfaceId);
+	
+	QList<MemSpyWindowGroup*> getWindowGroups();
 	
 	MemSpyDwoTracker* createDeviceWideOperation(DeviceWideOperation operation);
 	

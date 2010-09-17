@@ -23,6 +23,7 @@
 
 
 #include <e32base.h>
+#include <QPluginLoader>
 #include <NotesEditorInterface>
 #include <AgendaUtil>
 #include <AgendaEntry>
@@ -46,6 +47,7 @@ class CCreatorNotepadWrapper : public CBase
 	private:
 		AgendaUtil *iAgendaUtil;
 		NotesEditorInterface *iNotepadApi;	//QT Notes api
+		QPluginLoader* iNotesEditorPluginLoader; // for loading QT Notes api
 	};
 
 #endif // __CREATORNOTEPADWRAPPER_H__

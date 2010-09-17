@@ -324,7 +324,7 @@ TInt CCreatorAccessPoints::CreateConnectionSettingsEntryL(CCreatorModuleBasePara
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( uid );
+    iEntryIds.AppendL( uid );
         
     TBuf<256> name = iParameters->iConnectionName->Des();
     iApUtils->SetNameL(name, uid); // sets the AP name

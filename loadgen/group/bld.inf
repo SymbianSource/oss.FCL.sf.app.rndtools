@@ -14,6 +14,7 @@ prj_platforms
 
 WINSCW GCCE ARMV5 ARMV6
 #include "bld_generic.inf"
+#include "../ui/avkon/group/bld.inf"
 
 
 prj_mmpfiles

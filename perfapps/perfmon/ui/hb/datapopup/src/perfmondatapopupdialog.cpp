@@ -131,8 +131,8 @@ void PerfMonDataPopupDialog::showEvent(QShowEvent *event)
 
 void PerfMonDataPopupDialog::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_UNUSED(event);
-
+    HbDialog::mousePressEvent(event);
+    
     QVariantMap data;
     data["mouseEvent"] = "press";
     emit deviceDialogData(data);
@@ -160,6 +160,7 @@ QStringList PerfMonDataPopupDialog::lines() const
 void PerfMonDataPopupDialog::setLines(const QStringList &lines)
 {
     mWidget->setLines(lines);
+    setPreferredSize(mWidget->preferredWidth()+30,mWidget->preferredHeight()+30);
 }
 
 void PerfMonDataPopupDialog::reposition()
@@ -178,4 +179,5 @@ void PerfMonDataPopupDialog::reposition()
                 break;
         }
     }
+    resize(0,0);
 }

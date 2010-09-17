@@ -95,6 +95,7 @@ bool PerfMonDataPopupPlugin::deviceDialogInfo(const QString &deviceDialogType,
 
     info->group = DeviceNotificationDialogGroup;
     //info->group = GenericDeviceDialogGroup;
+    //info->group = IndicatorGroup;
     info->flags = NoDeviceDialogFlags;
     info->priority = DefaultPriority;
 

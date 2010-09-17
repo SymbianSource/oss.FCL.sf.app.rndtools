@@ -129,7 +129,7 @@ void MemSpySwmtView::forceDump()
 	
 	mProgressDialog = new HbProgressDialog(HbProgressDialog::WaitDialog);
 	mProgressDialog->setText(tr("Please wait..."));
-	mProgressDialog->setPrimaryAction(0);
+	mProgressDialog->removeAction(mProgressDialog->actions().at(0));
 	mProgressDialog->show();
 	
 	tracker->start();

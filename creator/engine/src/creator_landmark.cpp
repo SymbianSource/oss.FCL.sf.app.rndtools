@@ -455,7 +455,7 @@ TInt CCreatorLandmarks::CreateLandmarkEntryL(CLandmarkParameters *aParameters)
     
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( newLandmark->LandmarkId() );
+    iEntryIds.AppendL( newLandmark->LandmarkId() );
 
     ExecuteAndDeleteLD(iLandmarkDb->CompactL());
     

@@ -142,7 +142,6 @@ void CCreatorScriptParser::OnStartDocumentL(const Xml::RDocumentParameters& aDoc
     {
     LOGSTRING2("Creator: CCreatorScriptParser::OnStartDocumentL (Error code: %d)", aErrorCode);
     User::LeaveIfError(aErrorCode);    
-    const TDesC8& charSet = aDocParam.CharacterSetName().DesC();
     }
 
 void CCreatorScriptParser::OnEndDocumentL(TInt aErrorCode)

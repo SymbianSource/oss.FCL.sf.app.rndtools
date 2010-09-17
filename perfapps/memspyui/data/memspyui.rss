@@ -1019,7 +1019,7 @@ RESOURCE DIALOG r_memspyui_about_dialog
             id = EAknMessageQueryContentId;
             control = AVKON_MESSAGE_QUERY
 				{
-                message = "Version 2.1.0 - 15th June 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
+                message = "Version 2.2.1 - 7th September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
 				};
 			}
 		};

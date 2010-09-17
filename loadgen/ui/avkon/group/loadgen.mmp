@@ -46,6 +46,7 @@ TARGETPATH        /private/10003a3f/apps
 END
 
 APP_LAYER_SYSTEMINCLUDE
+USERINCLUDE		  /epoc32/include/mw/http
 USERINCLUDE       ../inc
 SOURCEPATH        ../src
 
@@ -75,6 +76,7 @@ SOURCE 			  loadgen_photocapture.cpp
 SOURCE			  loadgen_bluetooth.cpp 
 SOURCE			  loadgen_pointerevent.cpp
 SOURCE			  loadgen_utils.cpp
+SOURCE			  loadgen_httpreceiver.cpp
 
 LIBRARY           euser.lib
 LIBRARY           commonengine.lib
@@ -110,5 +112,7 @@ LIBRARY			  centralrepository.lib
 LIBRARY           esock.lib
 LIBRARY           bluetooth.lib
 LIBRARY			  hal.lib
+LIBRARY			  http.lib
+LIBRARY			  inetprotutil.lib
 
 // End of File

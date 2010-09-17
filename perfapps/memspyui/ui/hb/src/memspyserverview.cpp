@@ -49,7 +49,7 @@ QVariant MemSpyServerModel::data(const QModelIndex &index, int role) const
     }
     
     if (role == Qt::UserRole)
-        return mServers.at(index.row())->id();
+        return mServers.at(index.row())->processId();
     
     return QVariant();
 }

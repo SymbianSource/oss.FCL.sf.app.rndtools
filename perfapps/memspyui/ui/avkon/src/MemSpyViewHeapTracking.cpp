@@ -43,12 +43,10 @@ CMemSpyViewHeapTracking::CMemSpyViewHeapTracking( RMemSpySession& aSession, MMem
 :   CMemSpyViewBase( aSession, aObserver ),    
     iState( EMemSpyViewHeapTrackingStateIdle )
     {
-	/*
-    if ( iEngine.HelperSysMemTracker().IsActive() )
-        {
-        iState = EMemSpyViewHeapTrackingStateTimerOn;
-        }
-    */    
+	if( iMemSpySession.IsSwmtRunningL() )
+		{
+		iState = EMemSpyViewHeapTrackingStateTimerOn;
+		}	   
     }
 
 
@@ -403,8 +401,8 @@ void CMemSpyViewHeapTracking::SetConfigByModeL( TMemSpyEngineHelperSysMemTracker
             {
             aConfig.iMode = aMode;
             aConfig.iEnabledCategories = TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserHeap |
-                                         TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks |
-                                         TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData |
+                                         //TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryUserStacks |
+                                         //TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategoryGlobalData |
                                          TMemSpyEngineHelperSysMemTrackerConfig::EMemSpyEngineSysMemTrackerCategorySystemMemory;
             aConfig.iDumpData = EFalse;
             break;

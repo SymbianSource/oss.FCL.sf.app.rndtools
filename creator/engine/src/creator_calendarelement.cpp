@@ -173,6 +173,7 @@ void CCreatorCalendarElement::FillEntryParamsL(TEntryType aType, const RPointerA
                 {
                 parameters->iTodoDueTime = parameters->iEndTime;
                 }
+            endResolved = ETrue;
             }
         else if( elemName == KRecurrentFreq )
             {

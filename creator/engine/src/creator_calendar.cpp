@@ -193,6 +193,7 @@ void CCalenderInterimParameters::ParseL (CCommandParser* parser,
             CleanupStack::PopAndDestroy (tempBuf );
 
             }
+            break;
 
         case MCreatorModuleBaseParameters::ECalendarMemo:
             {
@@ -208,6 +209,7 @@ void CCalenderInterimParameters::ParseL (CCommandParser* parser,
 
             CleanupStack::PopAndDestroy (tempBuf );
             }
+            break;
 
         case MCreatorModuleBaseParameters::ECalendarMeeting:
             {
@@ -226,6 +228,7 @@ void CCalenderInterimParameters::ParseL (CCommandParser* parser,
 
             CleanupStack::PopAndDestroy (tempBuf );
             }
+            break;
 
         case MCreatorModuleBaseParameters::ECalendarAnniv:
             {
@@ -241,10 +244,12 @@ void CCalenderInterimParameters::ParseL (CCommandParser* parser,
             CleanupStack::PopAndDestroy (tempBuf );
 
             }
+            break;
         default:
             {
             //implement 
             }
+            break;
         }
     }
 //----------------------------------------------------------------------------
@@ -537,7 +542,7 @@ TInt CCreatorInterimCalendar::CreateAppointmentEntryL (
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( entry->LocalUidL() );
+    iEntryIds.AppendL( entry->LocalUidL() );
     
     //One item should be added at time
     if (success != 1 )
@@ -944,7 +949,7 @@ TInt CCreatorInterimCalendar::CreateEventEntryL (
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( entry->LocalUidL() );
+    iEntryIds.AppendL( entry->LocalUidL() );
     
     //One item should be added at time
     if (success != 1 )
@@ -1045,7 +1050,7 @@ TInt CCreatorInterimCalendar::CreateReminderEntryL (
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( entry->LocalUidL() );
+    iEntryIds.AppendL( entry->LocalUidL() );
     
     //One item should be added at time
     if (success != 1 )
@@ -1145,7 +1150,7 @@ TInt CCreatorInterimCalendar::CreateAnniversaryEntryL (
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( entry->LocalUidL() );
+    iEntryIds.AppendL( entry->LocalUidL() );
     
     //One item should be added at time
     if (success != 1 )
@@ -1250,7 +1255,7 @@ TInt CCreatorInterimCalendar::CreateTodoEntryL (
 
     // id has been generated, store it for being able to delete
     // entries created only with Creator
-    iEntryIds.Append( entry->LocalUidL() );
+    iEntryIds.AppendL( entry->LocalUidL() );
     
     //One item should be added at time
     if (success != 1 )

@@ -23,7 +23,6 @@ PRJ_EXPORTS
 ../group/backup_registration.xml    Z:/private/20011384/backup_registration.xml
 
 
-
 PRJ_MMPFILES
 #if defined(__SERIES60_30__) || defined(__SERIES60_31__) || defined(__S60_32__)
   gnumakefile loadgen_icons_aif.mk

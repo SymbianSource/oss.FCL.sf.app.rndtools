@@ -18,5 +18,4 @@
 TEMPLATE = subdirs
 
 BLD_INF_RULES.prj_platforms += "$${LITERAL_HASH}include \"bld_generic.inf\""
-#TODO: Functionality broken 
-#BLD_INF_RULES.prj_exports += "../rom/perfmon_datapopup.iby CORE_IBY_EXPORT_PATH(tools,perfmon_datapopup.iby)"
+BLD_INF_RULES.prj_exports += "../rom/perfmon_datapopup.iby CORE_IBY_EXPORT_PATH(tools,perfmon_datapopup.iby)"

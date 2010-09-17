@@ -95,7 +95,7 @@ void CCommandParser::QueryDialogClosedL(TBool aPositiveAction, TInt aUserData)
             iObserver->ScriptChosenL( EFalse );
             }
         }
-    else if( aUserData == EGetingRandomDataFile && aPositiveAction && iSearchArray->Count() )
+    else if( aUserData == EGetingRandomDataFile && iSearchArray->Count() )
         {
         if(aPositiveAction)
             {

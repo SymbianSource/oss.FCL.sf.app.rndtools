@@ -252,7 +252,7 @@ TInt CCreatorPhonebook::CreateContactEntryL(CCreatorModuleBaseParameters *aParam
 	// create a new contact item
 	
 	TUint32 contactId = iPhonebookWrapper->CreateContactEntryL( parameters->iContactFields ); //wrapper should return contact id to store
-	iContactsToDelete.Append( contactId );
+	iContactsToDelete.AppendL( contactId );
 	
 
 	// If this contact has a link id in script (i.e. belongs to a contact-set), we must cache the contact id:
@@ -392,7 +392,7 @@ void CCreatorPhonebook::StoreLinksForDeleteL( RArray<TUint32>& aLinks, TUid aSto
            TRAP_IGNORE( 
                do{ //iContactMngr->CreateLinksLC( in )) != NULL ) // will leave with KErrEof
                    previousLink = in.ReadUint32L();
-                   iPreviousDeleteLinks.Append( previousLink );
+                   iPreviousDeleteLinks.AppendL( previousLink );
                    if(previousLink)
                 	   {
 					   r=true;
@@ -658,7 +658,7 @@ TInt CCreatorPhonebook::CreateGroupEntryL(CCreatorModuleBaseParameters *aParamet
 	    
 	    // store the link to contact, so that Creator is able to delete
 	    // it when user requests deletion of contacts that were created with Creator 
-	    iContactGroupsToDelete.Append( newGroupId );
+	    iContactGroupsToDelete.AppendL( newGroupId );
 	    
 	    return err;
     }

@@ -32,7 +32,8 @@ void MemSpyMainView::initialize(const QVariantMap& params)
 			<< tr("Kernel Objects")
 			<< tr("Tracking")
             << tr("Servers")
-            << tr("ECom");
+            << tr("ECom")
+            << tr("Window Groups");
 	mListView.setModel(new QStringListModel(items, this));
     
 	QObject::connect(&mListView, SIGNAL(released(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
@@ -41,7 +42,14 @@ void MemSpyMainView::initialize(const QVariantMap& params)
 void MemSpyMainView::itemClicked(const QModelIndex& index)
 {
 	Q_UNUSED(index);
-	ViewIndex indexes[] = { ProcessView, KernelObjectTypeView, TrackingView, ServerView, EComCategoryView };
+	ViewIndex indexes[] = { 
+	        ProcessView, 
+	        KernelObjectTypeView, 
+	        TrackingView, 
+	        ServerView, 
+	        EComCategoryView,
+	        WindowGroupsView
+	};
     mViewManager.showView(indexes[index.row()]);
 }
 

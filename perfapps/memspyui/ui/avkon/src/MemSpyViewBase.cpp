@@ -20,7 +20,6 @@
 // System includes
 #include <eikrted.h>  // for example label control
 #include <txtrich.h>
-#include <apgtask.h>
 #include <akntitle.h>
 #include <akncontext.h>
 #include <aknnavi.h>
@@ -120,7 +119,7 @@ void CMemSpyViewBase::RefreshL()
         {
         iListBox->UpdateScrollBarsL();
         }
-
+    
     DrawDeferred();
     }
 

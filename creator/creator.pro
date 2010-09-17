@@ -146,6 +146,8 @@ symbian: {
 			"END"
 
 	MMP_RULES += creatorDataBlock
+	MMP_RULES -= PAGED
+  MMP_RULES *= UNPAGED
 
     BLD_INF_RULES.prj_exports += "./rom/creator.iby CORE_IBY_EXPORT_PATH(tools,creator.iby)
 	BLD_INF_RULES.prj_exports += \

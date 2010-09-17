@@ -236,7 +236,7 @@ TInt CCreatorBrowser::CreateBookmarkEntryL(CBrowserParameters *aParameters)
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iBmEntryIds.Append( item->Uid() );
+    iBmEntryIds.AppendL( item->Uid() );
     
     CleanupStack::PopAndDestroy(3); //db, session, item
 
@@ -287,7 +287,7 @@ TInt CCreatorBrowser::CreateBookmarkFolderEntryL(CBrowserParameters *aParameters
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iBmFEntryIds.Append( item->Uid() );
+    iBmFEntryIds.AppendL( item->Uid() );
     
     CleanupStack::PopAndDestroy(3); //db, session, item
             
@@ -376,7 +376,7 @@ TInt CCreatorBrowser::CreateSavedDeckEntryL(CBrowserParameters *aParameters)
 
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iSpEntryIds.Append( item->Uid() );
+    iSpEntryIds.AppendL( item->Uid() );
 
  
     CleanupStack::PopAndDestroy(6); //db, session, item, sourceFile, destinationFile, sourceBuf    
@@ -427,7 +427,7 @@ TInt CCreatorBrowser::CreateSavedDeckFolderEntryL(CBrowserParameters *aParameter
 
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iSpFEntryIds.Append( item->Uid() );
+    iSpFEntryIds.AppendL( item->Uid() );
 
     CleanupStack::PopAndDestroy(3); //db, session, item
                 

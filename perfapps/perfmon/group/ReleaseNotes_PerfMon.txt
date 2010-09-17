@@ -1,7 +1,7 @@
 ===============================================================================
 
-RELEASE NOTES - PERFORMANCE MONITOR v1.2.0
-RELEASED 26th August 2010 
+RELEASE NOTES - PERFORMANCE MONITOR v1.2.1
+RELEASED 10th September 2010 
 
 SUPPORTS S60 5.2+
 
@@ -26,11 +26,11 @@ Main Features:
 
 ===============================================================================
 
-What's New in v1.2.0
+What's New in v1.2.1
 ====================
-- SMP support
-- Added power usage statistics
-- Error corrections  
+- Feature: Power usage analysis for TB 10.1 devices 
+- Feature: Datapopup can be set to visible
+
 
 ===============================================================================
 
@@ -67,12 +67,18 @@ N/A
 
 Known Issues:
 =============
-N/A
+Datapopup can make Orbit's main menu difficult to use. Works better in landscape mode.
 
 ===============================================================================
 
 Version History:
+
 ================
+Version 1.2.0 - 26th August 2010 
+====================
+- Feature: Support for multiple CPUs in the device
+- Feature: Power usage analysis in watts
+- Error corrections
 
 Version 1.1.1 - 26th August 2010 
 ====================

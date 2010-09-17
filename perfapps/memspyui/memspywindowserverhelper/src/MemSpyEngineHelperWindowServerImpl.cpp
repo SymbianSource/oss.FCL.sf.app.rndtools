@@ -19,7 +19,7 @@
 
 // System includes
 #include <apgwgnam.h>
-#include <apgtask.h>
+#include <APGTASK.h>
 
 // ============================= LOCAL FUNCTIONS ===============================
 
@@ -157,7 +157,7 @@ EXPORT_C void CMemSpyEngineHelperWindowServerImpl::SwitchToL( TInt aWindowGroupI
         User::Leave( KErrNotFound );
         }
     task.BringToForeground();                     
-    CleanupStack::PopAndDestroy( wgName );
+    CleanupStack::PopAndDestroy( wgName );       
     }
 
 
@@ -165,9 +165,6 @@ EXPORT_C void CMemSpyEngineHelperWindowServerImpl::SwitchToL( TInt aWindowGroupI
 
 
 
-
-
-        
 CMemSpyEngineWindowGroupListImpl::CMemSpyEngineWindowGroupListImpl()
     {
     }

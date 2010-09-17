@@ -16,6 +16,7 @@
 */
 
 
+#include <QDir>
 #include "creator_notepadwrapper.h"
 
 	/**
@@ -30,13 +31,16 @@ CCreatorNotepadWrapper::CCreatorNotepadWrapper()
 	*/
 CCreatorNotepadWrapper::~CCreatorNotepadWrapper()
 	{
-/*    
-	if(iNotepadApi)
+    
+    iNotepadApi = NULL;
+		
+    if(iNotesEditorPluginLoader)
         {
-        delete iNotepadApi;
-        iNotepadApi = NULL;
+	    iNotesEditorPluginLoader->unload();
+        delete iNotesEditorPluginLoader;
+        iNotesEditorPluginLoader = NULL;
         }
- */   
+        
     if(iAgendaUtil)
         {
         delete iAgendaUtil;
@@ -72,16 +76,36 @@ CCreatorNotepadWrapper* CCreatorNotepadWrapper::NewLC()
 void CCreatorNotepadWrapper::ConstructL()
 	{
 	iAgendaUtil = new AgendaUtil();
-//	iNotepadApi = new NotesEditor(iAgendaUtil);
+	
+	//	iNotepadApi = new NotesEditor(iAgendaUtil);
+	
+	// Load notes editor plugin.
+    // Launch the notes editor using notes editor plugin api
+    QDir dir(NOTES_EDITOR_PLUGIN_PATH);
+    QString pluginName = dir.absoluteFilePath(NOTES_EDITOR_PLUGIN_NAME);
+
+    QT_TRYCATCH_LEAVING(
+        // Create NotesEditor plugin loader object.
+        iNotesEditorPluginLoader = new QPluginLoader(pluginName);
+
+        // Load the plugin
+        bool notesPluginLoaded = iNotesEditorPluginLoader->load();
+        QObject *plugin = qobject_cast<QObject*> ( iNotesEditorPluginLoader->instance());
+
+        iNotepadApi = qobject_cast<NotesEditorInterface*>(plugin);
+        );
+
 	}
 
 TInt CCreatorNotepadWrapper::CreateNoteL( const TDesC& aText )
 	{
-	TInt err = KErrNone;
-	QString textNote = QString::fromUtf16( aText.Ptr(),aText.Length());
+	User::LeaveIfNull(iNotepadApi);
+
+    QString textNote = QString::fromUtf16( aText.Ptr(),aText.Length());
     iNotepadApi->edit(textNote,iAgendaUtil);
     iNotepadApi->close(NotesEditorInterface::CloseWithSave, iAgendaUtil);
-	return err;
+	
+    return KErrNone;
     }
 void CCreatorNotepadWrapper::DeleteAllL()
 	{

@@ -196,9 +196,9 @@ void CCreatorContactElement::ExecuteCommandL()
             for( TInt i = 0; i < fieldList.Count(); ++i )
                 {
                 TPtrC fieldName = fieldList[i]->Name();
-                const CCreatorScriptAttribute* amountAttr = fieldList[i]->FindAttributeByName(KAmount);
-                const CCreatorScriptAttribute* rndLenAttr = fieldList[i]->FindAttributeByName(KRandomLength);
-                const CCreatorScriptAttribute* increaseAttr = fieldList[i]->FindAttributeByName(KIncrease);
+                //const CCreatorScriptAttribute* amountAttr = fieldList[i]->FindAttributeByName(KAmount);
+                //const CCreatorScriptAttribute* rndLenAttr = fieldList[i]->FindAttributeByName(KRandomLength);
+                //const CCreatorScriptAttribute* increaseAttr = fieldList[i]->FindAttributeByName(KIncrease);
                 //TBool increase( EFalse );
                 //if ( increaseAttr )
                 //    {

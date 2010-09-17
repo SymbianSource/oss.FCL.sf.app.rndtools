@@ -35,8 +35,7 @@ int main(int argc, char *argv[])
 
     MainWindow window(engine);
 	window.show();
-// TODO: functionality broken
-	/*
+
     DataPopup dataPopup(engine);
 
     QObject::connect(&app, SIGNAL(foregroundEvent(bool)),
@@ -44,6 +43,6 @@ int main(int argc, char *argv[])
 
     // TODO: pass false if run in background
     dataPopup.updateVisibility(true);
-*/
+
     return app.exec();
 }

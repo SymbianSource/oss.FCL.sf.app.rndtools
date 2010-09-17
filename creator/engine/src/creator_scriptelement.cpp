@@ -208,7 +208,7 @@ void CCreatorScriptElement::AddSubElementL(CCreatorScriptElement* aElem, TInt aI
         }
     else if( aIndex < iSubElements.Count())
         {
-        iSubElements.Insert(aElem, aIndex);
+        iSubElements.InsertL(aElem, aIndex);
         }
     else
         {
@@ -254,7 +254,7 @@ void CCreatorScriptElement::AddAttributeL(CCreatorScriptAttribute* aAttribute, T
         }
     else if( aIndex < iAttributes.Count())
         {
-        iAttributes.Insert(aAttribute, aIndex);        
+        iAttributes.InsertL(aAttribute, aIndex);        
         }
     else
         {

@@ -33,7 +33,8 @@ USERINCLUDE     ../inc
 APP_LAYER_SYSTEMINCLUDE
 
 LIBRARY         euser.lib
-LIBRARY			ws32.lib apgrfx.lib
+LIBRARY			ws32.lib 
+LIBRARY			apgrfx.lib
 
 
 // End of File

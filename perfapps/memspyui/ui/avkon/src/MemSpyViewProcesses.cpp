@@ -56,7 +56,7 @@ CMemSpyViewProcesses::CMemSpyViewProcesses( RMemSpySession& aEngine, MMemSpyView
 
 CMemSpyViewProcesses::~CMemSpyViewProcesses()
     {	
-	iProcesses.Close();
+	iProcesses.Reset();
     //delete iSearchField;
     delete iMatcherBuffer;
     }

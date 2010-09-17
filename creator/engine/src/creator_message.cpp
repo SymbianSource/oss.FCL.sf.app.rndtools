@@ -539,7 +539,7 @@ TInt CCreatorMessages::CreateSMSEntryL(const CMessagesParameters& parameters)
 
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( messageEntry.Id() );
+    iEntryIds.AppendL( messageEntry.Id() );
     
     CleanupStack::PopAndDestroy(3); //session, registry, clientMtm
         
@@ -759,7 +759,7 @@ TInt CCreatorMessages::CreateMMSEntryL(const CMessagesParameters& parameters)
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( messageEntry.Id() );
+    iEntryIds.AppendL( messageEntry.Id() );
     
     CleanupStack::PopAndDestroy(3); //session, registry, clientMtm        
         
@@ -1013,7 +1013,7 @@ TInt CCreatorMessages::CreateAMSEntryL(const CMessagesParameters& parameters)
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( messageEntry.Id() );
+    iEntryIds.AppendL( messageEntry.Id() );
     
     CleanupStack::PopAndDestroy(3); //session, registry, clientMtm        
         
@@ -1229,7 +1229,7 @@ TInt CCreatorMessages::CreateEmailEntryL(const CMessagesParameters& parameters)
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( messageEntry.Id() );
+    iEntryIds.AppendL( messageEntry.Id() );
     
     CleanupStack::PopAndDestroy(3); //session, registry, clientMtm 
 
@@ -1366,7 +1366,7 @@ TInt CCreatorMessages::CreateSmartMessageEntryL(const CMessagesParameters& param
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( messageEntry.Id() );
+    iEntryIds.AppendL( messageEntry.Id() );
     
     CleanupStack::PopAndDestroy(3); //session, registry, clientMtm
         
@@ -1511,7 +1511,7 @@ TInt CCreatorMessages::CreateObexEntryL(TUid aMtm, const CMessagesParameters& pa
     
     // id has been generated, store it for being able to delete
     // only entries created with Creator
-    iEntryIds.Append( messageEntry.Id() );
+    iEntryIds.AppendL( messageEntry.Id() );
     
     CleanupStack::PopAndDestroy(3); //session, registry, clientMtm 
 

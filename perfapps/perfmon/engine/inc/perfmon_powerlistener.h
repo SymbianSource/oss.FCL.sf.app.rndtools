@@ -25,10 +25,12 @@
 #include "perfmon.hrh"
 
 // HWRM reporting interval multiplier
-const TInt KSampleIntervalMultiple = 1;
-const TInt KReportingDuration = 0;  // Infinite duration
+const TInt KHWRMSampleIntervalMultiple = 1;
+const TInt KHWRMReportingDuration = 0;  // Infinite duration
 
-class CPerfMonPowerListener : public CBase, public MHWRMBatteryPowerObserver
+class CPerfMonPowerListenerImpl;
+
+class CPerfMonPowerListener : public CBase
     {
 public:
     static CPerfMonPowerListener* NewL();
@@ -38,13 +40,42 @@ private:
     CPerfMonPowerListener();
     void ConstructL();
 
+public:
+    // Is power monitoring feature suported by platform
+    static inline TBool IsSupported() { return iIsSupported; };
+
+    // Start monitoring power data
+    TInt Activate();
+    // Stop monitoring power data
+    void DeActivate();
+
+    // Get average power since last read.
+    TInt GetPower();
+    // Maximum power value since measurement started
+    TInt GetMaxPower();
+
+private:
+    static TBool                iIsSupported;
+    CPerfMonPowerListenerImpl*  iPowerListenerImpl;
+    };
+
+
+
+class CPerfMonPowerListenerImpl : public CBase, public MHWRMBatteryPowerObserver
+    {
+public:
+    static CPerfMonPowerListenerImpl* NewL();
+    ~CPerfMonPowerListenerImpl();
+
+private:
+    CPerfMonPowerListenerImpl();
+    void ConstructL();
+
     // Handling central repository max reporting period key
-    void GetReportingPeriodL();
+    TInt GetReportingPeriodL();
     void SetReportingPeriodL(TInt aDuration);
 
 public:
-    static TBool IsSupported();
-
     // Start monitoring power values
     TInt Activate();
     // Stop monitoring power values

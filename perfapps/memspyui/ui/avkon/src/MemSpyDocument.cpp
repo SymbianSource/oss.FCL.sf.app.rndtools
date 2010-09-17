@@ -37,7 +37,11 @@ CMemSpyDocument::CMemSpyDocument(CEikApplication& aApp)
 CMemSpyDocument::~CMemSpyDocument()
     {
     delete iSettings;
-    iMemSpySession->Close();    
+    if( iMemSpySession != NULL )
+    	{
+		iMemSpySession->Close();
+		delete iMemSpySession;
+    	}
     }
 
 
@@ -47,9 +51,9 @@ void CMemSpyDocument::ConstructL()
     //cigasto
     //iEngine = CMemSpyEngine::NewL( fsSession );
     
-    iMemSpySession = new (ELeave) RMemSpySession();
-    //RMemSpySession iMemSpySession;
-	TInt error = iMemSpySession->Connect();	
+    iMemSpySession = new (ELeave) RMemSpySession();    
+    
+    TInt error = iMemSpySession->Connect();	
 	if(error != KErrNotFound)
 		{
 		User::LeaveIfError( error );
