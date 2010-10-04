@@ -41,5 +41,10 @@
 		    <unit bldFile="screengrabber" qt:proFile="screengrabber.pro"/>
       </component>
     </collection>
+    <collection id="debugapps" name="Debug Applications" level="generic">
+			<component id="appregexec" filter="s60" name="AppRegExec" purpose="development" target="device" class="tool">
+				<unit bldFile="debugapps/appregexec/group" />
+			</component>    
+    </collection>    
   </package>
 </SystemDefinition>

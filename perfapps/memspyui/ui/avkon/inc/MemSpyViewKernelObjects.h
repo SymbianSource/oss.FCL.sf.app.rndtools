@@ -91,6 +91,8 @@ private: // Data members
     TInt iCurrItemIndex;
     CDesCArrayFlat* iModel;
     RArray<CMemSpyApiKernelObjectItem*> iKernelObjectItems;
+    
+    CAknWaitDialog* iWaitDialog;
     };
 
 #endif

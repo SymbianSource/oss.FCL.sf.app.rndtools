@@ -56,8 +56,7 @@ CMemSpyViewProcesses::CMemSpyViewProcesses( RMemSpySession& aEngine, MMemSpyView
 
 CMemSpyViewProcesses::~CMemSpyViewProcesses()
     {	
-	iProcesses.Reset();
-    //delete iSearchField;
+	iProcesses.ResetAndDestroy();
     delete iMatcherBuffer;
     }
 
@@ -65,7 +64,15 @@ CMemSpyViewProcesses::~CMemSpyViewProcesses()
 //void CMemSpyViewProcesses::ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune )
 void CMemSpyViewProcesses::ConstructL( const TRect& aRect, CCoeControl& aContainer, TProcessId aSelectionRune )
     {
-	iMemSpySession.GetProcessesL(iProcesses); // get processes array;
+    RArray<CMemSpyApiProcess*> processes;
+	iMemSpySession.GetProcessesL( processes ); // get processes array;
+	CleanupClosePushL( processes );
+	iProcesses.ResetAndDestroy();
+	for (TInt i=0; i<processes.Count(); i++)
+	    {
+	    iProcesses.Append(processes[i]);
+	    }
+	CleanupStack::PopAndDestroy( &processes );
 	
     _LIT( KTitle, "Processes\n& Threads" );
     SetTitleL( KTitle );
@@ -302,7 +309,7 @@ void CMemSpyViewProcesses::OnCmdEndTerminateL()
     if ( doTerminate )
         {        
         TRAP( err, iMemSpySession.EndProcessL( iCurrentProcessId, ETerminate ) );
-        if( err = KErrNone )
+        if( err == KErrNone )
             RefreshL();
         }        
     }
@@ -358,21 +365,23 @@ void CMemSpyViewProcesses::OnCmdEndKillL()
 
 void CMemSpyViewProcesses::SetListBoxModelL()
     {	
-	if( iProcesses.Count() > 0 )
-		{
-		iProcesses.Close();
-		}
-	
-	iMemSpySession.GetProcessesL(iProcesses); // get processes array;
-	iModel = new (ELeave) CDesC16ArrayFlat( iProcesses.Count() + 1); //array for formated items
-	
-	_LIT( KTab, "\t" );
-	iModel = FormatModel( iProcesses ); //TODO Format model method with advanced formatting
+    RArray<CMemSpyApiProcess*> processes;
+    iMemSpySession.GetProcessesL( processes ); // get processes array;
+    CleanupClosePushL( processes );
+    iProcesses.ResetAndDestroy();
+    for (TInt i=0; i<processes.Count(); i++)
+        {
+        iProcesses.Append( processes[i] );
+        }
+    
+    CDesCArrayFlat* model = FormatModelLC( processes ); //TODO Format model method with advanced formatting
 		
 	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-    //listbox->Model()->SetItemTextArray( &iEngine.Container() );
-    listbox->Model()->SetItemTextArray( iModel );
-    listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
+    listbox->Model()->SetItemTextArray( model );
+    listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
+    
+    CleanupStack::Pop( model );
+    CleanupStack::PopAndDestroy( &processes );
     }
 
 
@@ -561,9 +570,11 @@ void CMemSpyViewProcesses::SelectListBoxItemByFindTextL()
 //Model formating methods
 //TODO: to be debbuged
 
-CDesCArrayFlat* CMemSpyViewProcesses::FormatModel( RArray<CMemSpyApiProcess*> aProcesses )
+CDesCArrayFlat* CMemSpyViewProcesses::FormatModelLC( const RArray<CMemSpyApiProcess*> &aProcesses )
 	{		
-	model = new (ELeave) CDesC16ArrayFlat( iProcesses.Count() + 16 ); //array for formated items
+    CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( iProcesses.Count() + 16 ); //array for formated items
+    CleanupStack::PushL( model );
+    
 	_LIT( KMemSpyProcessNameFormatSpecBasicName, " \t%S\t\t%8x, " );
 	
 	for( TInt i=0; i < aProcesses.Count(); i++ )

@@ -30,6 +30,9 @@
 			<module name="piprofilerui">
 				<unit unitID="tools.piprofilerui" mrp="" bldFile="&layer_real_source_path;/perfapps/piprofilerui" name="piprofilerui" proFile="piprofilerui.pro" />
 			</module>
+			<module name="appregexec">
+				<unit unitID="tools.appregexec" mrp="" bldFile="&layer_real_source_path;/debugapps/appregexec/group" name="appregexec" />
+			</module>
     </layer>
   </systemModel>
 </SystemDefinition>

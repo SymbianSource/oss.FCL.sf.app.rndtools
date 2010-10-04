@@ -79,7 +79,7 @@ class MemSpyUiUtils : public MemSpyEngineUtils
 public:
     static void Format( TDes& aBuf, TInt aResourceId, ...);
     static void GetErrorText( TDes& aBuf, TInt aError );
-    static HBufC* FormatItem( const TDesC& aCaption );
+    static HBufC* FormatItemLC( const TDesC& aCaption );
     static TDesC& ThreadInfoItemNameByType( TMemSpyThreadInfoItemType aType );
     static void AppendPriority( TDes& aDes, TProcessPriority aPriority );
     static void AppendExitInfo( TDes& aDes, TExitType aType, TInt aExitReason, const TDesC& aExitCategory  );

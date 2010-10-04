@@ -28,6 +28,7 @@
 #include <memspy/engine/memspyenginehelpersysmemtrackerobserver.h>
 
 // User includes
+#include "MemSpyAsyncTracker.h"
 #include "MemSpyViewBase.h"
 
 // Classes referenced
@@ -59,12 +60,14 @@ private: // From MMemSpyEngineHelperSysMemTrackerObserver
     void HandleCycleFinishedL( const CMemSpyEngineHelperSysMemTrackerCycle& aCycle );
     
 private: // Internal methods
-    TInt IndexByViewType( TMemSpyViewType aType );
+    TInt IndexByViewTypeL( TMemSpyViewType aType );
     void SetConfigByModeL( TMemSpyEngineHelperSysMemTrackerConfig::TMemSpyEngineSysMemTrackerMode aMode, TMemSpyEngineHelperSysMemTrackerConfig& aConfig );
     TInt AsyncStopTimerCallback();
-    void GetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig );
-    void SetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig );
-
+    void GetSwmtConfigL( TMemSpyEngineHelperSysMemTrackerConfig& aConfig );
+    void SetSwmtConfigL( TMemSpyEngineHelperSysMemTrackerConfig& aConfig );    	
+	void DumpNowL();
+	void StartSwmtTimerL();
+    
 private: // Enum
     enum TMemSpyViewHeapTrackingState
         {

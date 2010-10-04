@@ -98,16 +98,18 @@ CMemSpyViewBase* CMemSpyViewKernelHeap::PrepareChildViewL()
 
 void CMemSpyViewKernelHeap::SetListBoxModelL()
     {	
-	CMemSpyApiHeap* iHeap;
-	iHeap = iMemSpySession.GetHeap( );
+	CMemSpyApiHeap* heap = iMemSpySession.GetHeap();
+	User::LeaveIfNull( heap );
+	CleanupStack::PushL( heap );
 		
-	CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( 22 );
-		
-	model = FormatModel( iHeap );	
+	CDesCArrayFlat* model = FormatModelLC( heap );	
 				
 	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
 	listbox->Model()->SetItemTextArray( model );
-	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );			
+	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
+	
+	CleanupStack::Pop( model );
+	CleanupStack::PopAndDestroy( heap );
 	}
 
 
@@ -137,9 +139,10 @@ void CMemSpyViewKernelHeap::OnCmdDumpKernelHeapL()
 
 
 //CDesCArrayFlat* CMemSpyViewKernelHeap::FormatModel( RArray<CMemSpyApiHeap*> &aHeap )
-CDesCArrayFlat* CMemSpyViewKernelHeap::FormatModel( CMemSpyApiHeap* aHeap )
+CDesCArrayFlat* CMemSpyViewKernelHeap::FormatModelLC( CMemSpyApiHeap* aHeap )
 	{
 	CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( 2 );
+	CleanupStack::PushL( model );
 	
 	if (aHeap) 
 	    {
@@ -166,140 +169,163 @@ CDesCArrayFlat* CMemSpyViewKernelHeap::FormatModel( CMemSpyApiHeap* aHeap )
         _LIT( KItem11, "Max. length" );
         _LIT( KItem12, "Debug Allocator Library" );
          
-        HBufC* hItem = FormatItem( KItem0, aHeap->Type() );
+        HBufC* hItem = FormatItemLC( KItem0, aHeap->Type() );
         TPtr pItem(hItem->Des());
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();	
         
-        hItem = FormatItem( KItem1, aHeap->Size() );
+        hItem = FormatItemLC( KItem1, aHeap->Size() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();	
         
         TUint address( aHeap->BaseAddress() );	
-        hItem = FormatItem( KItem8b, address );
+        hItem = FormatItemLC( KItem8b, address );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
         if(aHeap->Shared()) //Yes / No value formatting		
-            hItem = FormatItem( KItem1b, KMemSpyCaptionYes );		
+            hItem = FormatItemLC( KItem1b, KMemSpyCaptionYes );		
         else		
-            hItem = FormatItem( KItem1b, KMemSpyCaptionNo );	
+            hItem = FormatItemLC( KItem1b, KMemSpyCaptionNo );	
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem2, aHeap->ChunkSize() );
+        hItem = FormatItemLC( KItem2, aHeap->ChunkSize() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem3, aHeap->AllocationsCount() );
+        hItem = FormatItemLC( KItem3, aHeap->AllocationsCount() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem4, aHeap->FreeCount() );
+        hItem = FormatItemLC( KItem4, aHeap->FreeCount() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem5, aHeap->BiggestAllocation() );
+        hItem = FormatItemLC( KItem5, aHeap->BiggestAllocation() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem6, aHeap->BiggestFree() );
+        hItem = FormatItemLC( KItem6, aHeap->BiggestFree() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem6a, aHeap->TotalAllocations() );
+        hItem = FormatItemLC( KItem6a, aHeap->TotalAllocations() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem6b, aHeap->TotalFree() );
+        hItem = FormatItemLC( KItem6b, aHeap->TotalFree() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem7, aHeap->SlackFreeSpace() );
+        hItem = FormatItemLC( KItem7, aHeap->SlackFreeSpace() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
         TReal iOneHundred( aHeap->Size() );
         TReal iValue( aHeap->Fragmentation() );	
-        hItem = FormatPercentageItem( KItem8a, iOneHundred, iValue );
+        hItem = FormatPercentageItemLC( KItem8a, iOneHundred, iValue );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem13, aHeap->HeaderSizeA() );
+        hItem = FormatItemLC( KItem13, aHeap->HeaderSizeA() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem14, aHeap->HeaderSizeF() );
+        hItem = FormatItemLC( KItem14, aHeap->HeaderSizeF() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem9a, aHeap->AllocationOverhead() );
+        hItem = FormatItemLC( KItem9a, aHeap->AllocationOverhead() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem9b, aHeap->FreeOverhead() );
+        hItem = FormatItemLC( KItem9b, aHeap->FreeOverhead() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem9c, aHeap->TotalOverhead() );
+        hItem = FormatItemLC( KItem9c, aHeap->TotalOverhead() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
         TReal iOverhead( aHeap->Overhead() );	
-        hItem = FormatPercentageItem( KItem9d, iOneHundred, iOverhead );	
+        hItem = FormatPercentageItemLC( KItem9d, iOneHundred, iOverhead );	
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
-        hItem = FormatItem( KItem10, aHeap->MinLength() );
+        hItem = FormatItemLC( KItem10, aHeap->MinLength() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
             
-        hItem = FormatItem( KItem11, aHeap->MaxLength() );
+        hItem = FormatItemLC( KItem11, aHeap->MaxLength() );
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
         
         if( aHeap->DebugAllocatorLibrary() )		
-            hItem = FormatItem( KItem12, KMemSpyCaptionYes );		
+            hItem = FormatItemLC( KItem12, KMemSpyCaptionYes );		
         else
-            hItem = FormatItem( KItem12, KMemSpyCaptionNo );	
+            hItem = FormatItemLC( KItem12, KMemSpyCaptionNo );	
         pItem = hItem->Des();
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();
 	    }
 	else
 	    {
-        HBufC* hItem = FormatItem( _L("Not Found"), _L("") );
+        HBufC* hItem = FormatItemLC( _L("Not Found"), _L("") );
         TPtr pItem(hItem->Des());
         model->AppendL( pItem );
+        CleanupStack::PopAndDestroy( hItem );
         pItem.Zero();	    
 	    }
 	
 	return model;
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TDesC& aValue )
+HBufC* CMemSpyViewKernelHeap::FormatItemLC( const TDesC& aCaption, const TDesC& aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );
+	HBufC* retBuf = HBufC::NewLC( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 	pRetBuf.Append( _L("\t") );
@@ -309,9 +335,9 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TDesC& aV
 	return retBuf;
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TInt aValue )
+HBufC* CMemSpyViewKernelHeap::FormatItemLC( const TDesC& aCaption, TInt aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );
+	HBufC* retBuf = HBufC::NewLC( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
     
@@ -326,9 +352,9 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TInt aValue )
 	return retBuf;
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint aValue )
+HBufC* CMemSpyViewKernelHeap::FormatItemLC( const TDesC& aCaption, TUint aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );
+	HBufC* retBuf = HBufC::NewLC( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
     
@@ -344,9 +370,9 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint aValue )
 	return retBuf;	
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TInt64& aValue )
+HBufC* CMemSpyViewKernelHeap::FormatItemLC( const TDesC& aCaption, const TInt64& aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );
+	HBufC* retBuf = HBufC::NewLC( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 	    
@@ -361,9 +387,9 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, const TInt64& a
 	return retBuf;	
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TAny* aValue )
+HBufC* CMemSpyViewKernelHeap::FormatItemLC( const TDesC& aCaption, TAny* aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );
+	HBufC* retBuf = HBufC::NewLC( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 		    
@@ -378,9 +404,9 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TAny* aValue )
 	return retBuf;	
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint* aValue )
+HBufC* CMemSpyViewKernelHeap::FormatItemLC( const TDesC& aCaption, TUint* aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );
+	HBufC* retBuf = HBufC::NewLC( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 		    
@@ -395,9 +421,9 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint* aValue )
 	return retBuf;	
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint8* aValue )
+HBufC* CMemSpyViewKernelHeap::FormatItemLC( const TDesC& aCaption, TUint8* aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );
+	HBufC* retBuf = HBufC::NewLC( KMaxName );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 		    
@@ -412,9 +438,9 @@ HBufC* CMemSpyViewKernelHeap::FormatItem( const TDesC& aCaption, TUint8* aValue 
 	return retBuf;	
 	}
 
-HBufC* CMemSpyViewKernelHeap::FormatPercentageItem( const TDesC& aCaption, TReal aOneHundredPercentValue, TReal aValue )
+HBufC* CMemSpyViewKernelHeap::FormatPercentageItemLC( const TDesC& aCaption, TReal aOneHundredPercentValue, TReal aValue )
 	{
-	HBufC* retBuf = HBufC::NewL( KMaxName );	//buffer for formatted item
+	HBufC* retBuf = HBufC::NewLC( KMaxName );	//buffer for formatted item
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 	

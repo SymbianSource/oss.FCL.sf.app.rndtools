@@ -244,6 +244,7 @@ void CMemSpyDwoProgressTracker::Start()
 	iProgressDialog->SetCallback( this );
 	iProgressDialog->SetGloballyCapturing( ETrue );
 	iProgressInfo = iProgressDialog->GetProgressInfoL();	
+	iProgressInfo->SetFinalValue( 100 );	
 	
 	iSession.NotifyDeviceWideOperationProgress( iProgress, iStatus );
 	

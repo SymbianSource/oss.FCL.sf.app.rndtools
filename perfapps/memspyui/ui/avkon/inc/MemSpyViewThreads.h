@@ -78,8 +78,7 @@ private: // Member data
     TThreadId iCurrentThreadId;
     TProcessId iParentProcessId;
     
-    RArray<CMemSpyApiThread*> iThreads;
-    CDesCArrayFlat* iModel;
+    RPointerArray<CMemSpyApiThread> iThreads;
     };
 
 

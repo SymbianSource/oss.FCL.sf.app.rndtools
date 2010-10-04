@@ -12,19 +12,9 @@
 * Contributors:
 *
 * Description:  
+* Bld.inf file to build Avkon version of PerfMon
 *
 */
 
-#include <platform_paths.hrh>
-
-prj_platforms
-
-WINSCW GCCE ARMV5 ARMV6
-
 #include "bld_generic.inf"
-
 #include "../ui/avkon/group/bld.inf"
-
-prj_mmpfiles
-
-prj_extensions

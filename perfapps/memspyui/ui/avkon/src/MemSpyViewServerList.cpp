@@ -53,7 +53,8 @@ CMemSpyViewServerList::CMemSpyViewServerList( RMemSpySession& aSession, MMemSpyV
 CMemSpyViewServerList::~CMemSpyViewServerList()
     {
     delete iList;
-    iServers.Reset();    
+    
+    iServers.ResetAndDestroy();
     }
 
 
@@ -138,57 +139,67 @@ CMemSpyViewBase* CMemSpyViewServerList::PrepareChildViewL()
 void CMemSpyViewServerList::SetListBoxModelL()
     {
 	TInt err = KErrNone;	
-	iModel = NULL;		
 	
-	TRAP( err, iMemSpySession.GetServersL( iServers, iSort ) );
+	RArray<CMemSpyApiServer*> servers;
+	iMemSpySession.GetServersL( servers, iSort );
+	CleanupClosePushL( servers );
 	
-	if ( err == KErrNone )
-		{
-		iModel = new (ELeave) CDesC16ArrayFlat( iServers.Count() ); //array for formated items
-		_LIT(KSession, "session");		
-		
-		for( TInt i = 0; i < iServers.Count(); i++ )
-			{		
-			HBufC* combined = HBufC::NewLC( iServers[i]->Name().Length() + 128 );
+	// copy servers to iServers array
+	iServers.ResetAndDestroy();
+	for (TInt i=0; i<servers.Count(); i++)
+	    {
+	    iServers.Append(servers[i]);
+	    }
+	
+	CleanupStack::PopAndDestroy( &servers );
+	
+    CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( iServers.Count() ); //array for formated items
+    CleanupStack::PushL( model );
+    
+    _LIT(KSession, "session");		
+    
+    for( TInt i = 0; i < iServers.Count(); i++ )
+        {		
+        HBufC* combined = HBufC::NewLC( iServers[i]->Name().Length() + 128 );
 
-			TPtr pCombined( combined->Des() );
-			pCombined.Zero();
-			pCombined.Copy( _L("\t") );
-			
-			if( iServers[i]->Name() != KNullDesC )
-				{
-				pCombined.Append( iServers[i]->Name() );
-				}
-			
-			pCombined.Append( _L("\t\t") );
-			TBuf<16> count;
-			_LIT( KCount, "%d session");
-			
-			count.Format( KCount, iServers[i]->SessionCount() );
-			pCombined.Append( count );
-			
-			if( iServers[i]->SessionCount() != 1 )				
-				{
-				_LIT( KS, "s" );
-				pCombined.Append( KS );
-				}
-			
-			iModel->AppendL( pCombined );	
-			
-			CleanupStack::PopAndDestroy(combined);
-			}
-		}
+        TPtr pCombined( combined->Des() );
+        pCombined.Zero();
+        pCombined.Copy( _L("\t") );
+        
+        if( iServers[i]->Name() != KNullDesC )
+            {
+            pCombined.Append( iServers[i]->Name() );
+            }
+        
+        pCombined.Append( _L("\t\t") );
+        TBuf<16> count;
+        _LIT( KCount, "%d session");
+        
+        count.Format( KCount, iServers[i]->SessionCount() );
+        pCombined.Append( count );
+        
+        if( iServers[i]->SessionCount() != 1 )				
+            {
+            _LIT( KS, "s" );
+            pCombined.Append( KS );
+            }
+        
+        model->AppendL( pCombined );	
+        
+        CleanupStack::PopAndDestroy( combined );
+        }
 	
-    //
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-    listbox->Model()->SetItemTextArray( iModel );
-    listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );    
+    listbox->Model()->SetItemTextArray( model );
+    listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
+    
+    CleanupStack::Pop( model );
     }
 
 
 void CMemSpyViewServerList::HandleListBoxItemActionedL( TInt aCurrentIndex )
-    {	
-    if  ( aCurrentIndex >= 0 && aCurrentIndex < iServers.Count() )
+    {
+    if  ( aCurrentIndex >= 0 && aCurrentIndex < iListBox->Model()->NumberOfItems() )
         {        
  		iActionedItemIndex = aCurrentIndex;
         }

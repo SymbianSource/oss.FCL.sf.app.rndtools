@@ -142,21 +142,15 @@ void CMemSpySettings::StoreSettingsL()
     
     // Verion info
     stream.WriteInt32L( KMemSpySettingsFileFormatVersion );
-    
+        
+    iMemSpySession.GetOutputSink( iSinkType );
     stream.WriteUint8L( iSinkType );
+        
+    // Get SWMT config    
+    GetSwmtConfig( iSwmtConfig );
     
-    
-    // Get SWMT config
-    //CMemSpyEngineHelperSysMemTracker& swmt = iEngine.HelperSysMemTracker();
-    //TMemSpyEngineHelperSysMemTrackerConfig swmtConfig;
-    //swmt.GetConfig( swmtConfig );
-
-    // Write SWMT settings
-    //stream.WriteInt32L( swmtConfig.TimerPeriod().Int() );
-    //stream.WriteUint8L( swmtConfig.DumpData() );
-    
-    stream.WriteInt32L( iSwmtConfig.TimerPeriod().Int() );
-    stream.WriteUint8L( iSwmtConfig.DumpData() );
+    stream.WriteInt32L( iSwmtConfig.iTimerPeriod.Int() );
+    stream.WriteUint8L( iSwmtConfig.iDumpData );
     
     // Write memory tracking auto-start process list
     /*
@@ -168,32 +162,14 @@ void CMemSpySettings::StoreSettingsL()
         TRACE( RDebug::Printf( "CMemSpySettings::StoreSettingsL() - process tracker uid[%02d]: 0x%08x", i, uid.iUid ) );
         stream << uid;
         }
-    */    
-    stream.WriteInt32L( iUidList.Count() );
-    for( TInt i = 0; i < iUidList.Count(); i++ )
-    	{
-		const TUid uid = iUidList[ i ];
-		TRACE( RDebug::Printf( "CMemSpySettings::StoreSettingsL() - process tracker uid[%02d]: 0x%08x", i, uid.iUid ) );
-		stream << uid;
-    	}
+    */        
     
-    // Write memory tracking categories
-    //stream.WriteInt32L( swmtConfig.iEnabledCategories );
+    // Write memory tracking categories    
     stream.WriteInt32L( iSwmtConfig.iEnabledCategories );
     
-    // Write heap tracking thread name filter
-    //stream.WriteInt32L( swmtConfig.iThreadNameFilter.Length() );
+    // Write heap tracking thread name filter    
     stream.WriteInt32L( iSwmtConfig.iThreadNameFilter.Length() );
-    
-    /*
-    if ( swmtConfig.iThreadNameFilter.Length() > 0 )
-        {
-        stream.WriteL( swmtConfig.iThreadNameFilter, swmtConfig.iThreadNameFilter.Length() );
-        }
-    
-    // Write mode
-    stream.WriteInt32L( swmtConfig.iMode );
-    */
+        
     if ( iSwmtConfig.iThreadNameFilter.Length() > 0 )
     	{
 		stream.WriteL( iSwmtConfig.iThreadNameFilter, iSwmtConfig.iThreadNameFilter.Length() );
@@ -220,9 +196,8 @@ void CMemSpySettings::RestoreSettingsL()
     // Engine settings
     TMemSpySinkType type = static_cast< TMemSpySinkType >( stream.ReadUint8L() );
     TRACE( RDebug::Printf( "CMemSpySettings::RestoreSettingsL() - read sinkType: %d", type ) );
-       
-    //iEngine.InstallSinkL( type );
-    //iMemSpySession.SwitchOutputSink( type ); //TODO: to argue to set stuf in engine from here
+           
+    iMemSpySession.SwitchOutputSinkL( type ); //set value in engine
     
     // Set SWMT config
     TMemSpyEngineHelperSysMemTrackerConfig swmtConfig;
@@ -241,13 +216,14 @@ void CMemSpySettings::RestoreSettingsL()
     // Restore memory tracking auto-start process uids if file format supports it...
     if ( version >= 2 )
         {
+		/*
         RArray<TUid> list;		
         CleanupClosePushL( list );
         //
         const TInt count = stream.ReadInt32L();
         
-        //CArrayFixFlat<TUid>* list = new(ELeave)CArrayFixFlat<TUid>(count);
-        //CleanupStack::PushL(list );               
+        CArrayFixFlat<TUid>* list = new(ELeave)CArrayFixFlat<TUid>(count);
+        CleanupStack::PushL(list );               
         
         for( TInt i=0; i<count; i++ )
             {
@@ -264,6 +240,7 @@ void CMemSpySettings::RestoreSettingsL()
         iUidList = list; 	//TODO: to get it into the engine
         
         CleanupStack::PopAndDestroy( &list );
+        */
         }
     
     // Restore memory tracking categories 
@@ -276,10 +253,10 @@ void CMemSpySettings::RestoreSettingsL()
     if ( version > 4 )
         {
         TInt len = stream.ReadInt32L();
-        if ( len > 0 )
-            {
+        if ( len > 0 && len < KMaxName )
+            {			
             stream.ReadL( swmtConfig.iThreadNameFilter, len );
-            }
+            }        
         }
 
     // Write mode
@@ -287,14 +264,42 @@ void CMemSpySettings::RestoreSettingsL()
         {
         swmtConfig.iMode = (TMemSpyEngineHelperSysMemTrackerConfig::TMemSpyEngineSysMemTrackerMode)stream.ReadInt32L();
         }
+        
+    iSwmtConfig = swmtConfig;
     
-    //CMemSpyEngineHelperSysMemTracker& swmt = iEngine.HelperSysMemTracker();
-    //swmt.SetConfigL( swmtConfig );
-    //iMemSpySession.SetSwmtConfig( swmtConfig );
-    
-    iSwmtConfig = swmtConfig; 	//TODO: to get it into the engine
+    SetSwmtConfig( iSwmtConfig ); //set values in engine
     
     CleanupStack::PopAndDestroy( &stream ); // Closes file    
     }
 
+void CMemSpySettings::GetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig )
+	{
+	TInt categories = 0;
+	iMemSpySession.GetSwmtCategoriesL( categories );
+	aConfig.iEnabledCategories = categories;
+		
+	TInt timerPeriod = 0;
+	iMemSpySession.GetSwmtTimerIntervalL( timerPeriod );
+	aConfig.iTimerPeriod = timerPeriod;
+		
+	TBool dumpData = EFalse;
+	iMemSpySession.GetSwmtHeapDumpsEnabledL( dumpData );
+	aConfig.iDumpData = dumpData;
+			     
+	TName threadNameFilter;
+	iMemSpySession.GetSwmtFilter( threadNameFilter );
+	aConfig.iThreadNameFilter = threadNameFilter;
+			
+	TMemSpyEngineHelperSysMemTrackerConfig::TMemSpyEngineSysMemTrackerMode mode;
+	iMemSpySession.GetSwmtMode( mode );
+	aConfig.iMode = mode;	    
+	}
 
+void CMemSpySettings::SetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig )
+	{
+	iMemSpySession.SetSwmtMode( aConfig.iMode );
+	iMemSpySession.SetSwmtCategoriesL( aConfig.iEnabledCategories );
+	iMemSpySession.SetSwmtTimerIntervalL( aConfig.iTimerPeriod.Int() );
+	iMemSpySession.SetSwmtHeapDumpsEnabledL( aConfig.iDumpData );
+	iMemSpySession.SetSwmtFilter( aConfig.iThreadNameFilter );
+	}

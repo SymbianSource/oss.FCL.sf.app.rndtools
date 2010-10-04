@@ -1,4 +1,4 @@
-/*
+/*	
 * Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies). 
 * All rights reserved.
 * This component and the accompanying materials are made available
@@ -52,8 +52,7 @@ CMemSpyViewHeapTracking::CMemSpyViewHeapTracking( RMemSpySession& aSession, MMem
 
 CMemSpyViewHeapTracking::~CMemSpyViewHeapTracking()
     {
-    delete iStopTimerCallBack;
-    //iEngine.HelperSysMemTracker().RemoveObserver( this );
+    delete iStopTimerCallBack;        
     }
 
 
@@ -67,7 +66,7 @@ void CMemSpyViewHeapTracking::ConstructL( const TRect& aRect, CCoeControl& aCont
     // Backup current config because it may be overwritten with Basic/Full mode settings.       
     TMemSpyEngineHelperSysMemTrackerConfig config;
 
-    GetSwmtConfig( config );
+    GetSwmtConfigL( config );
     
     iOriginalConfig = config;     
         
@@ -82,7 +81,7 @@ void CMemSpyViewHeapTracking::ConstructL( const TRect& aRect, CCoeControl& aCont
     if  ( aSelectionRune != NULL )
         {
         const TMemSpyViewType viewType = (TMemSpyViewType) ((TInt) aSelectionRune);
-        index = IndexByViewType( viewType );
+        index = IndexByViewTypeL( viewType );
         }
     iListBox->SetCurrentItemIndex( index );
     HandleListBoxItemSelectedL( index );       
@@ -130,7 +129,7 @@ CMemSpyViewBase* CMemSpyViewHeapTracking::PrepareChildViewL()
     // Get current config    
     TMemSpyEngineHelperSysMemTrackerConfig config;    
     
-    GetSwmtConfig( config );
+    GetSwmtConfigL( config );
     
     //
     if  ( index == 0 )
@@ -142,10 +141,7 @@ CMemSpyViewBase* CMemSpyViewHeapTracking::PrepareChildViewL()
        // if  ( !iEngine.HelperSysMemTracker().IsActive() )
         if  ( !iMemSpySession.IsSwmtRunningL() )
             {
-            iState = EMemSpyViewHeapTrackingStateSingleOn;
-            // Setting observer to be able to stop SWMT after first cycle is completed            
-            //iEngine.HelperSysMemTracker().SetObserver( this );
-            iMemSpySession.ForceSwmtUpdateL();
+			DumpNowL();            
             }
 
         // Redraw listbox 
@@ -165,8 +161,9 @@ CMemSpyViewBase* CMemSpyViewHeapTracking::PrepareChildViewL()
             }
         else if ( iState == EMemSpyViewHeapTrackingStateIdle )
             {
-            iState = EMemSpyViewHeapTrackingStateTimerOn;            
-            iMemSpySession.StartSwmtTimerL();
+			iState = EMemSpyViewHeapTrackingStateTimerOn;
+			RefreshL();
+            StartSwmtTimerL();
             }
 
         // Redraw listbox 
@@ -205,15 +202,7 @@ CMemSpyViewBase* CMemSpyViewHeapTracking::PrepareChildViewL()
         if ( config.iMode == TMemSpyEngineHelperSysMemTrackerConfig::MemSpyEngineSysMemTrackerModeCustom )
             {
             child = new(ELeave) CMemSpyViewHeapTrackingSettings( iMemSpySession, iObserver );
-            }
-        else
-            {
-            child = new(ELeave) CMemSpyViewHeapTrackingResults( iMemSpySession, iObserver );
-            }
-        }
-    else if ( index == 4 )
-        {
-        child = new(ELeave) CMemSpyViewHeapTrackingResults( iMemSpySession, iObserver );
+            }       
         }
     if  ( child )
         {
@@ -237,7 +226,7 @@ void CMemSpyViewHeapTracking::SetListBoxModelL()
     // Get current config    
     TMemSpyEngineHelperSysMemTrackerConfig config;       
     
-    GetSwmtConfig( config );
+    GetSwmtConfigL( config );
 
     // 1st item
     _LIT( KItem1FormatEnable, "\tGet dump now" );
@@ -246,7 +235,7 @@ void CMemSpyViewHeapTracking::SetListBoxModelL()
     
     // 1st item
     //if  ( iEngine.HelperSysMemTracker().IsActive() && iState == EMemSpyViewHeapTrackingStateTimerOn )
-    if  ( iMemSpySession.IsSwmtRunningL() && iState == EMemSpyViewHeapTrackingStateTimerOn )
+    if ( iState == EMemSpyViewHeapTrackingStateTimerOn ) //iMemSpySession.IsSwmtRunningL() &&
         {
         _LIT( KItem1FormatEnable, "\tStop timer\t\t%d (sec)" );
         TName item;
@@ -316,23 +305,7 @@ void CMemSpyViewHeapTracking::SetListBoxModelL()
             break;
             }
         default: break;
-        }
-    
-    // 4th item        
-    TInt cycleCount = iMemSpySession.GetSwmtCyclesCount();    
-    
-    if ( cycleCount > 0 )
-        {
-        _LIT( KItem2Format, "\tResults\t\t%d cycles" );
-        TFullName item;
-        item.Format( KItem2Format, cycleCount );
-        model->AppendL( item );
-        }
-    else
-        {
-        _LIT( KItem2Format, "\tResults\t\tNo results" );
-        model->AppendL( KItem2Format );
-        }      
+        }         
 
     // Set up list box
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
@@ -355,17 +328,17 @@ void CMemSpyViewHeapTracking::HandleCycleFinishedL( const CMemSpyEngineHelperSys
     {
     // Stopping SWMT does not work directly from this function.
     // It has to be made asynchronously.
-   // iStopTimerCallBack = new (ELeave) CAsyncCallBack( TCallBack( CMemSpyViewHeapTracking::AsyncStopTimerCallback, this ), CActive::EPriorityStandard );
-   // iStopTimerCallBack->CallBack();
+    iStopTimerCallBack = new (ELeave) CAsyncCallBack( TCallBack( CMemSpyViewHeapTracking::AsyncStopTimerCallback, this ), CActive::EPriorityStandard );
+    iStopTimerCallBack->CallBack();
     }
 
 
-TInt CMemSpyViewHeapTracking::IndexByViewType( TMemSpyViewType aType )
+TInt CMemSpyViewHeapTracking::IndexByViewTypeL( TMemSpyViewType aType )
     {
     // Get current config	
     TMemSpyEngineHelperSysMemTrackerConfig config;    
     
-    GetSwmtConfig( config );
+    GetSwmtConfigL( config );
     
     TInt index = 0;
     //
@@ -426,7 +399,7 @@ void CMemSpyViewHeapTracking::SetConfigByModeL( TMemSpyEngineHelperSysMemTracker
         default: User::Leave( KErrArgument );
         }
     // Push changes to SWMT
-    SetSwmtConfig( aConfig );
+    SetSwmtConfigL( aConfig );
     Settings().StoreSettingsL();
     }
 
@@ -451,7 +424,7 @@ TInt CMemSpyViewHeapTracking::AsyncStopTimerCallback()
     return KErrNone;
     }
 
-void CMemSpyViewHeapTracking::GetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig )
+void CMemSpyViewHeapTracking::GetSwmtConfigL( TMemSpyEngineHelperSysMemTrackerConfig& aConfig )
 	{
 	TInt categories = 0;
 	iMemSpySession.GetSwmtCategoriesL( categories );
@@ -474,7 +447,7 @@ void CMemSpyViewHeapTracking::GetSwmtConfig( TMemSpyEngineHelperSysMemTrackerCon
 	aConfig.iMode = mode;	     	
 	}
 
-void CMemSpyViewHeapTracking::SetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig )
+void CMemSpyViewHeapTracking::SetSwmtConfigL( TMemSpyEngineHelperSysMemTrackerConfig& aConfig )
 	{
 	iMemSpySession.SetSwmtMode( aConfig.iMode );
 	iMemSpySession.SetSwmtCategoriesL( aConfig.iEnabledCategories );
@@ -483,4 +456,18 @@ void CMemSpyViewHeapTracking::SetSwmtConfig( TMemSpyEngineHelperSysMemTrackerCon
 	iMemSpySession.SetSwmtFilter( aConfig.iThreadNameFilter );
 	}
 
+void CMemSpyViewHeapTracking::DumpNowL()
+	{
+	iState = EMemSpyViewHeapTrackingStateSingleOn;	            	
+		
+	CMemSpySwmtDumpTracker* tracker = new (ELeave) CMemSpySwmtDumpTracker( iMemSpySession );		
+	
+	tracker->StartL();		
+	}
 
+void CMemSpyViewHeapTracking::StartSwmtTimerL()
+	{
+	CMemSpySwmtStartTimerTracker* tracker = new (ELeave) CMemSpySwmtStartTimerTracker( iMemSpySession );
+	
+	tracker->StartL();
+	}

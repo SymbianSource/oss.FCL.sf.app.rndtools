@@ -46,17 +46,25 @@ CMemSpyViewThreads::CMemSpyViewThreads( RMemSpySession& aSession, MMemSpyViewObs
 
 CMemSpyViewThreads::~CMemSpyViewThreads()
     {
-	iThreads.Reset();
+    iThreads.ResetAndDestroy();
     }
 
  
 void CMemSpyViewThreads::ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune )
     {
-    TInt error = KErrNone; 
-	TRAP( error, iMemSpySession.GetThreadsL( iParentProcessId, iThreads ) );
+    TInt error = KErrNone;
+    RArray<CMemSpyApiThread*> threads;
+	TRAP( error, iMemSpySession.GetThreadsL( iParentProcessId, threads ) );
 	
 	if( error == KErrNone )
 	    {
+	    CleanupClosePushL( threads );
+        for (TInt i=0; i<threads.Count(); i++)
+            {
+            iThreads.Append( threads[i] );
+            }
+        CleanupStack::PopAndDestroy( &threads );
+        
 	    _LIT( KTitle, "Threads" );
 	    SetTitleL( KTitle );
 	    //
@@ -350,9 +358,20 @@ void CMemSpyViewThreads::OnCmdInfoHandlesL()
 
 
 void CMemSpyViewThreads::SetListBoxModelL()
-    {		
-	iModel = new (ELeave) CDesC16ArrayFlat( iThreads.Count() ); //array for formated items
-		
+    {
+    RArray<CMemSpyApiThread*> threads;
+    iMemSpySession.GetThreadsL( iParentProcessId, threads );
+    CleanupClosePushL( threads );
+    iThreads.ResetAndDestroy();
+    for (TInt i=0; i<threads.Count(); i++)
+        {
+        iThreads.Append( threads[i] );
+        }
+    CleanupStack::PopAndDestroy( &threads );
+    
+    CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( iThreads.Count() ); //array for formated items
+    CleanupStack::PushL( model );
+    
 	_LIT( KTab, "\t" );
 	_LIT( KTTab, "\t\t" );
 			
@@ -367,14 +386,16 @@ void CMemSpyViewThreads::SetListBoxModelL()
 	    
 	    AppendPriority( tempNamePtr, iThreads[i]->ThreadPriority() );
 	    
-	    iModel->AppendL( tempNamePtr );
+	    model->AppendL( tempNamePtr );
 	    	
 	    CleanupStack::PopAndDestroy( tempName ); 
 	    }			
 	
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );    
-    listbox->Model()->SetItemTextArray( iModel );
-    listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
+    listbox->Model()->SetItemTextArray( model );
+    listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
+    
+    CleanupStack::Pop( model );
     }
 
 

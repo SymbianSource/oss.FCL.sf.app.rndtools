@@ -22,7 +22,7 @@ PRJ_EXPORTS
 ../rom/perfmon.iby CORE_IBY_EXPORT_PATH(tools,perfmon.iby)
 
 PRJ_MMPFILES
-#if defined(__SERIES60_30__) || defined(__SERIES60_31__) || defined(__S60_32__)
+#ifndef SBSV2
   gnumakefile perfmon_icons_aif.mk
 
   #ifdef MARM
@@ -30,7 +30,7 @@ PRJ_MMPFILES
   #endif
 #endif
 
-#if(!defined __SERIES60_30__ && !defined __SERIES60_31__ && !defined __S60_32__)
+#ifdef SBSV2
   PRJ_EXTENSIONS
   START EXTENSION s60/mifconv
   OPTION TARGETFILE perfmon_aif.mif

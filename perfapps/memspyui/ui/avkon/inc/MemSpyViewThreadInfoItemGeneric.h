@@ -78,9 +78,6 @@ protected: // Member data
 private: // Member data
     CAknWaitDialog* iWaitNote;
     CPeriodic* iWaitConstructionChecker;
-    
-    RArray<CMemSpyApiThreadInfoItem*> iThreadInfoItems;  //cigasto
-    CDesCArrayFlat* iModel;
     TThreadId iThreadId;
     TProcessId iParentProcessId;
     TMemSpyThreadInfoItemType iType;

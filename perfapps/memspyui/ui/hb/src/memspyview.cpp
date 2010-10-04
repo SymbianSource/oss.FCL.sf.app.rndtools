@@ -142,7 +142,7 @@ void MemSpyView::showSettings()
 void MemSpyView::showAbout()
 {
 	HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeInformation);
-	messageBox->setText("Version 2.2.1 - 7th September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
+	messageBox->setText("Version 2.2.2 - 21st September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
 	HbLabel *header = new HbLabel("About MemSpy", messageBox);
 	messageBox->setHeadingWidget(header);
 	messageBox->setAttribute(Qt::WA_DeleteOnClose);

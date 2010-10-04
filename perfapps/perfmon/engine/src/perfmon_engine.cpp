@@ -863,7 +863,7 @@ void CPerfMonEngine::LoadSettingsL()
     iSettings.iCPUMode = ECPUModeCPUTime;
     iSettings.iKeepBacklightOn = ETrue;
 
-    iSettings.iDataPopupVisibility = EDataPopupVisbilityAlwaysAlwaysOff;
+    iSettings.iDataPopupVisibility = EDataPopupVisbilityAlwaysOn;
     iSettings.iDataPopupLocation = EDataPopupLocationTopRight;
     iSettings.iDataPopupSources.SetDefaults1();
 

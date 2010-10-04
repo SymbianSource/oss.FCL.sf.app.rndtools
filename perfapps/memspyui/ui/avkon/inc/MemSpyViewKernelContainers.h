@@ -23,6 +23,7 @@
 #include <coecntrl.h>
 #include <aknlists.h>
 #include <BADESCA.H>
+#include <aknwaitdialog.h>
 
 // User includes
 #include "MemSpyViewBase.h"
@@ -66,6 +67,8 @@ private: // Internal methods
 private: // Data members
     //CMemSpyEngineGenericKernelObjectContainer* iModel;
     RArray<CMemSpyApiKernelObject*> iKernelObjects; //array of raw items data
+    
+    CAknWaitDialog* iWaitDialog;
     };
 
 

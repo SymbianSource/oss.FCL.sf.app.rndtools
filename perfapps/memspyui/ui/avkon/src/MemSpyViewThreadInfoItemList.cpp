@@ -266,118 +266,100 @@ void CMemSpyViewThreadInfoItemList::HandleMemSpyEngineInfoContainerEventL( TEven
 
 void CMemSpyViewThreadInfoItemList::SetListBoxModelL()
     {	
-	CDesC16ArrayFlat* iModel = new (ELeave) CDesC16ArrayFlat( 32 );
+	CDesC16ArrayFlat* model = new (ELeave) CDesC16ArrayFlat( 32 );
+	CleanupStack::PushL( model );
 	
-	HBufC* iItem = HBufC::NewL( 32 );
+	HBufC* item;
 	
-	iItem = MemSpyUiUtils::FormatItem( KGeneral );
-	TPtr pItem( iItem->Des() );
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KGeneral );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KHeap );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KHeap );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KStack );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KStack );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KChunks );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KChunks );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KCodeSegs );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KCodeSegs );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KOpenFiles );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KOpenFiles );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KActiveObjects );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KActiveObjects );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KThreadHandlers );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KThreadHandlers );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KProcessHandlers );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KProcessHandlers );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KServers );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KServers );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KConnections );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KConnections );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KSemaphores );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KSemaphores );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KThreadReferences );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KThreadReferences );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KProcessReferences );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KProcessReferences );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KMutexes );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KMutexes );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KTimers );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KTimers );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KDD );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KDD );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KChangeNotif );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KChangeNotif );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KUndertakers );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KUndertakers );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KLogicalDrivers );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();
+	item = MemSpyUiUtils::FormatItemLC( KLogicalDrivers );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
-	iItem = MemSpyUiUtils::FormatItem( KPhysicalDrivers );
-	pItem = iItem->Des();
-	iModel->AppendL( pItem );
-	pItem.Zero();		
+	item = MemSpyUiUtils::FormatItemLC( KPhysicalDrivers );
+	model->AppendL( item->Des() );
+	CleanupStack::PopAndDestroy( item );
 	
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox ); 
-    listbox->Model()->SetItemTextArray( iModel );
-    listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
+    listbox->Model()->SetItemTextArray( model );
+    listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
+    
+    CleanupStack::Pop( model );
     }
 
 

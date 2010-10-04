@@ -103,7 +103,7 @@ void SettingsView::open(const QString &settingsName, TLoadGenCommandIds cmdId)
     connect(actionOk, SIGNAL(triggered()), this, SLOT(okExit()));
 	connect(actionCancel, SIGNAL(triggered()), this, SLOT(cancelled()));
 	connect(this, SIGNAL(aboutToClose()), this, SLOT(backButtonPressed()));
-	connect(mSettingForm, SIGNAL(activated(const QModelIndex)), this, SLOT(dataItemDisplayed(const QModelIndex)));  
+	//connect(mSettingForm, SIGNAL(activated(const QModelIndex)), this, SLOT(dataItemDisplayed(const QModelIndex)));
 	show();
 }
 
@@ -181,6 +181,7 @@ void SettingsView::createCpuLoadItems(HbDataFormModel *model, HbDataFormModelIte
 									  mLoadSettings);
 	mType->setContentWidgetData(QString("items"), CPULOADTYPES);
 
+	mSettingForm->addConnection(mType,SIGNAL(itemSelected(int)),this,SLOT(selectionChanged(int)));
 }
 
 // ---------------------------------------------------------------------------
@@ -227,6 +228,8 @@ void SettingsView::createEatMemoryItems(HbDataFormModel *model, HbDataFormModelI
 										   mLoadSettings);
 	mRandomVar->setContentWidgetData("maximum" , 100);
 	mRandomVar->setContentWidgetData("minimum", 0);	
+	
+	mSettingForm->addConnection(mType,SIGNAL(itemSelected(int)),this,SLOT(selectionChanged(int)));
 }	
 
 // ---------------------------------------------------------------------------

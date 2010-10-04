@@ -58,6 +58,7 @@ symbian: {
         -lbafl \
         -lefsrv \
         -lavkon \
+        -leikcore \
         -lapparc \
         -lapgrfx \
         -lgdi \

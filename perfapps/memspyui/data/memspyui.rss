@@ -1019,7 +1019,7 @@ RESOURCE DIALOG r_memspyui_about_dialog
             id = EAknMessageQueryContentId;
             control = AVKON_MESSAGE_QUERY
 				{
-                message = "Version 2.2.1 - 7th September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
+                message = "Version 2.2.2 - 21st September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.";
 				};
 			}
 		};
@@ -1128,6 +1128,29 @@ RESOURCE LOCALISABLE_APP_INFO r_memspyui_localisable_app_info
         // Note for ROM-based apps it is recommended to add the drive letter
         // icon_file = "z:"APP_BITMAP_DIR"\\myapp_aif.mif";
         icon_file = APP_BITMAP_DIR"\\memspyui_aif.mif";
+        };
+    }
+
+
+RESOURCE DIALOG r_memspy_wait_note
+    {
+	flags = EAknWaitNoteFlags;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtNote;
+            id = EGeneralNote; 	//EWaitNoteId;
+            control = AVKON_NOTE 
+                { 
+				layout = EWaitLayout;
+                singular_label = "Please wait...";     
+                imagefile       = AVKON_ICON_FILE;
+                imageid         = EMbmAvkonQgn_note_progress;
+                imagemask       = EMbmAvkonQgn_note_progress_mask;
+                animation       = R_QGN_GRAF_WAIT_BAR_ANIM;
+                };
+            }
         };
     }
 

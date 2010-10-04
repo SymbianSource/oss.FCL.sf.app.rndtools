@@ -22,13 +22,14 @@
 #include <QFont>
 
 class EngineWrapper;
+class HbMainWindow;
 
 class DataPopup : public HbDeviceDialog
 {
     Q_OBJECT
 
 public:
-    DataPopup(EngineWrapper &engine);
+    DataPopup(EngineWrapper &engine, HbMainWindow &mainWindow);
 
 public slots:
     void show();
@@ -37,19 +38,20 @@ public slots:
     void updateSettings();
     void updateVisibility(bool foreground);
 
-signals:
-    void clicked();
 
 private slots:
     void triggerAction(QVariantMap data);
+    void orientationChanged(Qt::Orientation newOrientation);
+    void inForeground();
+    void inBackground();
 
 private:
     QVariantMap collectParams() const;
     void updateData();
 
 private:
-    EngineWrapper &mEngine;
-
+    EngineWrapper& mEngine;
+    HbMainWindow& mMainWindow;
     bool mPopupCreated;
 
     bool mPopupVisible;

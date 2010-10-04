@@ -215,34 +215,41 @@ TBool CMemSpyViewThreadInfoItemGeneric::HandleCommandL( TInt aCommand )
 
 void CMemSpyViewThreadInfoItemGeneric::SetListBoxModelL()
     {
-	iMemSpySession.GetThreadInfoItems( iThreadInfoItems, iThreadId, iType ); // TODO don't ignore error!
+    
+    RArray<CMemSpyApiThreadInfoItem*> threadInfoItems;
+	iMemSpySession.GetThreadInfoItems( threadInfoItems, iThreadId, iType ); // TODO don't ignore error!
+	CleanupClosePushL( threadInfoItems );
 	
-	iModel = new (ELeave) CDesC16ArrayFlat( iThreadInfoItems.Count() + 10 );
+	CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( threadInfoItems.Count() + 10 );
+	CleanupStack::PushL( model );
 	
-	for( TInt i=0; i<iThreadInfoItems.Count(); i++)
+	for( TInt i=0; i<threadInfoItems.Count(); i++)
 		{						
-		HBufC* combined = HBufC::NewLC( iThreadInfoItems[i]->Caption().Length() + iThreadInfoItems[i]->Value().Length() + 30 );		
+		HBufC* combined = HBufC::NewLC( threadInfoItems[i]->Caption().Length() + threadInfoItems[i]->Value().Length() + 30 );		
 
 		TPtr pCombined( combined->Des() );
 		pCombined.Zero();
 		pCombined.Copy( _L("\t") );
-		if( iThreadInfoItems[i]->Caption() != KNullDesC )
-			pCombined.Append( iThreadInfoItems[i]->Caption() );
+		if( threadInfoItems[i]->Caption() != KNullDesC )
+			pCombined.Append( threadInfoItems[i]->Caption() );
 		if( iType != EMemSpyThreadInfoItemTypeChunk )
 			{
 			pCombined.Append( _L("\t\t") );
-			pCombined.Append( iThreadInfoItems[i]->Value() );
+			pCombined.Append( threadInfoItems[i]->Value() );
 			}					
 		
-		iModel->AppendL( pCombined );	
+		model->AppendL( pCombined );	
 		
-		CleanupStack::PopAndDestroy(combined);
+		CleanupStack::PopAndDestroy( combined );
 		}	
 	
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
     //listbox->Model()->SetItemTextArray( iInfoItem );
-    listbox->Model()->SetItemTextArray( iModel );
+    listbox->Model()->SetItemTextArray( model );
     listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
+    
+    CleanupStack::Pop( model );
+    CleanupStack::PopAndDestroy( &threadInfoItems );
     }
 
 

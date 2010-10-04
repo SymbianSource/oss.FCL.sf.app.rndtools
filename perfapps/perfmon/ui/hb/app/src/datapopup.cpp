@@ -15,6 +15,7 @@
 *
 */
 
+#include <HbMainWindow>
 #include <HbView>
 #include <HbEvent>
 #include <QFontMetrics>
@@ -23,14 +24,18 @@
 #include "enginewrapper.h"
 #include "popupdatacontainer.h"
 
-DataPopup::DataPopup(EngineWrapper &engine) :
+DataPopup::DataPopup(EngineWrapper &engine, HbMainWindow &mainWindow) :
         mEngine(engine),
+        mMainWindow(mainWindow),
         mPopupCreated(false),
         mPopupVisible(false)
 {
     connect(&mEngine, SIGNAL(samplesUpdated()), this, SLOT(updateSamples()));
     connect(&mEngine, SIGNAL(settingsUpdated()), this, SLOT(updateSettings()));
     connect(this, SIGNAL(dataReceived(QVariantMap)), this, SLOT(triggerAction(QVariantMap)));
+    connect(&mainWindow, SIGNAL(orientationChanged(Qt::Orientation)), this, SLOT(orientationChanged(Qt::Orientation)));
+    connect(&mainWindow, SIGNAL(obscured()), this, SLOT(inBackground()));
+    connect(&mainWindow, SIGNAL(revealed()), this, SLOT(inForeground()));
 }
 
 void DataPopup::show()
@@ -66,9 +71,7 @@ void DataPopup::updateSamples()
 
 void DataPopup::updateSettings()
 {
-    // mEngine.settings().dataPopupVisibility can only be changed from
-    // main window, so we may assume the window is in foreground
-    updateVisibility(true);
+    updateVisibility(!mMainWindow.isObscured());
     updateData();
 }
 
@@ -76,7 +79,6 @@ void DataPopup::updateVisibility(bool foreground)
 {
     if (mEngine.settings().dataPopupVisibility() == EDataPopupVisbilityAlwaysOn ||
         (mEngine.settings().dataPopupVisibility() == EDataPopupVisbilityBackgroundOnly && !foreground)) {
-
         show();
     } else {
         hide();
@@ -86,12 +88,14 @@ void DataPopup::updateVisibility(bool foreground)
 void DataPopup::triggerAction(QVariantMap data)
 {
     if (data.contains("mouseEvent") && data["mouseEvent"].toString() == "press") {
-        emit clicked();
-
         // data popup was clicked, move it to other position
+        hide();
+        
         mEngine.settings().setDataPopupLocation(
                 EDataPopupLocationBottomMiddle - mEngine.settings().dataPopupLocation());
         mEngine.updateSettings();
+        
+        show();
     }
 }
 
@@ -175,3 +179,23 @@ void DataPopup::updateData()
         HbDeviceDialog::update(collectParams());
     }
 }
+
+void DataPopup::orientationChanged(Qt::Orientation /*newOrientation*/)
+    {
+    // force the reposition of the window
+    if( mEngine.settings().dataPopupVisibility() == EDataPopupVisbilityAlwaysOn ||
+        (mEngine.settings().dataPopupVisibility() == EDataPopupVisbilityBackgroundOnly && mMainWindow.isObscured()) ) {
+        hide();
+        show();
+        }
+    }
+
+void DataPopup::inForeground()
+    {
+    updateVisibility(true);
+    }
+
+void DataPopup::inBackground()
+    {
+    updateVisibility(false);
+    }

@@ -81,11 +81,8 @@ SettingsView::SettingsView(EngineWrapper &engine)
     mSettingsForm->setModel(mModel);
     setWidget(mSettingsForm);
 
-
     connect(actionOk, SIGNAL(triggered()), this, SLOT(accept()));
     connect(actionCancel, SIGNAL(triggered()), this, SLOT(reject()));
-    connect(this, SIGNAL(aboutToClose()), this, SLOT(accept()));
-
 }
 
 void SettingsView::createModel(HbDataFormModel &model)
@@ -274,5 +271,6 @@ void SettingsView::accept()
 
 void SettingsView::reject()
 {
+    load(mEngine.settings());
     emit finished(false);
 }

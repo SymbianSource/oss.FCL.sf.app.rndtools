@@ -38,6 +38,7 @@ class PerfMonDataPopupDialog : public HbDialog, public HbDeviceDialogInterface
 public:
     enum Location
     {
+        LocationUndefined = -1,
         LocationTopRight = 0,
         LocationBottomMiddle
     };
@@ -63,9 +64,6 @@ protected:
 signals:
     void deviceDialogClosed();
     void deviceDialogData(QVariantMap data);
-
-private slots:
-    void reposition();
 
 private:
     Location location() const;

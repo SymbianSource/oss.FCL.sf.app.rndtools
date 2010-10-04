@@ -26,6 +26,7 @@
 #include <aknnotewrappers.h>
 #include <apgwgnam.h>
 #include <aknmessagequerydialog.h>
+#include <aknwaitdialog.h>
 
 // Engine includes
 #include <memspy/engine/memspyengine.h>
@@ -71,20 +72,35 @@ CMemSpyViewKernelObjects::~CMemSpyViewKernelObjects()
         iNavContainer->Pop( iNavDecorator );
         delete iNavDecorator;
         }
-    delete iModel;
     delete iItems;
     delete iObjectList;
+    
+    if( iWaitDialog )
+    	delete iWaitDialog;
+    
+    for (TInt i=0; i<iKernelObjectItems.Count(); i++)
+        {
+        delete iKernelObjectItems[i];
+    }
+
+    iKernelObjectItems.Close();
     }
 
 
 void CMemSpyViewKernelObjects::ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune )
     {
+	iWaitDialog = new (ELeave) CAknWaitDialog((REINTERPRET_CAST(CEikDialog**, &iWaitDialog)), ETrue);
+	iWaitDialog->PrepareLC( R_MEMSPY_WAIT_NOTE );	
+	iWaitDialog->RunLD();
+	
     _LIT( KTitle, "Kernel Objects" );
     SetTitleL( KTitle );
     iItems = new(ELeave) CDesCArrayFlat(5);
     //
     CMemSpyViewBase::ConstructL( aRect, aContainer, aSelectionRune );
     CreateTabsL();
+    
+    iWaitDialog->ProcessFinishedL(); 
     }
 
 
@@ -107,9 +123,9 @@ CEikListBox* CMemSpyViewKernelObjects::ConstructListBoxL()
 
 
 void CMemSpyViewKernelObjects::RefreshL()
-    {
+    {	
     SetListBoxModelL();
-    CMemSpyViewBase::RefreshL();
+    CMemSpyViewBase::RefreshL();               
     }
 
 
@@ -168,9 +184,14 @@ void CMemSpyViewKernelObjects::SetListBoxModelL()
     //_LIT( KLineFormatSpec, "\t%S" );
     _LIT( KTab, "\t" );
        
+    for (TInt i=0; i<iKernelObjectItems.Count(); i++)
+        {
+        delete iKernelObjectItems[i];
+        }
     iMemSpySession.GetKernelObjectItems( iKernelObjectItems, iObjectType );    
     
-    iModel = new (ELeave) CDesC16ArrayFlat( iKernelObjectItems.Count() + 1 ); //array for formated items, +1 added there for 0 case - creating 0-sized array panics
+    CDesC16ArrayFlat* model = new (ELeave) CDesC16ArrayFlat( iKernelObjectItems.Count() + 1 ); //array for formated items, +1 added there for 0 case - creating 0-sized array panics
+    CleanupStack::PushL( model );
         
     for ( TInt i = 0; i < iKernelObjectItems.Count(); i++ )
         {
@@ -182,14 +203,16 @@ void CMemSpyViewKernelObjects::SetListBoxModelL()
         TBuf<KMaxName> temp;
         temp.Copy(iKernelObjectItems[i]->Name());    	
         tempNamePtr.Append( temp	 );
-        iModel->AppendL( tempNamePtr );
+        model->AppendL( tempNamePtr );
             
         CleanupStack::PopAndDestroy( tempName ); 
         }
     
     CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );
-    listbox->Model()->SetItemTextArray( iModel );
-    listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );       
+    listbox->Model()->SetItemTextArray( model );
+    listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
+    
+    CleanupStack::Pop( model );
     }
 
 

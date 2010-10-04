@@ -15,6 +15,7 @@
 *
 */
 
+#include <eikenv.h>
 #include <QMessageBox>
 
 #include "application.h"
@@ -33,13 +34,13 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // set as system application to prevent getting shut down events 
+    CEikonEnv::Static()->SetSystem( ETrue );
+    
     MainWindow window(engine);
 	window.show();
 
-    DataPopup dataPopup(engine);
-
-    QObject::connect(&app, SIGNAL(foregroundEvent(bool)),
-                     &dataPopup, SLOT(updateVisibility(bool)));
+    DataPopup dataPopup(engine, window);
 
     // TODO: pass false if run in background
     dataPopup.updateVisibility(true);

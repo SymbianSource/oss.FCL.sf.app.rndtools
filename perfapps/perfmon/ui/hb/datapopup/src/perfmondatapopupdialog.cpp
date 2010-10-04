@@ -29,7 +29,7 @@
 PerfMonDataPopupDialog::PerfMonDataPopupDialog(const QVariantMap &parameters) :
         mLastError(NoError),
         mShowEventReceived(false),
-        mLocation(LocationTopRight),
+        mLocation(LocationUndefined),
         mWidget(new PerfMonDataPopupWidget(this))
 {
     setTimeout(0);
@@ -108,10 +108,6 @@ HbPopup *PerfMonDataPopupDialog::deviceDialogWidget() const
 // Widget is about to hide. Closing effect has ended.
 void PerfMonDataPopupDialog::hideEvent(QHideEvent *event)
 {
-    if (mainWindow()) {
-        disconnect(mainWindow(), SIGNAL(orientationChanged(Qt::Orientation)),
-                   this, SLOT(reposition()));
-    }
     HbPopup::hideEvent(event);
     emit deviceDialogClosed();
 }
@@ -119,11 +115,6 @@ void PerfMonDataPopupDialog::hideEvent(QHideEvent *event)
 // Widget is about to show
 void PerfMonDataPopupDialog::showEvent(QShowEvent *event)
 {
-    if (mainWindow()) {
-        connect(mainWindow(), SIGNAL(orientationChanged(Qt::Orientation)),
-                this, SLOT(reposition()));
-    }
-    reposition();
     HbPopup::showEvent(event);
     mShowEventReceived = true;
 }
@@ -148,7 +139,13 @@ void PerfMonDataPopupDialog::setLocation(Location location)
 {
     if (location != mLocation) {
         mLocation = location;
-        reposition();
+        QSize screenSize = HbDeviceProfile::profile(mainWindow()).logicalSize();
+        if(mLocation == LocationTopRight) {
+            setPreferredPos(QPointF(screenSize.width(), 0), HbPopup::TopRightCorner);
+        }
+        else{
+            setPreferredPos(QPointF(screenSize.width() / 2, screenSize.height()), HbPopup::BottomEdgeCenter);
+        }
     }
 }
 
@@ -160,24 +157,4 @@ QStringList PerfMonDataPopupDialog::lines() const
 void PerfMonDataPopupDialog::setLines(const QStringList &lines)
 {
     mWidget->setLines(lines);
-    setPreferredSize(mWidget->preferredWidth()+30,mWidget->preferredHeight()+30);
-}
-
-void PerfMonDataPopupDialog::reposition()
-{
-    if (mainWindow()) {
-        QSize screenSize = HbDeviceProfile::profile(mainWindow()).logicalSize();
-        switch (mLocation) {
-            case LocationTopRight:
-                setPreferredPos(QPointF(screenSize.width(), 0),
-                                HbPopup::TopRightCorner);
-                break;
-
-            case LocationBottomMiddle:
-                setPreferredPos(QPointF(screenSize.width() / 2, screenSize.height()),
-                                HbPopup::BottomEdgeCenter);
-                break;
-        }
-    }
-    resize(0,0);
 }

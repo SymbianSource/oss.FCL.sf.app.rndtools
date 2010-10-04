@@ -40,6 +40,7 @@ source          MemSpyDeviceWideOperationDialog.cpp
 source          MemSpyExportBitmapsToMemoryCardDialog.cpp
 source          MemSpyUiUtils.cpp
 source          MemSpySettings.cpp
+source			MemSpyAsyncTracker.cpp
 //
 source          MemSpyViewBase.cpp
 source          MemSpyViewMainMenu.cpp
@@ -75,9 +76,9 @@ source          MemSpyViewThreadInfoItemActiveObject.cpp
 source          MemSpyViewThreadInfoItemGeneralInfo.cpp
 
 source          MemSpyViewHeapTracking.cpp
-source          MemSpyViewHeapTrackingResults.cpp
-source          MemSpyViewHeapTrackingSettings.cpp
+source          MemSpyViewHeapTrackingSettings.cpp 
 /*
+source          MemSpyViewHeapTrackingResults.cpp //removed 
 source			MemSpyViewThreadInfoItemMemoryTracking.cpp
 source			MemSpyViewMemoryTrackingAutoStartConfig.cpp
 source			MemSpyViewWindowGroups.cpp

@@ -63,9 +63,9 @@ void MemSpyUiUtils::GetErrorText( TDes& aBuf, TInt aError )
         }
     }
 
-HBufC* MemSpyUiUtils::FormatItem( const TDesC& aCaption )
+HBufC* MemSpyUiUtils::FormatItemLC( const TDesC& aCaption )
 	{
-	HBufC* retBuf = HBufC::NewL( 32 );
+	HBufC* retBuf = HBufC::NewLC( 32 );
 	TPtr pRetBuf( retBuf->Des() );
 	pRetBuf.Zero();
 	pRetBuf.Append( _L("\t") );

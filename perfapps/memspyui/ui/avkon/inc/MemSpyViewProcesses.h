@@ -96,7 +96,7 @@ private: // From MCoeControlObserver
 private: // Internal methods
     void SelectListBoxItemByFindTextL();
     
-    CDesCArrayFlat* FormatModel( RArray<CMemSpyApiProcess*> aProcesses );
+    CDesCArrayFlat* FormatModelLC( const RArray<CMemSpyApiProcess*> &aProcesses );
     void AppendPriority( TDes& aDes, TProcessPriority aPriority );
     void AppendExitInfo( TDes& aDes, TExitType aType, TInt aExitReason, const TDesC& aExitCategory  );
     void AppendExitType( TDes& aDes, TExitType aType );
@@ -106,7 +106,7 @@ private: // Data members
     TProcessId iCurrentProcessId;
     CAknSearchField* iSearchField;
     HBufC* iMatcherBuffer;
-    RArray<CMemSpyApiProcess*> iProcesses;  //cigasto
+    RPointerArray<CMemSpyApiProcess> iProcesses;
     CDesCArrayFlat* iModel;
     CDesCArrayFlat* model;
     };

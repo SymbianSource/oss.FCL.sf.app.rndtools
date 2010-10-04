@@ -58,15 +58,15 @@ private: // Command handlers
 
 private: // Internal methods
     //CDesCArrayFlat* FormatModel( RArray<CMemSpyApiHeap*> &aHeap );
-    CDesCArrayFlat* FormatModel( CMemSpyApiHeap* aHeap );
-    HBufC* FormatItem( const TDesC& aCaption, const TDesC& aValue );
-    HBufC* FormatItem( const TDesC& aCaption, TInt aValue );
-    HBufC* FormatItem( const TDesC& aCaption, TUint aValue );
-    HBufC* FormatItem( const TDesC& aCaption, const TInt64& aValue );
-    HBufC* FormatItem( const TDesC& aCaption, TAny* aValue );
-    HBufC* FormatItem( const TDesC& aCaption, TUint* aValue );
-    HBufC* FormatItem( const TDesC& aCaption, TUint8* aValue );
-    HBufC* FormatPercentageItem( const TDesC& aCaption, TReal aOneHundredPercentValue, TReal aValue );
+    CDesCArrayFlat* FormatModelLC( CMemSpyApiHeap* aHeap );
+    HBufC* FormatItemLC( const TDesC& aCaption, const TDesC& aValue );
+    HBufC* FormatItemLC( const TDesC& aCaption, TInt aValue );
+    HBufC* FormatItemLC( const TDesC& aCaption, TUint aValue );
+    HBufC* FormatItemLC( const TDesC& aCaption, const TInt64& aValue );
+    HBufC* FormatItemLC( const TDesC& aCaption, TAny* aValue );
+    HBufC* FormatItemLC( const TDesC& aCaption, TUint* aValue );
+    HBufC* FormatItemLC( const TDesC& aCaption, TUint8* aValue );
+    HBufC* FormatPercentageItemLC( const TDesC& aCaption, TReal aOneHundredPercentValue, TReal aValue );
 
 private: // Data members
     };

@@ -57,6 +57,10 @@ private: // Settings methods
     void GetSettingsFileNameL( TDes& aFileName );
     void GetSettingsPathL( TDes& aPath );
     RFile SettingsFileLC( TBool aReplace = EFalse );
+    
+    //new methods according to new architecture
+    void GetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig );
+    void SetSwmtConfig( TMemSpyEngineHelperSysMemTrackerConfig& aConfig );  
 
 private: // Data members
     RFs& iFsSession;    

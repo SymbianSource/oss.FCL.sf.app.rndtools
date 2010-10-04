@@ -67,8 +67,7 @@ private: // Data members
     CMemSpyEngineServerList* iList;
     const CMemSpyEngineServerEntry* iActionedItem;
     TInt iActionedItemIndex;
-    RArray<CMemSpyApiServer*> iServers;
-    CDesCArrayFlat* iModel;  
+    RPointerArray<CMemSpyApiServer> iServers;
     TSortType iSort;
     };
 

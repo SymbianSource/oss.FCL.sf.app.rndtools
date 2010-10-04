@@ -17,6 +17,7 @@
 
 #include <QActionGroup>
 #include <HbApplication>
+#include <hbmainwindow.h>
 #include <HbMenu>
 #include <HbToolBar>
 #include <HbAction>
@@ -84,6 +85,9 @@ void MainView::showValues()
 {
     // remove old widget & take ownership
     takeWidget();
+    if(scene()){
+        scene()->removeItem(mGraphDataContainer);
+    }
     mGraphDataContainer->hideContainer();
     mValueDataContainer->showContainer(); 
     // set new widget
@@ -100,6 +104,9 @@ void MainView::showGraphs()
 {
     // remove old widget & take ownership
     takeWidget();
+    if(scene()){
+        scene()->removeItem(mValueDataContainer);
+    }
     mValueDataContainer->hideContainer();    
     mGraphDataContainer->showContainer();
     // set new widget
@@ -128,7 +135,7 @@ void MainView::toggleLogging()
 void MainView::showAbout()
 {
     HbMessageBox *messageBox = new HbMessageBox(HbMessageBox::MessageTypeInformation);
-    messageBox->setText("Version 1.2.1 - 10th September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
+    messageBox->setText("Version 1.2.2 - 24th September 2010. Copyright © 2010 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. Licensed under Eclipse Public License v1.0.");
     HbLabel *header = new HbLabel("About PerfMon", messageBox);
     messageBox->setHeadingWidget(header);
     messageBox->setAttribute(Qt::WA_DeleteOnClose);

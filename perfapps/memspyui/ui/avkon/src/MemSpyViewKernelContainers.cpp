@@ -48,17 +48,29 @@ CMemSpyViewKernelContainers::CMemSpyViewKernelContainers( RMemSpySession& aSessi
 
 CMemSpyViewKernelContainers::~CMemSpyViewKernelContainers()
     {
-	iKernelObjects.Reset();	
-    //delete iModel;
+    for (TInt i=0; i<iKernelObjects.Count(); i++)
+        {
+        delete iKernelObjects[i];
+        }
+    iKernelObjects.Close();
+    
+    if( iWaitDialog )    	
+		delete iWaitDialog;    
     }
 
 
 void CMemSpyViewKernelContainers::ConstructL( const TRect& aRect, CCoeControl& aContainer, TAny* aSelectionRune )
     {
+	iWaitDialog = new (ELeave) CAknWaitDialog((REINTERPRET_CAST(CEikDialog**, &iWaitDialog)), ETrue);
+	iWaitDialog->PrepareLC( R_MEMSPY_WAIT_NOTE );	
+	iWaitDialog->RunLD();
+	
     _LIT( KTitle, "Kernel Objects" );
     SetTitleL( KTitle );
     //    
     CMemSpyViewBase::ConstructL( aRect, aContainer, aSelectionRune );
+    
+    iWaitDialog->ProcessFinishedL();
     }
 
 
@@ -99,9 +111,14 @@ CMemSpyViewBase* CMemSpyViewKernelContainers::PrepareChildViewL()
 
 
 void CMemSpyViewKernelContainers::SetListBoxModelL()
-    {	
+    {
+    for (TInt i=0; i<iKernelObjects.Count(); i++)
+        {
+        delete iKernelObjects[i];
+        }
 	iMemSpySession.GetKernelObjects( iKernelObjects );
 		
+	
 	CDesCArrayFlat* model = new (ELeave) CDesC16ArrayFlat( iKernelObjects.Count() ); //array for formated items
 	
 	for( TInt i=0 ; i<iKernelObjects.Count() ; i++ )
@@ -137,7 +154,7 @@ void CMemSpyViewKernelContainers::SetListBoxModelL()
 	
 	CAknSettingStyleListBox* listbox = static_cast< CAknSettingStyleListBox* >( iListBox );	
 	listbox->Model()->SetItemTextArray( model );
-	listbox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
+	listbox->Model()->SetOwnershipType( ELbmOwnsItemArray );
     }
 
 
