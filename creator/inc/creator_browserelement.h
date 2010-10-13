@@ -41,7 +41,7 @@ class CCreatorBrowserElement : public CCreatorScriptElement
 public:
     static CCreatorBrowserElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();
+    
 protected:
     CCreatorBrowserElement(CCreatorEngine* aEngine);    
     TInt GetBrowserCommandL() const;

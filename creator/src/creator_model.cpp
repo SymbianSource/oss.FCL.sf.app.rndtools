@@ -57,13 +57,10 @@ CCreatorEngine* CCreatorEngine::NewL(CCreatorAppUi* aAppUi)
 
 // ---------------------------------------------------------------------------
 
-CCreatorEngine::CCreatorEngine() : 
-    CActive(0), 
-    iAsyncRunScript( CActive::EPriorityStandard )
-    {
-    TCallBack asyncRunScriptCB( AsyncRunScriptCB, this );
-    iAsyncRunScript.Set( asyncRunScriptCB );
-    }
+CCreatorEngine::CCreatorEngine() 
+: 
+CActive(0)
+{}
 
 // ---------------------------------------------------------------------------
 
@@ -697,25 +694,6 @@ void CCreatorEngine::DoCancel()
     LOGSTRING("Creator: CCreatorEngine::DoCancel");
 
     iTimer.Cancel();
-    }
-
-// ----------------------------------------------------------------------------
-// CCreatorEngine::AsyncRunScript
-// CallBack for an asynchronous call of RunScriptL
-// ----------------------------------------------------------------------------
-//
-TInt CCreatorEngine::AsyncRunScriptCB( TAny* aObject )
-    {
-    TRAPD( err, static_cast<CCreatorEngine*>( aObject )->RunScriptL() );
-    return err;
-    }
-
-// ---------------------------------------------------------------------------
-
-void CCreatorEngine::AsyncRunScript()
-    {
-    LOGSTRING("Creator: CCreatorEngine::AsyncRunScript");
-    iAsyncRunScript.CallBack();
     }
 
 // ---------------------------------------------------------------------------

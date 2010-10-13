@@ -25,5 +25,7 @@
 #include "../loadgen/group/bld.inf"
 #include "../perfmon/group/bld.inf"
 #include "../screengrabber/group/bld.inf"
+#include "../stifui/avkon/group/bld.inf"
 #include "../memspyui/group/bld.inf"
+#include "../htiui/group/bld.inf"
 #include "../piprofilerui/group/bld.inf"

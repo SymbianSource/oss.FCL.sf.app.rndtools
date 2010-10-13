@@ -51,7 +51,6 @@ class CCreatorFileElement : public CCreatorScriptElement
 public:
     static CCreatorFileElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();
     
 protected:
     CCreatorFileElement(CCreatorEngine* aEngine);

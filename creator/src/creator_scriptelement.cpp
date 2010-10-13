@@ -387,51 +387,6 @@ TBool CCreatorScriptElement::IsCommandElement() const
     return iIsCommandElement;
     }
 
-void CCreatorScriptElement::AsyncExecuteCommandAndWaitL()
-    {
-    iAsyncCallback.Cancel();
-    iLoopIndex = 0;
-    iAsyncOpError = KErrNone;
-    // start async executing
-    iAsyncCallback.CallBack();
-    // wait until async executing is finished
-    iWaiter.Start();
-    User::LeaveIfError( iAsyncOpError );
-    }
-
-TInt CCreatorScriptElement::ExecuteCommandCB( TAny* aPtr )
-    {
-    static_cast<CCreatorScriptElement*>( aPtr )->AsyncExecuteCommand();
-    return KErrNone;
-    }
-
-void CCreatorScriptElement::AsyncExecuteCommand()
-    {
-    TRAPD( err, AsyncExecuteCommandL() );
-    if( err != KErrNone )
-        {
-        iAsyncOpError = err;
-        iAsyncCallback.Cancel();
-        iWaiter.AsyncStop();
-        }
-    }
-
-void CCreatorScriptElement::AsyncExecuteCommandL()
-    {
-    User::Panic(_L("CCreatorScriptElement::AsyncExecuteCommandL not written"), -1000);
-    }
-
-void CCreatorScriptElement::StartNextLoop()
-    {
-    iLoopIndex++;
-    iAsyncCallback.CallBack();
-    }
-
-void CCreatorScriptElement::AsyncCommandFinished()
-    {
-    iWaiter.AsyncStop();
-    }
-
 void CCreatorScriptElement::ExecuteCommandL()
     {
     
@@ -445,15 +400,12 @@ TBool CCreatorScriptElement::IsRoot() const
     return EFalse;
     }
 
-CCreatorScriptElement::CCreatorScriptElement(CCreatorEngine* aEngine) : 
-    iIsCommandElement(EFalse),
-    iIsRoot(EFalse),
-    iEngine(aEngine),
-    iAsyncCallback( CActive::EPriorityLow )
-    {
-    TCallBack callback( ExecuteCommandCB, this);
-    iAsyncCallback.Set( callback );
-    }
+CCreatorScriptElement::CCreatorScriptElement(CCreatorEngine* aEngine)
+: 
+iIsCommandElement(EFalse),
+iIsRoot(EFalse),
+iEngine(aEngine)
+    {}
     
 void CCreatorScriptElement::ConstructL(const TDesC& aName, const TDesC& aContext)
     {
@@ -741,3 +693,29 @@ CCreatorScriptElement(aEngine)
     iIsRoot=ETrue;
     }
 
+
+CCreatorCalendarElementBase* CCreatorCalendarElementBase::NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext)
+    {
+    CCreatorCalendarElementBase* self = new (ELeave) CCreatorCalendarElementBase(aEngine);
+    CleanupStack::PushL(self);
+    self->ConstructL(aName, aContext);
+    CleanupStack::Pop();
+    return self;
+    }
+CCreatorCalendarElementBase::CCreatorCalendarElementBase(CCreatorEngine* aEngine) 
+: 
+CCreatorScriptElement(aEngine)
+    { }
+
+CCreatorMessageElementBase* CCreatorMessageElementBase::NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext)
+    {
+    CCreatorMessageElementBase* self = new (ELeave) CCreatorMessageElementBase(aEngine);
+    CleanupStack::PushL(self);
+    self->ConstructL(aName, aContext);
+    CleanupStack::Pop();
+    return self;
+    }
+CCreatorMessageElementBase::CCreatorMessageElementBase(CCreatorEngine* aEngine) 
+: 
+CCreatorScriptElement(aEngine)
+    { }

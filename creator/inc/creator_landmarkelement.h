@@ -47,7 +47,7 @@ class CCreatorLandmarkElement : public CCreatorScriptElement
 public:
     static CCreatorLandmarkElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();
+    
 protected:
     CCreatorLandmarkElement(CCreatorEngine* aEngine);
 };

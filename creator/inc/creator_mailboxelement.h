@@ -115,7 +115,7 @@ class CCreatorMailboxElement : public CCreatorScriptElement
 public:
     static CCreatorMailboxElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();
+    
 protected:
     CCreatorMailboxElement(CCreatorEngine* aEngine);
     TBool SetTextParamL(const TDesC& aElemName, const TDesC& aElemContent, CMailboxesParameters* aParams, TBool aSetRandom );

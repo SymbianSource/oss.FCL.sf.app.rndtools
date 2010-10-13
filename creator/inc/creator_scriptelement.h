@@ -227,15 +227,11 @@ public:
     virtual void AddToCacheL();
     virtual TBool IsCommandElement() const;
     virtual void ExecuteCommandL();
-    
-    void AsyncExecuteCommand();
     //virtual void SaveCommandResultsL();
     //virtual void DiscardCommandResultsL();
     virtual TBool IsRoot() const;
     virtual RPointerArray<CCreatorModuleBaseParameters>& CommandParameters();
     virtual const RPointerArray<CCreatorModuleBaseParameters>& CommandParameters() const;
-    
-    void AsyncExecuteCommandAndWaitL();
     
 protected:
 
@@ -290,11 +286,6 @@ protected:
      */
     void IncreasePhoneNumL( const TDesC& aOriginal, TInt aDelta, HBufC* aIncreased ) const;
     
-    static TInt ExecuteCommandCB( TAny *aPtr );
-    virtual void AsyncExecuteCommandL();
-    void StartNextLoop();
-    void AsyncCommandFinished();
-
 protected:
     
     // Sub-element array
@@ -312,11 +303,6 @@ protected:
     TBool iIsRoot;
     CCreatorEngine* iEngine;
     RPointerArray<CCreatorModuleBaseParameters> iParameters;
-    
-    CAsyncCallBack iAsyncCallback;
-    CActiveSchedulerWait iWaiter;
-    volatile TInt iAsyncOpError;
-    TInt iLoopIndex;
 };
 
 /**
@@ -343,6 +329,21 @@ public:
     static CCreatorCalendarElementBase* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
 protected:
     CCreatorCalendarElementBase(CCreatorEngine* aEngine);
+};
+
+/**
+ * Message elements
+ */
+
+/**
+ * Base class for message elements
+ */
+class CCreatorMessageElementBase : public CCreatorScriptElement
+{
+public:
+    static CCreatorMessageElementBase* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
+protected:
+    CCreatorMessageElementBase(CCreatorEngine* aEngine);
 };
 
 #endif /*CREATORSCRIPTELEMENT_H_*/

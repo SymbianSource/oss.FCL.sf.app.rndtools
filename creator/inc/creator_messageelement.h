@@ -58,7 +58,6 @@ class CCreatorMessageElement : public CCreatorScriptElement
 public:
     static CCreatorMessageElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();
 protected:    
     CCreatorMessageElement(CCreatorEngine* aEngine);
     /*

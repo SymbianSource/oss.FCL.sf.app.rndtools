@@ -55,7 +55,7 @@ symbian: {
     
 	TARGET.CAPABILITY = ALL -TCB
 
-	LIBS += -lcharconv -lbafl -lsysutil -lefsrv
+	LIBS += -lcharconv -lbafl -lsysutil
     
     ICON = ../icons/qgn_menu_piprofilerui.svg 
     

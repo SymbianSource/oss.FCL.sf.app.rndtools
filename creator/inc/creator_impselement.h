@@ -40,7 +40,7 @@ class CCreatorImpsServerElement : public CCreatorScriptElement
 public:
     static CCreatorImpsServerElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();
+    
 protected:
     CCreatorImpsServerElement(CCreatorEngine* aEngine);
 };

@@ -39,7 +39,7 @@ class CCreatorLogElement : public CCreatorScriptElement
 public:
     static CCreatorLogElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();
+    
 protected:
     CCreatorLogElement(CCreatorEngine* aEngine);
     TInt GetLogCommandL( const TDesC& aFileIdStr, TBool aRandom ) const;

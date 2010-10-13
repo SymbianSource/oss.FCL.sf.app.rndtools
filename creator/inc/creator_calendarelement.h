@@ -102,7 +102,6 @@ class CCreatorCalendarElement : public CCreatorScriptElement
 public:
     static CCreatorCalendarElement* NewL(CCreatorEngine* aEngine, const TDesC& aName, const TDesC& aContext = KNullDesC);
     void ExecuteCommandL();
-    void AsyncExecuteCommandL();    
 protected:
     CCreatorCalendarElement(CCreatorEngine* aEngine);
     

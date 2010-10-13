@@ -15,18 +15,18 @@
  *
  */
 
-#include <HbMainWindow>
-#include <HbDataForm>
-#include <HbDataFormModel>
-#include <HbDataFormModelItem>
-#include <HbDataFormViewItem>
-#include <QGraphicsLinearLayout>
-#include <QValidator>
-#include <QIntValidator>
-#include <QModelIndex>
-#include <HbLineEdit>
-#include <HbValidator>
-#include <HbEditorInterface>
+#include <hbmainwindow>
+#include <hbdataform>
+#include <hbdataformmodel>
+#include <hbdataformmodelitem>
+#include <hbdataformviewitem>
+#include <qgraphicslinearlayout>
+#include <qvalidator>
+#include <qintvalidator>
+#include <qmodelindex>
+#include <hblineedit>
+#include <hbvalidator>
+#include <hbeditorinterface>
 #include <hbabstractitemview.h>
 
 #include "pisettingsview.h"
