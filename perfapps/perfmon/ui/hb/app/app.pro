@@ -75,7 +75,11 @@ symbian: {
 
     TARGET.EPOCHEAPSIZE = 0x10000 0x2000000  // Min 64Kb, Max 32Mb
 
-    ICON = ../../../icons/qgn_menu_perfmon.svg
+    ICON = ../../../icons/PerfMon_application_icon_svgt.svg
 
     RSS_RULES += "group_name = \"RnD Tools\"";
+    
+    MMP_RULES -= PAGED
+  	MMP_RULES *= UNPAGEDDATA
+  	MMP_RULES += SMPSAFE
 }

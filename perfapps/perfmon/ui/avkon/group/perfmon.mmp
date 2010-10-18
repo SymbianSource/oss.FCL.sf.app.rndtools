@@ -87,4 +87,7 @@ LIBRARY           estor.lib
 LIBRARY           centralrepository.lib
 LIBRARY           HWRMPowerClient.lib
 
+UNPAGEDDATA
+SMPSAFE
+
 // End of File

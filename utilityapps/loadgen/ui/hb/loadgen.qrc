@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/" >
+        <file alias="loadgen.svg" >../../icons/qgn_menu_loadgen.svg</file>
+        <file alias="active.svg" >../../icons/qgn_prob_status_green.svg</file>
+        <file alias="paused.svg" >../../icons/qgn_prob_status_red.svg</file>
+        <file alias="cross.svg" >../../icons/mono_stop_all.svg</file>
+        <file alias="pause.svg" >../../icons/mono_suspend_all.svg</file>
+        <file alias="play.svg" >../../icons/mono_resume_all.svg</file>
+        <file alias="newload.svg" >../../icons/mono_new_load.svg</file>
+    </qresource>
+</RCC>

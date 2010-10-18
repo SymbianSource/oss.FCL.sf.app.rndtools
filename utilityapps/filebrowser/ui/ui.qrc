@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="qtg_mono_filebrowser_parent_folder.svg" >../icons/qtg_mono_filebrowser_parent_folder.svg</file>
+        <file alias="qtg_mono_filebrowser_search.svg" >../icons/qtg_mono_filebrowser_search.svg</file>
+        <file alias="qtg_mono_filebrowser_selection_mode.svg" >../icons/qtg_mono_filebrowser_selection_mode.svg</file>
+        <file alias="qtg_mono_filebrowser_selection_mode_off.svg" >../icons/qtg_mono_filebrowser_selection_mode_off.svg</file>
+        <file alias="qtg_mono_filebrowser_paste.svg" >../icons/qtg_mono_filebrowser_paste.svg</file>
+        <file alias="qtg_indi_status_back.svg" >../icons/qtg_indi_status_back.svg</file>
+    </qresource>
+</RCC>
