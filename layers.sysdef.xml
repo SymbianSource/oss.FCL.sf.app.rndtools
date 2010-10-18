@@ -7,22 +7,22 @@
   <systemModel>
     <layer name="app_layer">
       <module name="screengrabber">
-				<unit unitID="tools.screengrabberqt" mrp="" bldFile="&layer_real_source_path;/screengrabber" name="screengrabber" proFile="screengrabber.pro" />
+				<unit unitID="tools.screengrabberqt" mrp="" bldFile="&layer_real_source_path;/utilityapps/screengrabber" name="screengrabber" proFile="screengrabber.pro" />
 			</module>
 			<module name="perfmon">
 				<unit unitID="tools.perfmonqt" mrp="" bldFile="&layer_real_source_path;/perfapps/perfmon" name="perfmon" proFile="perfmon.pro" />
 			</module>
 			<module name="creator">
-				<unit unitID="tools.creatorqt" mrp="" bldFile="&layer_real_source_path;/creator" name="creator" proFile="creator.pro" />
+				<unit unitID="tools.creatorqt" mrp="" bldFile="&layer_real_source_path;/utilityapps/creator" name="creator" proFile="creator.pro" />
 			</module>
 			<module name="filebrowser">
-				<unit unitID="tools.filebrowserqt" mrp="" bldFile="&layer_real_source_path;/filebrowser" name="filebrowser" proFile="filebrowser.pro" />
+				<unit unitID="tools.filebrowserqt" mrp="" bldFile="&layer_real_source_path;/utilityapps/filebrowser" name="filebrowser" proFile="filebrowser.pro" />
 			</module>
 			<module name="launcher">
-				<unit unitID="tools.launcherqt" mrp="" bldFile="&layer_real_source_path;/launcher" name="launcher" proFile="launcher.pro" />
+				<unit unitID="tools.launcherqt" mrp="" bldFile="&layer_real_source_path;/utilityapps/launcher" name="launcher" proFile="launcher.pro" />
 			</module>
 			<module name="loadgen">
-				<unit unitID="tools.loadgenqt" mrp="" bldFile="&layer_real_source_path;/loadgen" name="loadgen" proFile="loadgen.pro" />
+				<unit unitID="tools.loadgenqt" mrp="" bldFile="&layer_real_source_path;/utilityapps/loadgen" name="loadgen" proFile="loadgen.pro" />
 			</module>
 			<module name="memspyui">
 				<unit unitID="tools.memspyuiqt" mrp="" bldFile="&layer_real_source_path;/perfapps/memspyui" name="memspyui" proFile="memspyui.pro" />
